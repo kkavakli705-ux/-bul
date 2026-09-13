@@ -557,4 +557,6 @@ class YonetimPaneli extends StatelessWidget {
             child: Padding(
               padding: EdgeInsets.all(16),
               child: Text(
-                'Yönetici hesabı\nBu bölüm sadece yönetici
+                'Yönetici hesabı - Bu bölüm sadece yöneticiye açıktır.',
+textAlign: TextAlign.center,
+),
