@@ -8,7 +8,7 @@ Future<void> main() async {
 
   await Firebase.initializeApp(
     options: const FirebaseOptions(
-      apiKey: 'AIzaSyD0H50wL0r2MB41mfj1MqBsRiB8lMkxKXs',
+      apiKey: 'AIzaSyD0H50wL0r2MB41mfjiMqBsRiB8lMkxKXs',
       appId: '1:308098362070:android:964692ab6543a09d42b777',
       messagingSenderId: '308098362070',
       projectId: 'is-bul-1652d',
@@ -136,11 +136,6 @@ class _AnaSayfaState extends State<AnaSayfa> {
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
-                const Icon(
-                  Icons.business_center,
-                  size: 70,
-                  color: Colors.blue,
-                ),
                 const SizedBox(height: 15),
                 const Center(
                   child: Text(
@@ -361,6 +356,7 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
+      mesaj('Önce giriş yapmalısınız.');
       return;
     }
 
