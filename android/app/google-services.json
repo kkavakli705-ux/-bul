@@ -1,0 +1,28 @@
+project_info": {
+    "project_number": "308098362070",
+    "project_id": "is-bul-1652d",
+    "storage_bucket": "is-bul-1652d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:308098362070:android:964692ab6543a09d42b777",
+        "android_client_info": {
+          "package_name": "com.example.is_bul"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD0H50wL0r2MB41mfjiMqBsRiB8lMkxKXs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
