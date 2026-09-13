@@ -28,7 +28,12 @@ class IsBulApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'İş Bul',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+        ),
         useMaterial3: true,
       ),
-      home
+      home: const AnaSayfa(),
+    );
+  }
+}
