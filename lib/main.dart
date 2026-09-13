@@ -4,10 +4,6 @@ void main() {
   runApp(const IsBulApp());
 }
 
-// =====================================================
-// UYGULAMA
-// =====================================================
-
 class IsBulApp extends StatelessWidget {
   const IsBulApp({super.key});
 
@@ -27,15 +23,11 @@ class IsBulApp extends StatelessWidget {
   }
 }
 
-// =====================================================
-// İLAN MODELİ
-// =====================================================
-
 class IsIlani {
-  String baslik;
-  String firma;
-  String sehir;
-  String aciklama;
+  final String baslik;
+  final String firma;
+  final String sehir;
+  final String aciklama;
 
   IsIlani({
     required this.baslik,
@@ -45,8 +37,6 @@ class IsIlani {
   });
 }
 
-// Geçici ilan deposu.
-// Daha sonra Firebase veritabanına bağlayacağız.
 class IlanDeposu {
   static final List<IsIlani> ilanlar = [
     IsIlani(
@@ -64,10 +54,6 @@ class IlanDeposu {
   ];
 }
 
-// =====================================================
-// ANA SAYFA
-// =====================================================
-
 class AnaSayfa extends StatefulWidget {
   const AnaSayfa({super.key});
 
@@ -76,8 +62,11 @@ class AnaSayfa extends StatefulWidget {
 }
 
 class _AnaSayfaState extends State<AnaSayfa> {
-  final meslekController = TextEditingController();
-  final sehirController = TextEditingController();
+  final TextEditingController meslekController =
+      TextEditingController();
+
+  final TextEditingController sehirController =
+      TextEditingController();
 
   @override
   void dispose() {
@@ -91,4 +80,36 @@ class _AnaSayfaState extends State<AnaSayfa> {
       context,
       MaterialPageRoute(
         builder: (context) => IsAraSayfasi(
-          meslek
+          meslek: meslekController.text,
+          sehir: sehirController.text,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'İŞ BUL',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 25),
+            const Icon(
+              Icons.work,
+              size: 90,
+              color: Colors.blue,
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'İş Bul\'
