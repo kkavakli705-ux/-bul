@@ -1,6 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: 'AIzaSyDOH5OwL0r2MB41mfjiMqBsRiB81MkxKXs',
+      appId: '1:308098362070:android:964692ab6543a09d42b777',
+      messagingSenderId: '308098362070',
+      projectId: 'is-bul-1652d',
+      storageBucket: 'is-bul-1652d.firebasestorage.app',
+    ),
+  );
+
   runApp(const IsBulApp());
 }
 
@@ -21,28 +35,133 @@ class IsBulApp extends StatelessWidget {
   }
 }
 
-class AnaSayfa extends StatelessWidget {
+class IsIlani {
+  final String baslik;
+  final String firma;
+  final String sehir;
+  final String aciklama;
+
+  const IsIlani({
+    required this.baslik,
+    required this.firma,
+    required this.sehir,
+    required this.aciklama,
+  });
+}
+
+class IlanDeposu {
+  static final ValueNotifier<List<IsIlani>> ilanlar =
+      ValueNotifier<List<IsIlani>>([
+    const IsIlani(
+      baslik: 'İnşaat Ustası',
+      firma: 'Örnek İnşaat',
+      sehir: 'Balıkesir',
+      aciklama: 'Deneyimli inşaat ustası aranmaktadır.',
+    ),
+    const IsIlani(
+      baslik: 'Şoför',
+      firma: 'Örnek Lojistik',
+      sehir: 'Bursa',
+      aciklama: 'B sınıfı ehliyetli şoför aranmaktadır.',
+    ),
+  ]);
+
+  static void ilanEkle(IsIlani ilan) {
+    ilanlar.value = [...ilanlar.value, ilan];
+  }
+}
+
+class AnaSayfa extends StatefulWidget {
   const AnaSayfa({super.key});
 
   @override
+  State<AnaSayfa> createState() => _AnaSayfaState();
+}
+
+class _AnaSayfaState extends State<AnaSayfa> {
+  User? get kullanici => FirebaseAuth.instance.currentUser;
+
+  Future<void> girisSayfasiniAc() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const GirisKayitSayfasi(),
+      ),
+    );
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> ilanVerSayfasiniAc() async {
+    if (FirebaseAuth.instance.currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('İlan vermek için önce giriş yapmalısınız.'),
+        ),
+      );
+
+      await girisSayfasiniAc();
+
+      if (FirebaseAuth.instance.currentUser == null) {
+        return;
+      }
+    }
+
+    if (!mounted) return;
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const IlanVerSayfasi(),
+      ),
+    );
+  }
+
+  Future<void> cikisYap() async {
+    await FirebaseAuth.instance.signOut();
+
+    if (mounted) {
+      setState(() {});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Çıkış yapıldı.'),
+        ),
+      );
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final user = kullanici;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('İŞ BUL'),
+        title: const Text(
+          'İŞ BUL',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const SizedBox(height: 40),
+            const SizedBox(height: 25),
+
             const Icon(
               Icons.work,
               size: 90,
               color: Colors.blue,
             ),
+
             const SizedBox(height: 20),
+
             const Text(
               'İş Bul\'a Hoş Geldiniz',
               textAlign: TextAlign.center,
@@ -51,50 +170,91 @@ class AnaSayfa extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
+
+            const SizedBox(height: 10),
+
+            const Text(
+              'İş arayanlarla işverenleri buluşturuyoruz.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
+
             const SizedBox(height: 30),
+
+            if (user != null)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(15),
+                  child: Column(
+                    children: [
+                      const Icon(
+                        Icons.verified_user,
+                        color: Colors.green,
+                        size: 35,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Giriş yapıldı',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(user.email ?? ''),
+                    ],
+                  ),
+                ),
+              ),
+
+            const SizedBox(height: 15),
+
             ElevatedButton.icon(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('İş arama bölümü yakında aktif olacak.'),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const IsAraSayfasi(),
                   ),
                 );
               },
               icon: const Icon(Icons.search),
               label: const Text('İŞ ARA'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(18),
+              ),
             ),
+
             const SizedBox(height: 15),
+
             ElevatedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('İş ilanı verme bölümü yakında aktif olacak.'),
-                  ),
-                );
-              },
+              onPressed: ilanVerSayfasiniAc,
               icon: const Icon(Icons.add_business),
               label: const Text('İŞ İLANI VER'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(18),
+              ),
             ),
+
             const SizedBox(height: 15),
-            OutlinedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Giriş ve kayıt bölümü hazırlanıyor.'),
-                  ),
-                );
-              },
-              onLongPress: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const AdminGirisSayfasi(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.person),
-              label: const Text('GİRİŞ YAP / KAYIT OL'),
-            ),
+
+            if (user == null)
+              OutlinedButton.icon(
+                onPressed: girisSayfasiniAc,
+                icon: const Icon(Icons.person),
+                label: const Text('GİRİŞ YAP / KAYIT OL'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.all(18),
+                ),
+              )
+            else
+              OutlinedButton.icon(
+                onPressed: cikisYap,
+                icon: const Icon(Icons.logout),
+                label: const Text('ÇIKIŞ YAP'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.all(18),
+                ),
+              ),
           ],
         ),
       ),
@@ -102,62 +262,198 @@ class AnaSayfa extends StatelessWidget {
   }
 }
 
-class AdminGirisSayfasi extends StatefulWidget {
-  const AdminGirisSayfasi({super.key});
+class GirisKayitSayfasi extends StatefulWidget {
+  const GirisKayitSayfasi({super.key});
 
   @override
-  State<AdminGirisSayfasi> createState() => _AdminGirisSayfasiState();
+  State<GirisKayitSayfasi> createState() => _GirisKayitSayfasiState();
 }
 
-class _AdminGirisSayfasiState extends State<AdminGirisSayfasi> {
+class _GirisKayitSayfasiState extends State<GirisKayitSayfasi> {
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController sifreController = TextEditingController();
 
-  void girisYap() {
-    if (sifreController.text == '1234') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const AdminPaneli(),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Şifre yanlış'),
-        ),
-      );
-    }
-  }
+  bool kayitModu = false;
+  bool yukleniyor = false;
+  bool sifreGizli = true;
 
   @override
   void dispose() {
+    emailController.dispose();
     sifreController.dispose();
     super.dispose();
   }
 
+  Future<void> girisVeyaKayit() async {
+    final email = emailController.text.trim();
+    final sifre = sifreController.text.trim();
+
+    if (email.isEmpty || sifre.isEmpty) {
+      mesajGoster('E-posta ve şifreyi doldurun.');
+      return;
+    }
+
+    if (sifre.length < 6) {
+      mesajGoster('Şifre en az 6 karakter olmalı.');
+      return;
+    }
+
+    setState(() {
+      yukleniyor = true;
+    });
+
+    try {
+      if (kayitModu) {
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: email,
+          password: sifre,
+        );
+      } else {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: email,
+          password: sifre,
+        );
+      }
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            kayitModu
+                ? 'Kayıt başarılı. Hoş geldiniz!'
+                : 'Giriş başarılı.',
+          ),
+        ),
+      );
+
+      Navigator.pop(context);
+    } on FirebaseAuthException catch (e) {
+      String mesaj = 'Bir hata oluştu.';
+
+      if (e.code == 'email-already-in-use') {
+        mesaj = 'Bu e-posta adresi zaten kayıtlı.';
+      } else if (e.code == 'invalid-email') {
+        mesaj = 'Geçerli bir e-posta adresi girin.';
+      } else if (e.code == 'weak-password') {
+        mesaj = 'Şifre çok zayıf.';
+      } else if (e.code == 'user-not-found') {
+        mesaj = 'Bu e-posta ile kayıtlı kullanıcı bulunamadı.';
+      } else if (e.code == 'wrong-password' ||
+          e.code == 'invalid-credential') {
+        mesaj = 'E-posta veya şifre yanlış.';
+      } else if (e.message != null) {
+        mesaj = e.message!;
+      }
+
+      mesajGoster(mesaj);
+    } catch (e) {
+      mesajGoster('Bağlantı hatası oluştu.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          yukleniyor = false;
+        });
+      }
+    }
+  }
+
+  void mesajGoster(String mesaj) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mesaj),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Yönetici Girişi'),
+        title: Text(
+          kayitModu ? 'Kayıt Ol' : 'Giriş Yap',
+        ),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const SizedBox(height: 40),
+            const SizedBox(height: 30),
+
+            Icon(
+              kayitModu ? Icons.person_add : Icons.lock,
+              size: 90,
+              color: Colors.blue,
+            ),
+
+            const SizedBox(height: 30),
+
             TextField(
-              controller: sifreController,
-              obscureText: true,
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
               decoration: const InputDecoration(
-                labelText: 'Yönetici Şifresi',
+                labelText: 'E-posta',
+                prefixIcon: Icon(Icons.email),
                 border: OutlineInputBorder(),
               ),
             ),
+
+            const SizedBox(height: 15),
+
+            TextField(
+              controller: sifreController,
+              obscureText: sifreGizli,
+              decoration: InputDecoration(
+                labelText: 'Şifre',
+                prefixIcon: const Icon(Icons.lock),
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      sifreGizli = !sifreGizli;
+                    });
+                  },
+                  icon: Icon(
+                    sifreGizli
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                  ),
+                ),
+              ),
+            ),
+
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: girisYap,
-              child: const Text('GİRİŞ YAP'),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: yukleniyor ? null : girisVeyaKayit,
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.all(17),
+                ),
+                child: yukleniyor
+                    ? const CircularProgressIndicator()
+                    : Text(
+                        kayitModu ? 'KAYIT OL' : 'GİRİŞ YAP',
+                      ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            TextButton(
+              onPressed: yukleniyor
+                  ? null
+                  : () {
+                      setState(() {
+                        kayitModu = !kayitModu;
+                      });
+                    },
+              child: Text(
+                kayitModu
+                    ? 'Zaten hesabın var mı? Giriş yap'
+                    : 'Hesabın yok mu? Kayıt ol',
+              ),
             ),
           ],
         ),
@@ -166,49 +462,133 @@ class _AdminGirisSayfasiState extends State<AdminGirisSayfasi> {
   }
 }
 
-class AdminPaneli extends StatelessWidget {
-  const AdminPaneli({super.key});
+class IsAraSayfasi extends StatefulWidget {
+  const IsAraSayfasi({super.key});
+
+  @override
+  State<IsAraSayfasi> createState() => _IsAraSayfasiState();
+}
+
+class _IsAraSayfasiState extends State<IsAraSayfasi> {
+  final TextEditingController aramaController = TextEditingController();
+
+  String arama = '';
+
+  @override
+  void dispose() {
+    aramaController.dispose();
+    super.dispose();
+  }
+
+  bool eslesiyor(IsIlani ilan) {
+    final kelime = arama.toLowerCase();
+
+    return ilan.baslik.toLowerCase().contains(kelime) ||
+        ilan.firma.toLowerCase().contains(kelime) ||
+        ilan.sehir.toLowerCase().contains(kelime) ||
+        ilan.aciklama.toLowerCase().contains(kelime);
+  }
+
+  void detayGoster(IsIlani ilan) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(ilan.baslik),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Firma: ${ilan.firma}'),
+              const SizedBox(height: 8),
+              Text('Şehir: ${ilan.sehir}'),
+              const SizedBox(height: 12),
+              Text(ilan.aciklama),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('KAPAT'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Yönetim Paneli'),
+        title: const Text('İş Ara'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Column(
         children: [
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.work),
-              title: const Text('İlanlar'),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const IlanlarSayfasi(),
-                  ),
+          Padding(
+            padding: const EdgeInsets.all(15),
+            child: TextField(
+              controller: aramaController,
+              onChanged: (deger) {
+                setState(() {
+                  arama = deger;
+                });
+              },
+              decoration: const InputDecoration(
+                labelText: 'İş, firma veya şehir ara',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ),
+
+          Expanded(
+            child: ValueListenableBuilder<List<IsIlani>>(
+              valueListenable: IlanDeposu.ilanlar,
+              builder: (context, ilanlar, child) {
+                final sonuc =
+                    ilanlar.where(eslesiyor).toList();
+
+                if (sonuc.isEmpty) {
+                  return const Center(
+                    child: Text('İlan bulunamadı.'),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(10),
+                  itemCount: sonuc.length,
+                  itemBuilder: (context, index) {
+                    final ilan = sonuc[index];
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: ListTile(
+                        leading: const Icon(
+                          Icons.work,
+                          size: 35,
+                        ),
+                        title: Text(
+                          ilan.baslik,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Text(
+                          '${ilan.firma} • ${ilan.sehir}',
+                        ),
+                        trailing:
+                            const Icon(Icons.arrow_forward_ios),
+                        onTap: () {
+                          detayGoster(ilan);
+                        },
+                      ),
+                    );
+                  },
                 );
               },
-            ),
-          ),
-          const Card(
-            child: ListTile(
-              leading: Icon(Icons.people),
-              title: Text('Kullanıcılar'),
-            ),
-          ),
-          const Card(
-            child: ListTile(
-              leading: Icon(Icons.report),
-              title: Text('Şikayetler'),
-            ),
-          ),
-          const Card(
-            child: ListTile(
-              leading: Icon(Icons.settings),
-              title: Text('Ayarlar'),
             ),
           ),
         ],
@@ -217,138 +597,133 @@ class AdminPaneli extends StatelessWidget {
   }
 }
 
-class IlanlarSayfasi extends StatefulWidget {
-  const IlanlarSayfasi({super.key});
+class IlanVerSayfasi extends StatefulWidget {
+  const IlanVerSayfasi({super.key});
 
   @override
-  State<IlanlarSayfasi> createState() => _IlanlarSayfasiState();
+  State<IlanVerSayfasi> createState() => _IlanVerSayfasiState();
 }
 
-class _IlanlarSayfasiState extends State<IlanlarSayfasi> {
-  final List<String> ilanlar = [
-    'İnşaat Ustası - Balıkesir',
-    'Şoför - Bursa',
-  ];
-
-  Future<void> ilanEkle() async {
-    final sonuc = await Navigator.push<String>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const IlanEkleSayfasi(),
-      ),
-    );
-
-    if (sonuc != null && sonuc.isNotEmpty) {
-      setState(() {
-        ilanlar.add(sonuc);
-      });
-    }
-  }
-
-  void ilanSil(int index) {
-    setState(() {
-      ilanlar.removeAt(index);
-    });
-  }
+class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
+  final TextEditingController baslikController =
+      TextEditingController();
+  final TextEditingController firmaController =
+      TextEditingController();
+  final TextEditingController sehirController =
+      TextEditingController();
+  final TextEditingController aciklamaController =
+      TextEditingController();
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('İlanları Yönet'),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: ilanEkle,
-        child: const Icon(Icons.add),
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: ilanlar.length,
-        itemBuilder: (context, index) {
-          return Card(
-            child: ListTile(
-              leading: const Icon(Icons.work),
-              title: Text(ilanlar[index]),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () {
-                  ilanSil(index);
-                },
-              ),
-            ),
-          );
-        },
-      ),
-    );
+  void dispose() {
+    baslikController.dispose();
+    firmaController.dispose();
+    sehirController.dispose();
+    aciklamaController.dispose();
+    super.dispose();
   }
-}
 
-class IlanEkleSayfasi extends StatefulWidget {
-  const IlanEkleSayfasi({super.key});
-
-  @override
-  State<IlanEkleSayfasi> createState() => _IlanEkleSayfasiState();
-}
-
-class _IlanEkleSayfasiState extends State<IlanEkleSayfasi> {
-  final TextEditingController meslekController = TextEditingController();
-  final TextEditingController sehirController = TextEditingController();
-
-  void kaydet() {
-    final meslek = meslekController.text.trim();
+  void ilanKaydet() {
+    final baslik = baslikController.text.trim();
+    final firma = firmaController.text.trim();
     final sehir = sehirController.text.trim();
+    final aciklama = aciklamaController.text.trim();
 
-    if (meslek.isEmpty || sehir.isEmpty) {
+    if (baslik.isEmpty ||
+        firma.isEmpty ||
+        sehir.isEmpty ||
+        aciklama.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Meslek ve şehir alanlarını doldur.'),
+          content: Text('Bütün alanları doldurun.'),
         ),
       );
       return;
     }
 
-    Navigator.pop(
-      context,
-      '$meslek - $sehir',
+    IlanDeposu.ilanEkle(
+      IsIlani(
+        baslik: baslik,
+        firma: firma,
+        sehir: sehir,
+        aciklama: aciklama,
+      ),
     );
-  }
 
-  @override
-  void dispose() {
-    meslekController.dispose();
-    sehirController.dispose();
-    super.dispose();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('İş ilanı başarıyla eklendi.'),
+      ),
+    );
+
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Yeni İlan'),
+        title: const Text('İş İlanı Ver'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
             TextField(
-              controller: meslekController,
+              controller: baslikController,
               decoration: const InputDecoration(
-                labelText: 'İş / Meslek',
+                labelText: 'İş başlığı',
                 border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.work),
               ),
             ),
+
             const SizedBox(height: 15),
+
+            TextField(
+              controller: firmaController,
+              decoration: const InputDecoration(
+                labelText: 'Firma adı',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.business),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
             TextField(
               controller: sehirController,
               decoration: const InputDecoration(
                 labelText: 'Şehir',
                 border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.location_city),
               ),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: kaydet,
-              child: const Text('İLANI KAYDET'),
+
+            const SizedBox(height: 15),
+
+            TextField(
+              controller: aciklamaController,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                labelText: 'İlan açıklaması',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.description),
+              ),
+            ),
+
+            const SizedBox(height: 25),
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: ilanKaydet,
+                icon: const Icon(Icons.save),
+                label: const Text('İLANI YAYINLA'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.all(17),
+                ),
+              ),
             ),
           ],
         ),
