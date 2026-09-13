@@ -1,0 +1,44 @@
+name: APK Olustur
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Kodlari al
+        uses: actions/checkout@v4
+
+      - name: Java kur
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Flutter kur
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Projeyi hazirla
+        run: |
+          if [ ! -f pubspec.yaml ] && [ -f Pubspec.yaml ]; then
+            cp Pubspec.yaml pubspec.yaml
+          fi
+          rm -rf android
+          flutter create --platforms=android .
+          flutter pub get
+
+      - name: APK olustur
+        run: flutter build apk --release
+
+      - name: APK yukle
+        uses: actions/upload-artifact@v4
+        with:
+          name: is-bul-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
