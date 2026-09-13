@@ -1,21 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: 'AIzaSyD0H50wL0r2MB41mfjiMqBsRiB8lMkxKXs',
-      appId: '1:308098362070:android:964692ab6543a09d42b777',
-      messagingSenderId: '308098362070',
-      projectId: 'is-bul-1652d',
-      storageBucket: 'is-bul-1652d.firebasestorage.app',
-    ),
-  );
-
+void main() {
   runApp(const IsBulApp());
 }
 
@@ -38,76 +23,55 @@ class IsBulApp extends StatelessWidget {
   }
 }
 
-class AdminServisi {
-  static Future<bool> adminMi() async {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      return false;
-    }
-
-    try {
-      final doc = await FirebaseFirestore.instance
-          .collection('admins')
-          .doc(user.uid)
-          .get();
-
-      return doc.exists &&
-          doc.data()?['role'] == 'admin';
-    } catch (_) {
-      return false;
-    }
-  }
-}
-
-class AnaSayfa extends StatefulWidget {
+class AnaSayfa extends StatelessWidget {
   const AnaSayfa({super.key});
 
   @override
-  State<AnaSayfa> createState() =>
-      _AnaSayfaState();
-}
-
-class _AnaSayfaState extends State<AnaSayfa> {
-  bool admin = false;
-
-  @override
-  void initState() {
-    super.initState();
-    adminKontrol();
-  }
-
-  Future<void> adminKontrol() async {
-    final sonuc = await AdminServisi.adminMi();
-
-    if (!mounted) return;
-
-    setState(() {
-      admin = sonuc;
-    });
-  }
-
-  Future<void> girisAc() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) =>
-            const GirisKayitSayfasi(),
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('İŞ BUL'),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.work,
+                size: 90,
+                color: Colors.blue,
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'İş Bul\'a Hoş Geldiniz',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: () {},
+                child: const Text('İŞ ARA'),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () {},
+                child: const Text('İŞ İLANI VER'),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: () {},
+                child: const Text('GİRİŞ YAP / KAYIT OL'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
-
-    await adminKontrol();
   }
-
-  Future<void> ilanVerAc() async {
-    if (FirebaseAuth.instance.currentUser ==
-        null) {
-      await girisAc();
-
-      if (FirebaseAuth.instance.currentUser ==
-          null) {
-        return;
-      }
-    }
-
-    if (!mounted
+}
