@@ -133,26 +133,27 @@ class AnaSayfa extends StatelessWidget {
     
              const SizedBox(height: 15),
 
-OutlinedButton.icon(
-  onPressed: () {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+            
+Ou.         tlinedButton.icon(
+           onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+         const SnackBar(
         content: Text('Giriş ve kayıt bölümü hazırlanıyor'),
-      ),
-    );
-  },
-  onLongPress: () {
-    Navigator.push(
+       ),
+       );
+       },
+       onLongPress: () {
+       Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => const AdminGirisSayfasi(),
       ),
     );
   },
-  icon: const Icon(Icons.person),
-  label: const Text('GİRİŞ YAP / KAYIT OL'),
-  style: OutlinedButton.styleFrom(
-    padding: const EdgeInsets.all(18),
+     icon: const Icon(Icons.person),
+     label: const Text('GİRİŞ YAP / KAYIT OL'),
+     style: OutlinedButton.styleFrom(
+      padding: const EdgeInsets.all(18),
   ),
 ), 
               
@@ -160,8 +161,8 @@ OutlinedButton.icon(
                 
                 
   
-              ),
-            ),
+              
+            
           ],
         ),
       ),
