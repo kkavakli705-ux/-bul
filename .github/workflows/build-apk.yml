@@ -34,11 +34,16 @@ jobs:
           flutter create --platforms=android .
           flutter pub get
 
+      - name: Debug SHA1 goster
+        run: |
+          keytool -list -v \
+          -alias androiddebugkey \
+          -keystore ~/.android/debug.keystore \
+          -storepass android \
+          -keypass android
+
       - name: APK olustur
         run: flutter build apk --release
-
-      - name: SHA1 goster
-        run: keytool -printcert -jarfile build/app/outputs/flutter-apk/app-release.apk
 
       - name: APK yukle
         uses: actions/upload-artifact@v4
