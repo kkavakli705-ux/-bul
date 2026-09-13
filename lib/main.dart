@@ -33,7 +33,7 @@ class IsBulApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const AnaSayfa(),
+      home:  AnaSayfa(),
     );
   }
 }
