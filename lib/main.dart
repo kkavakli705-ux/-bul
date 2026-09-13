@@ -349,7 +349,9 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
   final firma = TextEditingController();
   final konum = TextEditingController();
   final aciklama = TextEditingController();
-
+  final telefon = TextEditingController();
+final whatsapp = TextEditingController();
+final ucret = TextEditingController();
   bool bekle = false;
 
   Future<void> gonder() async {
@@ -361,9 +363,12 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
     }
 
     if (baslik.text.trim().isEmpty ||
-        firma.text.trim().isEmpty ||
-        konum.text.trim().isEmpty ||
-        aciklama.text.trim().isEmpty) {
+    firma.text.trim().isEmpty ||
+    konum.text.trim().isEmpty ||
+    aciklama.text.trim().isEmpty ||
+    telefon.text.trim().isEmpty ||
+    whatsapp.text.trim().isEmpty ||
+    ucret.text.trim().isEmpty) {
       mesaj('Bütün alanları doldurun.');
       return;
     }
@@ -379,6 +384,9 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
         'city': konum.text.trim(),
         'description': aciklama.text.trim(),
         'ownerUid': user.uid,
+        'phone': telefon.text.trim(),
+'whatsapp': whatsapp.text.trim(),
+'salary': ucret.text.trim(),
         'status': 'pending',
         'createdAt': FieldValue.serverTimestamp(),
       });
