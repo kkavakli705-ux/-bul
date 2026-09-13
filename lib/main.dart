@@ -13,7 +13,9 @@ class IsBulApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'İş Bul',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+        ),
         useMaterial3: true,
       ),
       home: const AnaSayfa(),
@@ -30,7 +32,9 @@ class AnaSayfa extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'İŞ BUL',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         centerTitle: true,
       ),
@@ -63,37 +67,88 @@ class AnaSayfa extends StatelessWidget {
             const Text(
               'İş arayanlarla işverenleri buluşturuyoruz.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
+              style: TextStyle(
+                fontSize: 16,
+              ),
             ),
 
-            const SizedBox(height: 40),
+            const SizedBox(height: 35),
+
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Meslek veya iş ara',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Şehir',
+                prefixIcon: const Icon(Icons.location_on),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 25),
 
             ElevatedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('İş arama bölümü hazır olacak.'),
+                  ),
+                );
+              },
               icon: const Icon(Icons.search),
-              label: const Text('İş Ara'),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('İş ilanları yakında burada!'),
-                  ),
-                );
-              },
+              label: const Text('İŞ ARA'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(18),
+              ),
             ),
 
             const SizedBox(height: 15),
 
             ElevatedButton.icon(
-              icon: const Icon(Icons.add_business),
-              label: const Text('İş İlanı Ver'),
               onPressed: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('İlan verme bölümü yakında!'),
+                    content: Text('İş ilanı verme bölümü hazır olacak.'),
                   ),
                 );
               },
+              icon: const Icon(Icons.add_business),
+              label: const Text('İŞ İLANI VER'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(18),
+              ),
             ),
 
             const SizedBox(height: 15),
 
-            Out
+            OutlinedButton.icon(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Giriş ve kayıt bölümü hazır olacak.'),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.person),
+              label: const Text('GİRİŞ YAP / KAYIT OL'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.all(18),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
