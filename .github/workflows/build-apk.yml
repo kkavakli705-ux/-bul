@@ -37,6 +37,9 @@ jobs:
       - name: APK olustur
         run: flutter build apk --release
 
+      - name: SHA1 goster
+        run: keytool -printcert -jarfile build/app/outputs/flutter-apk/app-release.apk
+
       - name: APK yukle
         uses: actions/upload-artifact@v4
         with:
