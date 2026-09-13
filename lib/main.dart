@@ -4,6 +4,10 @@ void main() {
   runApp(const IsBulApp());
 }
 
+// =====================================================
+// UYGULAMA
+// =====================================================
+
 class IsBulApp extends StatelessWidget {
   const IsBulApp({super.key});
 
@@ -23,327 +27,68 @@ class IsBulApp extends StatelessWidget {
   }
 }
 
-class AnaSayfa extends StatelessWidget {
+// =====================================================
+// İLAN MODELİ
+// =====================================================
+
+class IsIlani {
+  String baslik;
+  String firma;
+  String sehir;
+  String aciklama;
+
+  IsIlani({
+    required this.baslik,
+    required this.firma,
+    required this.sehir,
+    required this.aciklama,
+  });
+}
+
+// Geçici ilan deposu.
+// Daha sonra Firebase veritabanına bağlayacağız.
+class IlanDeposu {
+  static final List<IsIlani> ilanlar = [
+    IsIlani(
+      baslik: 'İnşaat Ustası',
+      firma: 'Örnek İnşaat',
+      sehir: 'Balıkesir',
+      aciklama: 'Deneyimli inşaat ustası aranmaktadır.',
+    ),
+    IsIlani(
+      baslik: 'Şoför',
+      firma: 'Örnek Lojistik',
+      sehir: 'Bursa',
+      aciklama: 'B sınıfı ehliyetli şoför aranmaktadır.',
+    ),
+  ];
+}
+
+// =====================================================
+// ANA SAYFA
+// =====================================================
+
+class AnaSayfa extends StatefulWidget {
   const AnaSayfa({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'İŞ BUL',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 30),
-
-              const Icon(
-                Icons.work,
-                size: 90,
-                color: Colors.blue,
-              ),
-
-              const SizedBox(height: 20),
-
-              const Text(
-                'İş Bul\'a Hoş Geldiniz',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              const Text(
-                'İş arayanlarla işverenleri buluşturuyoruz.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 16,
-                ),
-              ),
-
-              const SizedBox(height: 35),
-
-              const TextField(
-                decoration: InputDecoration(
-                  hintText: 'Meslek veya iş ara',
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              const TextField(
-                decoration: InputDecoration(
-                  hintText: 'Şehir',
-                  prefixIcon: Icon(Icons.location_on),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-
-              const SizedBox(height: 25),
-
-              ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'İş arama bölümü hazırlanıyor',
-                      ),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.search),
-                label: const Text('İŞ ARA'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(18),
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'İş ilanı verme bölümü hazırlanıyor',
-                      ),
-                    ),
-                  );
-                },
-                icon: const Icon(Icons.add_business),
-                label: const Text('İŞ İLANI VER'),
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(18),
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              OutlinedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Giriş ve kayıt bölümü hazırlanıyor',
-                      ),
-                    ),
-                  );
-                },
-
-                // Bu butona uzun basınca yönetici ekranı açılır.
-                onLongPress: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          const AdminGirisSayfasi(),
-                    ),
-                  );
-                },
-
-                icon: const Icon(Icons.person),
-                label: const Text(
-                  'GİRİŞ YAP / KAYIT OL',
-                ),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.all(18),
-                ),
-              ),
-
-              const SizedBox(height: 30),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  State<AnaSayfa> createState() => _AnaSayfaState();
 }
 
-class AdminGirisSayfasi extends StatefulWidget {
-  const AdminGirisSayfasi({super.key});
-
-  @override
-  State<AdminGirisSayfasi> createState() =>
-      _AdminGirisSayfasiState();
-}
-
-class _AdminGirisSayfasiState
-    extends State<AdminGirisSayfasi> {
-  final TextEditingController sifreController =
-      TextEditingController();
-
-  void girisYap() {
-    if (sifreController.text == '1234') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              const AdminPaneli(),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Şifre yanlış'),
-        ),
-      );
-    }
-  }
+class _AnaSayfaState extends State<AnaSayfa> {
+  final meslekController = TextEditingController();
+  final sehirController = TextEditingController();
 
   @override
   void dispose() {
-    sifreController.dispose();
+    meslekController.dispose();
+    sehirController.dispose();
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Yönetici Girişi'),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const SizedBox(height: 40),
-
-            const Icon(
-              Icons.admin_panel_settings,
-              size: 90,
-              color: Colors.blue,
-            ),
-
-            const SizedBox(height: 30),
-
-            TextField(
-              controller: sifreController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Yönetici Şifresi',
-                prefixIcon: Icon(Icons.lock),
-                border: OutlineInputBorder(),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: girisYap,
-                icon: const Icon(Icons.login),
-                label: const Text(
-                  'YÖNETİCİ GİRİŞİ',
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class AdminPaneli extends StatelessWidget {
-  const AdminPaneli({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'İş Bul Yönetim Paneli',
-        ),
-        centerTitle: true,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          adminButon(
-            context,
-            Icons.work,
-            'İlanlar',
-          ),
-          adminButon(
-            context,
-            Icons.people,
-            'Kullanıcılar',
-          ),
-          adminButon(
-            context,
-            Icons.pending_actions,
-            'Bekleyen İlanlar',
-          ),
-          adminButon(
-            context,
-            Icons.report,
-            'Şikayetler',
-          ),
-          adminButon(
-            context,
-            Icons.star,
-            'Öne Çıkan İlanlar',
-          ),
-          adminButon(
-            context,
-            Icons.settings,
-            'Ayarlar',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget adminButon(
-    BuildContext context,
-    IconData icon,
-    String baslik,
-  ) {
-    return Card(
-      margin: const EdgeInsets.only(
-        bottom: 12,
-      ),
-      child: ListTile(
-        leading: Icon(
-          icon,
-          color: Colors.blue,
-          size: 32,
-        ),
-        title: Text(
-          baslik,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        trailing: const Icon(
-          Icons.arrow_forward_ios,
-        ),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                '$baslik bölümü hazırlanıyor',
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
+  void isAra() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => IsAraSayfasi(
+          meslek
