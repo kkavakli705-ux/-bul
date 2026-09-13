@@ -100,8 +100,9 @@ class _AnaSayfaState extends State<AnaSayfa> {
       setState(() {
         kontrol = true;
       });
-      await adminKontrol();
     }
+
+    await adminKontrol();
   }
 
   Future<void> cikis() async {
@@ -125,104 +126,101 @@ class _AnaSayfaState extends State<AnaSayfa> {
         centerTitle: true,
       ),
       body: user == null
-          ? girisYapilmamis()
-          : girisYapilmis(user),
-    );
-  }
-
-  Widget girisYapilmamis() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: ElevatedButton.icon(
-          onPressed: girisAc,
-          icon: const Icon(Icons.login),
-          label: const Text('GİRİŞ YAP / KAYIT OL'),
-        ),
-      ),
-    );
-  }
-
-  Widget girisYapilmis(User user) {
-    return ListView(
-      padding: const EdgeInsets.all(20),
-      children: [
-        const Icon(
-          Icons.business_center,
-          size: 70,
-          color: Colors.blue,
-        ),
-        const SizedBox(height: 15),
-        const Center(
-          child: Text(
-            'İş Bul\'a Hoş Geldiniz',
-            style: TextStyle(
-              fontSize: 23,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        const SizedBox(height: 20),
-        Card(
-          child: Padding(
-            padding: const EdgeInsets.all(15),
-            child: Text(
-              'Giriş yapıldı\n${user.email ?? ''}',
-              textAlign: TextAlign.center,
-            ),
-          ),
-        ),
-        const SizedBox(height: 15),
-        ElevatedButton.icon(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const IsAraSayfasi(),
+          ? Center(
+              child: ElevatedButton.icon(
+                onPressed: girisAc,
+                icon: const Icon(Icons.login),
+                label: const Text('GİRİŞ YAP / KAYIT OL'),
               ),
-            );
-          },
-          icon: const Icon(Icons.search),
-          label: const Text('İŞ ARA'),
-        ),
-        const SizedBox(height: 10),
-        ElevatedButton.icon(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const IlanVerSayfasi(),
-              ),
-            );
-          },
-          icon: const Icon(Icons.add_business),
-          label: const Text('İŞ İLANI VER'),
-        ),
-        const SizedBox(height: 15),
-        if (kontrol)
-          const Center(
-            child: CircularProgressIndicator(),
-          ),
-        if (admin)
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const YonetimPaneli(),
+            )
+          : ListView(
+              padding: const EdgeInsets.all(20),
+              children: [
+                const Icon(
+                  Icons.business_center,
+                  size: 70,
+                  color: Colors.blue,
                 ),
-              );
-            },
-            icon: const Icon(Icons.admin_panel_settings),
-            label: const Text('YÖNETİM PANELİ'),
-          ),
-        const SizedBox(height: 15),
-        OutlinedButton.icon(
-          onPressed: cikis,
-          icon: const Icon(Icons.logout),
-          label: const Text('ÇIKIŞ YAP'),
-        ),
-      ],
+                const SizedBox(height: 15),
+                const Center(
+                  child: Text(
+                    'İş Bul',
+                    style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(15),
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Giriş yapıldı',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(user.email ?? ''),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 15),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const IsAraSayfasi(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.search),
+                  label: const Text('İŞ ARA'),
+                ),
+                const SizedBox(height: 10),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const IlanVerSayfasi(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.add_business),
+                  label: const Text('İŞ İLANI VER'),
+                ),
+                const SizedBox(height: 15),
+                if (kontrol)
+                  const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                if (admin)
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const YonetimPaneli(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.admin_panel_settings),
+                    label: const Text('YÖNETİM PANELİ'),
+                  ),
+                const SizedBox(height: 15),
+                OutlinedButton.icon(
+                  onPressed: cikis,
+                  icon: const Icon(Icons.logout),
+                  label: const Text('ÇIKIŞ YAP'),
+                ),
+              ],
+            ),
     );
   }
 }
@@ -241,9 +239,12 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
   bool kayit = false;
   bool bekle = false;
 
-  Future<void> devam() async {
-    if (email.text.trim().isEmpty || sifre.text.trim().isEmpty) {
-      mesaj('E-posta ve şifreyi girin.');
+  Future<void> giris() async {
+    final eposta = email.text.trim();
+    final parola = sifre.text.trim();
+
+    if (eposta.isEmpty || parola.isEmpty) {
+      mesaj('E-posta ve şifreyi doldurun.');
       return;
     }
 
@@ -254,13 +255,13 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
     try {
       if (kayit) {
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: email.text.trim(),
-          password: sifre.text.trim(),
+          email: eposta,
+          password: parola,
         );
       } else {
         await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: email.text.trim(),
-          password: sifre.text.trim(),
+          email: eposta,
+          password: parola,
         );
       }
 
@@ -268,7 +269,7 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
         Navigator.pop(context);
       }
     } on FirebaseAuthException catch (e) {
-      mesaj(e.message ?? 'Giriş yapılamadı.');
+      mesaj(e.message ?? 'İşlem yapılamadı.');
     } catch (_) {
       mesaj('Bir hata oluştu.');
     }
@@ -320,14 +321,8 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
           ),
           const SizedBox(height: 15),
           ElevatedButton(
-            onPressed: bekle ? null : devam,
-            child: Text(
-              bekle
-                  ? 'BEKLEYİN...'
-                  : kayit
-                      ? 'KAYIT OL'
-                      : 'GİRİŞ YAP',
-            ),
+            onPressed: bekle ? null : giris,
+            child: Text(kayit ? 'KAYIT OL' : 'GİRİŞ YAP'),
           ),
           TextButton(
             onPressed: () {
@@ -471,9 +466,7 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
           ElevatedButton.icon(
             onPressed: bekle ? null : gonder,
             icon: const Icon(Icons.send),
-            label: Text(
-              bekle ? 'GÖNDERİLİYOR...' : 'İLANI ONAYA GÖNDER',
-            ),
+            label: const Text('İLANI ONAYA GÖNDER'),
           ),
         ],
       ),
@@ -486,15 +479,17 @@ class IsAraSayfasi extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ilanStream = FirebaseFirestore.instance
+        .collection('jobs')
+        .where('status', isEqualTo: 'approved')
+        .snapshots();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('İş Ara'),
       ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('jobs')
-            .where('status', isEqualTo: 'approved')
-            .snapshots(),
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: ilanStream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(
@@ -520,16 +515,21 @@ class IsAraSayfasi extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             itemCount: ilanlar.length,
             itemBuilder: (context, index) {
-              final data =
-                  ilanlar[index].data() as Map<String, dynamic>;
+              final data = ilanlar[index].data();
 
               return Card(
+                margin: const EdgeInsets.only(bottom: 12),
                 child: ListTile(
+                  leading: const Icon(Icons.work),
                   title: Text(data['title'] ?? ''),
-                  subtitle: Text(
-                    '${data['company'] ?? ''}\n'
-                    '${data['city'] ?? ''}\n\n'
-                    '${data['description'] ?? ''}',
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(data['company'] ?? ''),
+                      Text(data['city'] ?? ''),
+                      const SizedBox(height: 5),
+                      Text(data['description'] ?? ''),
+                    ],
                   ),
                 ),
               );
@@ -556,7 +556,211 @@ class YonetimPaneli extends StatelessWidget {
           const Card(
             child: Padding(
               padding: EdgeInsets.all(16),
-              child: Text(
-                'Yönetici hesabı - Bu bölüm sadece yöneticiye açıktır.',
-textAlign: TextAlign.center,
-),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.admin_panel_settings,
+                    size: 45,
+                    color: Colors.blue,
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Yönetici hesabı',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    'Bu bölüm sadece yönetici hesabına açıktır.',
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.work),
+              title: const Text('İş İlanlarını Yönet'),
+              subtitle: const Text(
+                'Bekleyen ilanları onayla veya reddet',
+              ),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const BekleyenIlanlarSayfasi(),
+                  ),
+                );
+              },
+            ),
+          ),
+          const Card(
+            child: ListTile(
+              leading: Icon(Icons.people),
+              title: Text('Kullanıcıları Yönet'),
+            ),
+          ),
+          const Card(
+            child: ListTile(
+              leading: Icon(Icons.report),
+              title: Text('Şikayetler'),
+            ),
+          ),
+          const Card(
+            child: ListTile(
+              leading: Icon(Icons.star),
+              title: Text('Öne Çıkan İlanlar'),
+            ),
+          ),
+          const Card(
+            child: ListTile(
+              leading: Icon(Icons.settings),
+              title: Text('Ayarlar'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class BekleyenIlanlarSayfasi extends StatelessWidget {
+  const BekleyenIlanlarSayfasi({super.key});
+
+  Future<void> durumDegistir(
+    BuildContext context,
+    String id,
+    String durum,
+  ) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('jobs')
+          .doc(id)
+          .update({
+        'status': durum,
+      });
+
+      if (context.mounted) {
+        final yazi =
+            durum == 'approved' ? 'İlan onaylandı.' : 'İlan reddedildi.';
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(yazi)),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('İşlem yapılamadı.'),
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bekleyenStream = FirebaseFirestore.instance
+        .collection('jobs')
+        .where('status', isEqualTo: 'pending')
+        .snapshots();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Bekleyen İlanlar'),
+      ),
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: bekleyenStream,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('İlanlar yüklenemedi.'),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          final ilanlar = snapshot.data!.docs;
+
+          if (ilanlar.isEmpty) {
+            return const Center(
+              child: Text('Onay bekleyen ilan yok.'),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: ilanlar.length,
+            itemBuilder: (context, index) {
+              final belge = ilanlar[index];
+              final data = belge.data();
+
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: Padding(
+                  padding: const EdgeInsets.all(15),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        data['title'] ?? '',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text('Firma: ${data['company'] ?? ''}'),
+                      Text('Konum: ${data['city'] ?? ''}'),
+                      const SizedBox(height: 8),
+                      Text(data['description'] ?? ''),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                durumDegistir(
+                                  context,
+                                  belge.id,
+                                  'approved',
+                                );
+                              },
+                              child: const Text('ONAYLA'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () {
+                                durumDegistir(
+                                  context,
+                                  belge.id,
+                                  'rejected',
+                                );
+                              },
+                              child: const Text('REDDET'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
