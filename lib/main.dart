@@ -1929,7 +1929,69 @@ class _AyarlarSayfasiState extends State<AyarlarSayfasi> {
       }
     }
   }
+  Future<void> hesabiSil() async {
+  final user = FirebaseAuth.instance.currentUser;
 
+  if (user == null) {
+    mesaj(context, 'Oturum bulunamadı.');
+    return;
+  }
+
+  final onay = await showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Hesabı Sil'),
+        content: const Text(
+          'Hesabınızı silmek istediğinize emin misiniz? Bu işlem geri alınamaz.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('VAZGEÇ'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('HESABI SİL'),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (onay != true) return;
+
+  try {
+    final uid = user.uid;
+
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .delete();
+
+    await user.delete();
+
+    if (mounted) {
+      Navigator.of(context).popUntil((route) => route.isFirst);
+      mesaj(context, 'Hesabınız silindi.');
+    }
+  } on FirebaseAuthException catch (e) {
+    if (mounted) {
+      if (e.code == 'requires-recent-login') {
+        mesaj(
+          context,
+          'Güvenlik nedeniyle önce çıkış yapıp tekrar giriş yapın, sonra hesabı silin.',
+        );
+      } else {
+        mesaj(context, e.message ?? 'Hesap silinemedi.');
+      }
+    }
+  } catch (_) {
+    if (mounted) {
+      mesaj(context, 'Hesap silinemedi.');
+    }
+  }
+}
   void metinAc(String baslik, String metin) {
     Navigator.push(
       context,
