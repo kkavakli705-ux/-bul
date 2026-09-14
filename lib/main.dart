@@ -1,191 +1,428 @@
-package com.example.isbul
+import 'package:flutter/material.dart';
 
-import android.widget.Toast
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+void main() {
+  runApp(const IsBulApp());
+}
 
-@Composable
-fun SettingsScreen(
-    email: String = "kkavakli705@gmail.com",
-    onBackClick: () -> Unit = {}
-) {
+class IsBulApp extends StatelessWidget {
+  const IsBulApp({super.key});
 
-    val context = LocalContext.current
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'İş Bul',
+      theme: ThemeData(
+        useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFF8F8FF),
+      ),
+      home: const SettingsScreen(),
+    );
+  }
+}
 
-    var notificationsEnabled by remember {
-        mutableStateOf(true)
-    }
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
 
-    var showPrivacyDialog by remember {
-        mutableStateOf(false)
-    }
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
 
-    var showTermsDialog by remember {
-        mutableStateOf(false)
-    }
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool notificationsEnabled = true;
 
-    var showAboutDialog by remember {
-        mutableStateOf(false)
-    }
+  final String email = "kkavakli705@gmail.com";
 
-    var showPasswordDialog by remember {
-        mutableStateOf(false)
-    }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F8FF),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      size: 34,
+                    ),
+                    onPressed: () {
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      }
+                    },
+                  ),
+                  const SizedBox(width: 22),
+                  const Text(
+                    "Ayarlar",
+                    style: TextStyle(
+                      fontSize: 31,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
 
-    val backgroundColor = Color(0xFFF8F8FF)
-    val cardColor = Color(0xFFF0F0F8)
-    val iconColor = Color(0xFF50545C)
-    val blueColor = Color(0xFF3478A8)
+              const SizedBox(height: 38),
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = backgroundColor
-    ) {
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 22.dp)
-        ) {
-
-            Spacer(modifier = Modifier.height(40.dp))
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-
-                IconButton(
-                    onClick = onBackClick
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Geri",
-                        tint = Color.Black,
-                        modifier = Modifier.size(32.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(25.dp))
-
-                Text(
-                    text = "Ayarlar",
-                    fontSize = 31.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-            }
-
-            Spacer(modifier = Modifier.height(40.dp))
-
-            // HESABIM
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(130.dp),
-                shape = RoundedCornerShape(22.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = cardColor
+              settingsCard(
+                height: 125,
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.account_circle,
+                      size: 44,
+                      color: Color(0xFF555960),
+                    ),
+                    const SizedBox(width: 25),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Hesabım",
+                            style: TextStyle(
+                              fontSize: 23,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 7),
+                          Text(
+                            email,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF555960),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 3.dp
-                )
-            ) {
+              ),
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 25.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+              const SizedBox(height: 14),
 
-                    Icon(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = null,
-                        tint = iconColor,
-                        modifier = Modifier.size(43.dp)
-                    )
+              settingsButton(
+                icon: Icons.lock_reset,
+                title: "Şifremi Değiştir",
+                subtitle:
+                    "E-posta adresine şifre sıfırlama bağlantısı gönder",
+                onTap: showPasswordDialog,
+              ),
 
-                    Spacer(modifier = Modifier.width(25.dp))
+              const SizedBox(height: 14),
 
-                    Column {
+              settingsCard(
+                height: 125,
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.notifications,
+                      size: 38,
+                      color: Color(0xFF555960),
+                    ),
+                    const SizedBox(width: 27),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Bildirimler",
+                            style: TextStyle(
+                              fontSize: 23,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 7),
+                          Text(
+                            notificationsEnabled
+                                ? "Bildirimler açık"
+                                : "Bildirimler kapalı",
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF555960),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: notificationsEnabled,
+                      activeTrackColor: const Color(0xFF3478A8),
+                      onChanged: (value) {
+                        setState(() {
+                          notificationsEnabled = value;
+                        });
 
-                        Text(
-                            text = "Hesabım",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = email,
-                            fontSize = 17.sp,
-                            color = iconColor
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // ŞİFRE DEĞİŞTİR
-            SettingsButton(
-                icon = Icons.Default.LockReset,
-                title = "Şifremi Değiştir",
-                subtitle = "E-posta adresine şifre sıfırlama bağlantısı gönder",
-                cardColor = cardColor,
-                iconColor = iconColor,
-                onClick = {
-                    showPasswordDialog = true
-                }
-            )
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // BİLDİRİMLER
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(130.dp),
-                shape = RoundedCornerShape(22.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = cardColor
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            duration: const Duration(seconds: 1),
+                            content: Text(
+                              value
+                                  ? "Bildirimler açıldı"
+                                  : "Bildirimler kapatıldı",
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 3.dp
-                )
-            ) {
+              ),
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 25.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+              const SizedBox(height: 14),
 
-                    Icon(
-                        imageVector = Icons.Default.Notifications,
-                        contentDescription = null,
-                        tint = iconColor,
-                        modifier = Modifier.size(38.dp)
-                    )
+              settingsButton(
+                icon: Icons.security,
+                title: "Gizlilik Politikası",
+                onTap: showPrivacyDialog,
+              ),
 
-                    Spacer(modifier = Modifier.width(27.dp))
+              const SizedBox(height: 14),
 
-                    Column(
-                        modifier = Modifier.weight(1f)
-                    ) {
+              settingsButton(
+                icon: Icons.description,
+                title: "Kullanım Koşulları",
+                onTap: showTermsDialog,
+              ),
 
-                        Text(
-                            text = "Bild
+              const SizedBox(height: 14),
+
+              settingsButton(
+                icon: Icons.info,
+                title: "Uygulama Hakkında",
+                subtitle: "İş Bul - Sürüm 0.4.0",
+                onTap: showAboutDialog,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget settingsCard({
+    required Widget child,
+    double? height,
+  }) {
+    return Container(
+      width: double.infinity,
+      height: height,
+      padding: const EdgeInsets.symmetric(horizontal: 25),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF0F0F8),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.10),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  Widget settingsButton({
+    required IconData icon,
+    required String title,
+    String? subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: onTap,
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(
+            minHeight: 105,
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 25,
+            vertical: 20,
+          ),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF0F0F8),
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.10),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 38,
+                color: const Color(0xFF555960),
+              ),
+              const SizedBox(width: 27),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Color(0xFF555960),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios,
+                size: 26,
+                color: Color(0xFF555960),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void showPasswordDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Şifremi Değiştir"),
+          content: Text(
+            "$email adresine şifre sıfırlama bağlantısı gönderilecek.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("İptal"),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(context);
+
+                ScaffoldMessenger.of(this.context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      "Şifre sıfırlama sistemi hazırlanıyor.",
+                    ),
+                  ),
+                );
+              },
+              child: const Text("Gönder"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showPrivacyDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Gizlilik Politikası"),
+          content: const SingleChildScrollView(
+            child: Text(
+              "İş Bul uygulaması, iş arayanlar ile işverenleri "
+              "buluşturmak amacıyla geliştirilmiştir.\n\n"
+              "Kullanıcı bilgileri izinsiz olarak üçüncü kişilerle "
+              "paylaşılmaz.\n\n"
+              "Uygulamanın çalışması için gerekli kullanıcı bilgileri "
+              "güvenli şekilde işlenir.",
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Tamam"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showTermsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Kullanım Koşulları"),
+          content: const SingleChildScrollView(
+            child: Text(
+              "İş Bul uygulamasında yayınlanan ilanların doğruluğundan "
+              "ilanı oluşturan kullanıcı sorumludur.\n\n"
+              "Sahte, yanıltıcı, yasa dışı veya kötüye kullanım içeren "
+              "ilanlar kaldırılabilir.\n\n"
+              "Uygulamayı kullanan kullanıcılar bu koşulları kabul "
+              "etmiş sayılır.",
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Tamam"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void showAboutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("İş Bul"),
+          content: const Text(
+            "İş Bul\n\n"
+            "Sürüm: 0.4.0\n\n"
+            "İş arayanlar ile işverenleri hızlı ve kolay şekilde "
+            "buluşturmak için geliştirilmektedir.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text("Tamam"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
