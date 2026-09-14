@@ -253,12 +253,24 @@ class _AnaSayfaState extends State<AnaSayfa> {
         ),
       );
     }
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('İŞ BUL'),
-        centerTitle: true,
+  appBar: AppBar(
+    title: const Text('İŞ BUL'),
+    centerTitle: true,
+    actions: [
+      IconButton(
+        icon: const Icon(Icons.notifications),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const BildirimlerSayfasi(),
+            ),
+          );
+        },
       ),
+    ],
+  ),
       body: user == null
           ? Center(
               child: ElevatedButton.icon(
@@ -2805,7 +2817,89 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
             },
 );
 },
-),
-);
-}
+),class BildirimlerSayfasi extends StatelessWidget {
+  const BildirimlerSayfasi({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('BİLDİRİMLER'),
+        centerTitle: true,
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('bildirimler')
+            .orderBy('tarih', descending: true)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('Bildirimler yüklenemedi.'),
+            );
+          }
+
+          final bildirimler = snapshot.data?.docs ?? [];
+
+          if (bildirimler.isEmpty) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.notifications_none,
+                    size: 70,
+                  ),
+                  SizedBox(height: 15),
+                  Text(
+                    'Henüz bildiriminiz yok.',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: bildirimler.length,
+            itemBuilder: (context, index) {
+              final veri =
+                  bildirimler[index].data() as Map<String, dynamic>;
+
+              final baslik =
+                  veri['baslik']?.toString() ?? 'Bildirim';
+
+              final mesaj =
+                  veri['mesaj']?.toString() ?? '';
+
+              return Card(
+                child: ListTile(
+                  leading: const CircleAvatar(
+                    child: Icon(Icons.notifications),
+                  ),
+                  title: Text(
+                    baslik,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(mesaj),
+                ),
+              );
+            },
+          );
+        },
+            },
+    );
+  }
 }
