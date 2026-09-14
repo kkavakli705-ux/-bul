@@ -2654,8 +2654,9 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
                 ),
               );
             },
-          );
-        },
-      ),
-    );
-  }
+);
+},
+),
+);
+}
+}
