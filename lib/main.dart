@@ -2039,8 +2039,16 @@ class _AyarlarSayfasiState extends State<AyarlarSayfasi> {
               onTap: sifreSifirla,
             ),
           ),
-          Card(
-            child: SwitchListTile(
+           Card(
+  child: ListTile(
+    leading: const Icon(Icons.delete_forever),
+    title: const Text('HESABIMI SİL'),
+    subtitle: const Text('Hesabımı kalıcı olarak sil'),
+    trailing: const Icon(Icons.arrow_forward_ios),
+    onTap: hesabiSil,
+  ),
+),
+          Card (        child: SwitchListTile(
               secondary: const Icon(Icons.notifications),
               title: const Text('Bildirimler'),
               subtitle: Text(
