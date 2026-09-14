@@ -37,6 +37,17 @@ class IsBulApp extends StatelessWidget {
   }
 }
 
+String bilgi(dynamic deger) {
+  final yazi = deger?.toString().trim() ?? '';
+  return yazi.isEmpty ? 'Belirtilmemiş' : yazi;
+}
+
+void mesaj(BuildContext context, String yazi) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(yazi)),
+  );
+}
+
 class AnaSayfa extends StatefulWidget {
   const AnaSayfa({super.key});
 
@@ -169,7 +180,7 @@ class _AnaSayfaState extends State<AnaSayfa> {
         ),
         body: Center(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(25),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -182,11 +193,6 @@ class _AnaSayfaState extends State<AnaSayfa> {
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  'Bu hesap şu anda uygulamayı kullanamaz.',
-                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton.icon(
@@ -324,12 +330,6 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
   bool kayit = false;
   bool bekle = false;
 
-  void mesaj(String yazi) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(yazi)),
-    );
-  }
-
   Future<void> kullaniciKaydiOlustur(User user) async {
     final ref =
         FirebaseFirestore.instance.collection('users').doc(user.uid);
@@ -348,7 +348,7 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
 
   Future<void> giris() async {
     if (email.text.trim().isEmpty || sifre.text.trim().isEmpty) {
-      mesaj('E-posta ve şifreyi doldurun.');
+      mesaj(context, 'E-posta ve şifreyi doldurun.');
       return;
     }
 
@@ -360,14 +360,14 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
       UserCredential sonuc;
 
       if (kayit) {
-        sonuc = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(
+        sonuc =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: email.text.trim(),
           password: sifre.text.trim(),
         );
       } else {
-        sonuc = await FirebaseAuth.instance
-            .signInWithEmailAndPassword(
+        sonuc =
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
           email: email.text.trim(),
           password: sifre.text.trim(),
         );
@@ -383,9 +383,9 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
         Navigator.pop(context);
       }
     } on FirebaseAuthException catch (e) {
-      mesaj(e.message ?? 'İşlem yapılamadı.');
+      mesaj(context, e.message ?? 'İşlem yapılamadı.');
     } catch (_) {
-      mesaj('Bir hata oluştu.');
+      mesaj(context, 'Bir hata oluştu.');
     }
 
     if (mounted) {
@@ -490,17 +490,11 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
   String? kategori;
   bool bekle = false;
 
-  void mesaj(String yazi) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(yazi)),
-    );
-  }
-
   Future<void> gonder() async {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
-      mesaj('Önce giriş yapmalısınız.');
+      mesaj(context, 'Önce giriş yapmalısınız.');
       return;
     }
 
@@ -512,7 +506,7 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
         ucret.text.trim().isEmpty ||
         aciklama.text.trim().isEmpty ||
         kategori == null) {
-      mesaj('Bütün alanları doldurun.');
+      mesaj(context, 'Bütün alanları doldurun.');
       return;
     }
 
@@ -538,16 +532,14 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('İlan yönetici onayına gönderildi.'),
-          ),
+        mesaj(
+          context,
+          'İlan yönetici onayına gönderildi.',
         );
-
         Navigator.pop(context);
       }
     } catch (_) {
-      mesaj('İlan gönderilemedi.');
+      mesaj(context, 'İlan gönderilemedi.');
     }
 
     if (mounted) {
@@ -683,13 +675,11 @@ class IsAraSayfasi extends StatefulWidget {
 class _IsAraSayfasiState extends State<IsAraSayfasi> {
   final arama = TextEditingController();
 
-  String bilgi(dynamic deger) {
-    final yazi = deger?.toString().trim() ?? '';
-    return yazi.isEmpty ? 'Belirtilmemiş' : yazi;
-  }
-
   String sadeceRakam(String numara) {
-    return numara.replaceAll(RegExp(r'[^0-9]'), '');
+    return numara.replaceAll(
+      RegExp(r'[^0-9]'),
+      '',
+    );
   }
 
   String whatsappNumarasi(String numara) {
@@ -777,18 +767,20 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
           }
 
           final ilanlar = snapshot.data!.docs
-              .where((doc) => eslesiyor(doc.data()))
+              .where(
+                (doc) => eslesiyor(doc.data()),
+              )
               .toList();
 
           ilanlar.sort((a, b) {
-            final aFeatured = a.data()['featured'] == true;
-            final bFeatured = b.data()['featured'] == true;
+            final af = a.data()['featured'] == true;
+            final bf = b.data()['featured'] == true;
 
-            if (aFeatured == bFeatured) {
+            if (af == bf) {
               return 0;
             }
 
-            return aFeatured ? -1 : 1;
+            return af ? -1 : 1;
           });
 
           return Column(
@@ -831,10 +823,13 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
 
                           final telefon = bilgi(data['phone']);
                           final whatsapp = bilgi(data['whatsapp']);
-                          final featured = data['featured'] == true;
+                          final featured =
+                              data['featured'] == true;
 
                           return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
+                            margin: const EdgeInsets.only(
+                              bottom: 12,
+                            ),
                             child: Padding(
                               padding: const EdgeInsets.all(15),
                               child: Column(
@@ -849,7 +844,8 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
                                         Text(
                                           'ÖNE ÇIKAN İLAN',
                                           style: TextStyle(
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight:
+                                                FontWeight.bold,
                                           ),
                                         ),
                                       ],
@@ -860,7 +856,8 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
                                     bilgi(data['title']),
                                     style: const TextStyle(
                                       fontSize: 19,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight:
+                                          FontWeight.bold,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
@@ -887,27 +884,43 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
                                   Row(
                                     children: [
                                       Expanded(
-                                        child: ElevatedButton.icon(
+                                        child:
+                                            ElevatedButton.icon(
                                           onPressed:
-                                              telefon == 'Belirtilmemiş'
+                                              telefon ==
+                                                      'Belirtilmemiş'
                                                   ? null
-                                                  : () =>
-                                                      telefonAra(telefon),
-                                          icon: const Icon(Icons.phone),
-                                          label: const Text('ARA'),
+                                                  : () {
+                                                      telefonAra(
+                                                        telefon,
+                                                      );
+                                                    },
+                                          icon: const Icon(
+                                            Icons.phone,
+                                          ),
+                                          label:
+                                              const Text('ARA'),
                                         ),
                                       ),
                                       const SizedBox(width: 8),
                                       Expanded(
-                                        child: ElevatedButton.icon(
+                                        child:
+                                            ElevatedButton.icon(
                                           onPressed:
-                                              whatsapp == 'Belirtilmemiş'
+                                              whatsapp ==
+                                                      'Belirtilmemiş'
                                                   ? null
-                                                  : () =>
-                                                      whatsappAc(whatsapp),
-                                          icon: const Icon(Icons.chat),
-                                          label:
-                                              const Text('WHATSAPP'),
+                                                  : () {
+                                                      whatsappAc(
+                                                        whatsapp,
+                                                      );
+                                                    },
+                                          icon: const Icon(
+                                            Icons.chat,
+                                          ),
+                                          label: const Text(
+                                            'WHATSAPP',
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -923,15 +936,17 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
                                             builder: (_) =>
                                                 SikayetEtSayfasi(
                                               jobId: belge.id,
-                                              jobTitle:
-                                                  bilgi(data['title']),
+                                              jobTitle: bilgi(
+                                                data['title'],
+                                              ),
                                             ),
                                           ),
                                         );
                                       },
                                       icon: const Icon(Icons.flag),
-                                      label:
-                                          const Text('ŞİKAYET ET'),
+                                      label: const Text(
+                                        'ŞİKAYET ET',
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -980,22 +995,16 @@ class _SikayetEtSayfasiState
   String? neden;
   bool bekle = false;
 
-  void mesaj(String yazi) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(yazi)),
-    );
-  }
-
   Future<void> sikayetGonder() async {
     final user = FirebaseAuth.instance.currentUser;
 
     if (user == null) {
-      mesaj('Önce giriş yapmalısınız.');
+      mesaj(context, 'Önce giriş yapmalısınız.');
       return;
     }
 
     if (neden == null) {
-      mesaj('Şikayet nedenini seçin.');
+      mesaj(context, 'Şikayet nedenini seçin.');
       return;
     }
 
@@ -1018,16 +1027,14 @@ class _SikayetEtSayfasiState
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Şikayet yöneticiye gönderildi.'),
-          ),
+        mesaj(
+          context,
+          'Şikayet yöneticiye gönderildi.',
         );
-
         Navigator.pop(context);
       }
     } catch (_) {
-      mesaj('Şikayet gönderilemedi.');
+      mesaj(context, 'Şikayet gönderilemedi.');
     }
 
     if (mounted) {
@@ -1113,11 +1120,6 @@ class _SikayetEtSayfasiState
 class KendiIlanlarimSayfasi extends StatelessWidget {
   const KendiIlanlarimSayfasi({super.key});
 
-  String bilgi(dynamic deger) {
-    final yazi = deger?.toString().trim() ?? '';
-    return yazi.isEmpty ? 'Belirtilmemiş' : yazi;
-  }
-
   String durumYazisi(String durum) {
     if (durum == 'approved') {
       return 'YAYINDA';
@@ -1128,6 +1130,68 @@ class KendiIlanlarimSayfasi extends StatelessWidget {
     }
 
     return 'ONAY BEKLİYOR';
+  }
+
+  Future<void> oneCikarmaTalebi(
+    BuildContext context,
+    String jobId,
+    Map<String, dynamic> data,
+  ) async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      mesaj(context, 'Önce giriş yapmalısınız.');
+      return;
+    }
+
+    try {
+      final mevcut = await FirebaseFirestore.instance
+          .collection('featuredRequests')
+          .where('ownerUid', isEqualTo: user.uid)
+          .get();
+
+      final zatenVar = mevcut.docs.any((doc) {
+        final d = doc.data();
+
+        return d['jobId'] == jobId &&
+            d['status'] == 'pending';
+      });
+
+      if (zatenVar) {
+        if (context.mounted) {
+          mesaj(
+            context,
+            'Bu ilan için zaten bekleyen bir talep var.',
+          );
+        }
+        return;
+      }
+
+      await FirebaseFirestore.instance
+          .collection('featuredRequests')
+          .add({
+        'jobId': jobId,
+        'jobTitle': bilgi(data['title']),
+        'ownerUid': user.uid,
+        'ownerEmail': user.email ?? '',
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      if (context.mounted) {
+        mesaj(
+          context,
+          'Öne çıkarma talebi yöneticiye gönderildi.',
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        mesaj(
+          context,
+          'Öne çıkarma talebi gönderilemedi.',
+        );
+      }
+    }
   }
 
   Future<void> ilanSil(
@@ -1144,11 +1208,15 @@ class KendiIlanlarimSayfasi extends StatelessWidget {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () {
+                Navigator.pop(context, false);
+              },
               child: const Text('VAZGEÇ'),
             ),
             ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
+              onPressed: () {
+                Navigator.pop(context, true);
+              },
               child: const Text('SİL'),
             ),
           ],
@@ -1167,19 +1235,11 @@ class KendiIlanlarimSayfasi extends StatelessWidget {
           .delete();
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('İlan silindi.'),
-          ),
-        );
+        mesaj(context, 'İlan silindi.');
       }
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('İlan silinemedi.'),
-          ),
-        );
+        mesaj(context, 'İlan silinemedi.');
       }
     }
   }
@@ -1191,14 +1251,19 @@ class KendiIlanlarimSayfasi extends StatelessWidget {
     if (user == null) {
       return const Scaffold(
         body: Center(
-          child: Text('Önce giriş yapmalısınız.'),
+          child: Text(
+            'Önce giriş yapmalısınız.',
+          ),
         ),
       );
     }
 
     final stream = FirebaseFirestore.instance
         .collection('jobs')
-        .where('ownerUid', isEqualTo: user.uid)
+        .where(
+          'ownerUid',
+          isEqualTo: user.uid,
+        )
         .snapshots();
 
     return Scaffold(
@@ -1224,7 +1289,9 @@ class KendiIlanlarimSayfasi extends StatelessWidget {
 
           if (ilanlar.isEmpty) {
             return const Center(
-              child: Text('Henüz verdiğiniz ilan yok.'),
+              child: Text(
+                'Henüz verdiğiniz ilan yok.',
+              ),
             );
           }
 
@@ -1234,10 +1301,15 @@ class KendiIlanlarimSayfasi extends StatelessWidget {
             itemBuilder: (context, index) {
               final belge = ilanlar[index];
               final data = belge.data();
-              final featured = data['featured'] == true;
+
+              final durum = bilgi(data['status']);
+              final featured =
+                  data['featured'] == true;
 
               return Card(
-                margin: const EdgeInsets.only(bottom: 12),
+                margin: const EdgeInsets.only(
+                  bottom: 12,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(15),
                   child: Column(
@@ -1253,23 +1325,22 @@ class KendiIlanlarimSayfasi extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        durumYazisi(
-                          bilgi(data['status']),
-                        ),
+                        durumYazisi(durum),
                         style: const TextStyle(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       if (featured) ...[
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 8),
                         const Row(
                           children: [
-                            Icon(Icons.star, size: 20),
+                            Icon(Icons.star),
                             SizedBox(width: 6),
                             Text(
                               'ÖNE ÇIKAN İLAN',
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
+                                fontWeight:
+                                    FontWeight.bold,
                               ),
                             ),
                           ],
@@ -1293,6 +1364,28 @@ class KendiIlanlarimSayfasi extends StatelessWidget {
                         bilgi(data['description']),
                       ),
                       const SizedBox(height: 12),
+
+                      if (durum == 'approved' && !featured)
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              oneCikarmaTalebi(
+                                context,
+                                belge.id,
+                                data,
+                              );
+                            },
+                            icon: const Icon(Icons.star),
+                            label: const Text(
+                              'ÖNE ÇIKARMA TALEBİ GÖNDER',
+                            ),
+                          ),
+                        ),
+
+                      if (durum == 'approved' && !featured)
+                        const SizedBox(height: 8),
+
                       SizedBox(
                         width: double.infinity,
                         child: OutlinedButton.icon(
@@ -1303,7 +1396,9 @@ class KendiIlanlarimSayfasi extends StatelessWidget {
                             );
                           },
                           icon: const Icon(Icons.delete),
-                          label: const Text('İLANI SİL'),
+                          label: const Text(
+                            'İLANI SİL',
+                          ),
                         ),
                       ),
                     ],
@@ -1354,11 +1449,15 @@ class YonetimPaneli extends StatelessWidget {
           Card(
             child: ListTile(
               leading: const Icon(Icons.work),
-              title: const Text('İş İlanlarını Yönet'),
+              title: const Text(
+                'İş İlanlarını Yönet',
+              ),
               subtitle: const Text(
                 'Bekleyen ilanları onayla veya reddet',
               ),
-              trailing: const Icon(Icons.arrow_forward_ios),
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+              ),
               onTap: () {
                 Navigator.push(
                   context,
@@ -1373,11 +1472,15 @@ class YonetimPaneli extends StatelessWidget {
           Card(
             child: ListTile(
               leading: const Icon(Icons.people),
-              title: const Text('Kullanıcıları Yönet'),
+              title: const Text(
+                'Kullanıcıları Yönet',
+              ),
               subtitle: const Text(
                 'Kullanıcıları görüntüle ve engelle',
               ),
-              trailing: const Icon(Icons.arrow_forward_ios),
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+              ),
               onTap: () {
                 Navigator.push(
                   context,
@@ -1396,7 +1499,9 @@ class YonetimPaneli extends StatelessWidget {
               subtitle: const Text(
                 'Kullanıcı şikayetlerini görüntüle',
               ),
-              trailing: const Icon(Icons.arrow_forward_ios),
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+              ),
               onTap: () {
                 Navigator.push(
                   context,
@@ -1410,12 +1515,40 @@ class YonetimPaneli extends StatelessWidget {
           ),
           Card(
             child: ListTile(
-              leading: const Icon(Icons.star),
-              title: const Text('Öne Çıkan İlanlar'),
-              subtitle: const Text(
-                'İlanları öne çıkar veya kaldır',
+              leading:
+                  const Icon(Icons.monetization_on),
+              title: const Text(
+                'Öne Çıkarma Talepleri',
               ),
-              trailing: const Icon(Icons.arrow_forward_ios),
+              subtitle: const Text(
+                'Kullanıcı taleplerini onayla veya reddet',
+              ),
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        const OneCikarmaTalepleriSayfasi(),
+                  ),
+                );
+              },
+            ),
+          ),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.star),
+              title: const Text(
+                'Öne Çıkan İlanlar',
+              ),
+              subtitle: const Text(
+                'İlanları manuel olarak yönet',
+              ),
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+              ),
               onTap: () {
                 Navigator.push(
                   context,
@@ -1439,13 +1572,234 @@ class YonetimPaneli extends StatelessWidget {
   }
 }
 
-class OneCikanIlanlarSayfasi extends StatelessWidget {
-  const OneCikanIlanlarSayfasi({super.key});
+class OneCikarmaTalepleriSayfasi
+    extends StatelessWidget {
+  const OneCikarmaTalepleriSayfasi({
+    super.key,
+  });
 
-  String bilgi(dynamic deger) {
-    final yazi = deger?.toString().trim() ?? '';
-    return yazi.isEmpty ? 'Belirtilmemiş' : yazi;
+  Future<void> onayla(
+    BuildContext context,
+    String requestId,
+    String jobId,
+  ) async {
+    try {
+      final jobRef = FirebaseFirestore.instance
+          .collection('jobs')
+          .doc(jobId);
+
+      final jobDoc = await jobRef.get();
+
+      if (!jobDoc.exists) {
+        mesaj(
+          context,
+          'İlan artık mevcut değil.',
+        );
+
+        await FirebaseFirestore.instance
+            .collection('featuredRequests')
+            .doc(requestId)
+            .update({
+          'status': 'rejected',
+        });
+
+        return;
+      }
+
+      await jobRef.update({
+        'featured': true,
+      });
+
+      await FirebaseFirestore.instance
+          .collection('featuredRequests')
+          .doc(requestId)
+          .update({
+        'status': 'approved',
+      });
+
+      if (context.mounted) {
+        mesaj(
+          context,
+          'Talep onaylandı. İlan öne çıkarıldı.',
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        mesaj(
+          context,
+          'İşlem yapılamadı.',
+        );
+      }
+    }
   }
+
+  Future<void> reddet(
+    BuildContext context,
+    String requestId,
+  ) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('featuredRequests')
+          .doc(requestId)
+          .update({
+        'status': 'rejected',
+      });
+
+      if (context.mounted) {
+        mesaj(
+          context,
+          'Öne çıkarma talebi reddedildi.',
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        mesaj(
+          context,
+          'İşlem yapılamadı.',
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final stream = FirebaseFirestore.instance
+        .collection('featuredRequests')
+        .snapshots();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Öne Çıkarma Talepleri',
+        ),
+      ),
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: stream,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text(
+                'Talepler yüklenemedi.',
+              ),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          final talepler = snapshot.data!.docs
+              .where(
+                (doc) =>
+                    doc.data()['status'] == 'pending',
+              )
+              .toList();
+
+          if (talepler.isEmpty) {
+            return const Center(
+              child: Text(
+                'Bekleyen öne çıkarma talebi yok.',
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: talepler.length,
+            itemBuilder: (context, index) {
+              final belge = talepler[index];
+              final data = belge.data();
+
+              return Card(
+                margin: const EdgeInsets.only(
+                  bottom: 12,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(15),
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        bilgi(data['jobTitle']),
+                        style: const TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Talep sahibi: ${bilgi(data['ownerEmail'])}',
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Durum: ONAY BEKLİYOR',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child:
+                                ElevatedButton.icon(
+                              onPressed: () {
+                                onayla(
+                                  context,
+                                  belge.id,
+                                  bilgi(
+                                    data['jobId'],
+                                  ),
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.check,
+                              ),
+                              label: const Text(
+                                'ONAYLA',
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child:
+                                OutlinedButton.icon(
+                              onPressed: () {
+                                reddet(
+                                  context,
+                                  belge.id,
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.close,
+                              ),
+                              label: const Text(
+                                'REDDET',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class OneCikanIlanlarSayfasi
+    extends StatelessWidget {
+  const OneCikanIlanlarSayfasi({
+    super.key,
+  });
 
   Future<void> oneCikarDegistir(
     BuildContext context,
@@ -1461,22 +1815,18 @@ class OneCikanIlanlarSayfasi extends StatelessWidget {
       });
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              featured
-                  ? 'Öne çıkarma kaldırıldı.'
-                  : 'İlan öne çıkarıldı.',
-            ),
-          ),
+        mesaj(
+          context,
+          featured
+              ? 'Öne çıkarma kaldırıldı.'
+              : 'İlan öne çıkarıldı.',
         );
       }
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('İşlem yapılamadı.'),
-          ),
+        mesaj(
+          context,
+          'İşlem yapılamadı.',
         );
       }
     }
@@ -1486,19 +1836,26 @@ class OneCikanIlanlarSayfasi extends StatelessWidget {
   Widget build(BuildContext context) {
     final stream = FirebaseFirestore.instance
         .collection('jobs')
-        .where('status', isEqualTo: 'approved')
+        .where(
+          'status',
+          isEqualTo: 'approved',
+        )
         .snapshots();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Öne Çıkan İlanlar'),
+        title: const Text(
+          'Öne Çıkan İlanlar',
+        ),
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: stream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(
-              child: Text('İlanlar yüklenemedi.'),
+              child: Text(
+                'İlanlar yüklenemedi.',
+              ),
             );
           }
 
@@ -1512,7 +1869,9 @@ class OneCikanIlanlarSayfasi extends StatelessWidget {
 
           if (ilanlar.isEmpty) {
             return const Center(
-              child: Text('Yayında ilan yok.'),
+              child: Text(
+                'Yayında ilan yok.',
+              ),
             );
           }
 
@@ -1522,10 +1881,13 @@ class OneCikanIlanlarSayfasi extends StatelessWidget {
             itemBuilder: (context, index) {
               final belge = ilanlar[index];
               final data = belge.data();
-              final featured = data['featured'] == true;
+              final featured =
+                  data['featured'] == true;
 
               return Card(
-                margin: const EdgeInsets.only(bottom: 12),
+                margin: const EdgeInsets.only(
+                  bottom: 12,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(15),
                   child: Column(
@@ -1542,10 +1904,14 @@ class OneCikanIlanlarSayfasi extends StatelessWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              bilgi(data['title']),
-                              style: const TextStyle(
+                              bilgi(
+                                data['title'],
+                              ),
+                              style:
+                                  const TextStyle(
                                 fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                                fontWeight:
+                                    FontWeight.bold,
                               ),
                             ),
                           ),
@@ -1588,7 +1954,9 @@ class OneCikanIlanlarSayfasi extends StatelessWidget {
                                     false,
                                   );
                                 },
-                                icon: const Icon(Icons.star),
+                                icon: const Icon(
+                                  Icons.star,
+                                ),
                                 label: const Text(
                                   'ÖNE ÇIKAR',
                                 ),
@@ -1606,8 +1974,11 @@ class OneCikanIlanlarSayfasi extends StatelessWidget {
   }
 }
 
-class KullanicilariYonetSayfasi extends StatelessWidget {
-  const KullanicilariYonetSayfasi({super.key});
+class KullanicilariYonetSayfasi
+    extends StatelessWidget {
+  const KullanicilariYonetSayfasi({
+    super.key,
+  });
 
   Future<void> engelDegistir(
     BuildContext context,
@@ -1623,22 +1994,18 @@ class KullanicilariYonetSayfasi extends StatelessWidget {
       });
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              blocked
-                  ? 'Kullanıcının engeli kaldırıldı.'
-                  : 'Kullanıcı engellendi.',
-            ),
-          ),
+        mesaj(
+          context,
+          blocked
+              ? 'Kullanıcının engeli kaldırıldı.'
+              : 'Kullanıcı engellendi.',
         );
       }
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('İşlem yapılamadı.'),
-          ),
+        mesaj(
+          context,
+          'İşlem yapılamadı.',
         );
       }
     }
@@ -1652,14 +2019,18 @@ class KullanicilariYonetSayfasi extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kullanıcıları Yönet'),
+        title: const Text(
+          'Kullanıcıları Yönet',
+        ),
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: stream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(
-              child: Text('Kullanıcılar yüklenemedi.'),
+              child: Text(
+                'Kullanıcılar yüklenemedi.',
+              ),
             );
           }
 
@@ -1673,7 +2044,9 @@ class KullanicilariYonetSayfasi extends StatelessWidget {
 
           if (kullanicilar.isEmpty) {
             return const Center(
-              child: Text('Henüz kullanıcı kaydı yok.'),
+              child: Text(
+                'Henüz kullanıcı kaydı yok.',
+              ),
             );
           }
 
@@ -1684,17 +2057,24 @@ class KullanicilariYonetSayfasi extends StatelessWidget {
               final belge = kullanicilar[index];
               final data = belge.data();
 
-              final email =
-                  (data['email'] ?? 'E-posta yok').toString();
+              final email = bilgi(
+                data['email'],
+              );
 
-              final blocked = data['blocked'] == true;
+              final blocked =
+                  data['blocked'] == true;
 
               final kendiHesabin =
                   belge.id ==
-                      FirebaseAuth.instance.currentUser?.uid;
+                      FirebaseAuth
+                          .instance
+                          .currentUser
+                          ?.uid;
 
               return Card(
-                margin: const EdgeInsets.only(bottom: 12),
+                margin: const EdgeInsets.only(
+                  bottom: 12,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(15),
                   child: Column(
@@ -1723,7 +2103,8 @@ class KullanicilariYonetSayfasi extends StatelessWidget {
                                 child: Text(
                                   'YÖNETİCİ HESABI',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.bold,
+                                    fontWeight:
+                                        FontWeight.bold,
                                   ),
                                 ),
                               )
@@ -1751,10 +2132,12 @@ class KullanicilariYonetSayfasi extends StatelessWidget {
                                         false,
                                       );
                                     },
-                                    icon:
-                                        const Icon(Icons.block),
-                                    label:
-                                        const Text('ENGELLE'),
+                                    icon: const Icon(
+                                      Icons.block,
+                                    ),
+                                    label: const Text(
+                                      'ENGELLE',
+                                    ),
                                   ),
                       ),
                     ],
@@ -1769,13 +2152,11 @@ class KullanicilariYonetSayfasi extends StatelessWidget {
   }
 }
 
-class SikayetlerSayfasi extends StatelessWidget {
-  const SikayetlerSayfasi({super.key});
-
-  String bilgi(dynamic deger) {
-    final yazi = deger?.toString().trim() ?? '';
-    return yazi.isEmpty ? 'Belirtilmemiş' : yazi;
-  }
+class SikayetlerSayfasi
+    extends StatelessWidget {
+  const SikayetlerSayfasi({
+    super.key,
+  });
 
   Future<void> cozulduYap(
     BuildContext context,
@@ -1790,10 +2171,9 @@ class SikayetlerSayfasi extends StatelessWidget {
       });
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Şikayet çözüldü.'),
-          ),
+        mesaj(
+          context,
+          'Şikayet çözüldü.',
         );
       }
     } catch (_) {}
@@ -1810,10 +2190,9 @@ class SikayetlerSayfasi extends StatelessWidget {
           .delete();
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Şikayet silindi.'),
-          ),
+        mesaj(
+          context,
+          'Şikayet silindi.',
         );
       }
     } catch (_) {}
@@ -1834,7 +2213,9 @@ class SikayetlerSayfasi extends StatelessWidget {
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(
-              child: Text('Şikayetler yüklenemedi.'),
+              child: Text(
+                'Şikayetler yüklenemedi.',
+              ),
             );
           }
 
@@ -1844,11 +2225,14 @@ class SikayetlerSayfasi extends StatelessWidget {
             );
           }
 
-          final sikayetler = snapshot.data!.docs;
+          final sikayetler =
+              snapshot.data!.docs;
 
           if (sikayetler.isEmpty) {
             return const Center(
-              child: Text('Henüz şikayet yok.'),
+              child: Text(
+                'Henüz şikayet yok.',
+              ),
             );
           }
 
@@ -1858,10 +2242,13 @@ class SikayetlerSayfasi extends StatelessWidget {
             itemBuilder: (context, index) {
               final belge = sikayetler[index];
               final data = belge.data();
-              final durum = bilgi(data['status']);
+              final durum =
+                  bilgi(data['status']);
 
               return Card(
-                margin: const EdgeInsets.only(bottom: 12),
+                margin: const EdgeInsets.only(
+                  bottom: 12,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(15),
                   child: Column(
@@ -1869,10 +2256,13 @@ class SikayetlerSayfasi extends StatelessWidget {
                         CrossAxisAlignment.start,
                     children: [
                       Text(
-                        bilgi(data['jobTitle']),
+                        bilgi(
+                          data['jobTitle'],
+                        ),
                         style: const TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontWeight:
+                              FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -1894,30 +2284,40 @@ class SikayetlerSayfasi extends StatelessWidget {
                       Row(
                         children: [
                           Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: durum == 'resolved'
-                                  ? null
-                                  : () {
-                                      cozulduYap(
-                                        context,
-                                        belge.id,
-                                      );
-                                    },
-                              icon: const Icon(Icons.check),
-                              label: const Text('ÇÖZÜLDÜ'),
+                            child:
+                                ElevatedButton.icon(
+                              onPressed:
+                                  durum == 'resolved'
+                                      ? null
+                                      : () {
+                                          cozulduYap(
+                                            context,
+                                            belge.id,
+                                          );
+                                        },
+                              icon: const Icon(
+                                Icons.check,
+                              ),
+                              label: const Text(
+                                'ÇÖZÜLDÜ',
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: OutlinedButton.icon(
+                            child:
+                                OutlinedButton.icon(
                               onPressed: () {
                                 sikayetSil(
                                   context,
                                   belge.id,
                                 );
                               },
-                              icon: const Icon(Icons.delete),
-                              label: const Text('SİL'),
+                              icon: const Icon(
+                                Icons.delete,
+                              ),
+                              label:
+                                  const Text('SİL'),
                             ),
                           ),
                         ],
@@ -1934,13 +2334,11 @@ class SikayetlerSayfasi extends StatelessWidget {
   }
 }
 
-class BekleyenIlanlarSayfasi extends StatelessWidget {
-  const BekleyenIlanlarSayfasi({super.key});
-
-  String bilgi(dynamic deger) {
-    final yazi = deger?.toString().trim() ?? '';
-    return yazi.isEmpty ? 'Belirtilmemiş' : yazi;
-  }
+class BekleyenIlanlarSayfasi
+    extends StatelessWidget {
+  const BekleyenIlanlarSayfasi({
+    super.key,
+  });
 
   Future<void> durumDegistir(
     BuildContext context,
@@ -1956,14 +2354,11 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
       });
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              durum == 'approved'
-                  ? 'İlan onaylandı.'
-                  : 'İlan reddedildi.',
-            ),
-          ),
+        mesaj(
+          context,
+          durum == 'approved'
+              ? 'İlan onaylandı.'
+              : 'İlan reddedildi.',
         );
       }
     } catch (_) {}
@@ -1973,19 +2368,26 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
   Widget build(BuildContext context) {
     final stream = FirebaseFirestore.instance
         .collection('jobs')
-        .where('status', isEqualTo: 'pending')
+        .where(
+          'status',
+          isEqualTo: 'pending',
+        )
         .snapshots();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bekleyen İlanlar'),
+        title: const Text(
+          'Bekleyen İlanlar',
+        ),
       ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: stream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(
-              child: Text('İlanlar yüklenemedi.'),
+              child: Text(
+                'İlanlar yüklenemedi.',
+              ),
             );
           }
 
@@ -1999,7 +2401,9 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
 
           if (ilanlar.isEmpty) {
             return const Center(
-              child: Text('Onay bekleyen ilan yok.'),
+              child: Text(
+                'Onay bekleyen ilan yok.',
+              ),
             );
           }
 
@@ -2011,7 +2415,9 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
               final data = belge.data();
 
               return Card(
-                margin: const EdgeInsets.only(bottom: 12),
+                margin: const EdgeInsets.only(
+                  bottom: 12,
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(15),
                   child: Column(
@@ -2022,7 +2428,8 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
                         bilgi(data['title']),
                         style: const TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontWeight:
+                              FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -2046,13 +2453,16 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        bilgi(data['description']),
+                        bilgi(
+                          data['description'],
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
-                            child: ElevatedButton.icon(
+                            child:
+                                ElevatedButton.icon(
                               onPressed: () {
                                 durumDegistir(
                                   context,
@@ -2060,13 +2470,18 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
                                   'approved',
                                 );
                               },
-                              icon: const Icon(Icons.check),
-                              label: const Text('ONAYLA'),
+                              icon: const Icon(
+                                Icons.check,
+                              ),
+                              label: const Text(
+                                'ONAYLA',
+                              ),
                             ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: OutlinedButton.icon(
+                            child:
+                                OutlinedButton.icon(
                               onPressed: () {
                                 durumDegistir(
                                   context,
@@ -2074,8 +2489,12 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
                                   'rejected',
                                 );
                               },
-                              icon: const Icon(Icons.close),
-                              label: const Text('REDDET'),
+                              icon: const Icon(
+                                Icons.close,
+                              ),
+                              label: const Text(
+                                'REDDET',
+                              ),
                             ),
                           ),
                         ],
