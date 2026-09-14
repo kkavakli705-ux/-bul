@@ -937,8 +937,7 @@ class SikayetEtSayfasi extends StatefulWidget {
       _SikayetEtSayfasiState();
 }
 
-class _SikayetEtSayfasiState
-    extends State<SikayetEtSayfasi> {
+class _SikayetEtSayfasiState extends State<SikayetEtSayfasi> {
   final aciklama = TextEditingController();
 
   final nedenler = [
@@ -1466,6 +1465,9 @@ class KullanicilariYonetSayfasi extends StatelessWidget {
 
               final blocked = data['blocked'] == true;
 
+              final kendiHesabin =
+                  belge.id == FirebaseAuth.instance.currentUser?.uid;
+
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 child: Padding(
@@ -1482,40 +1484,51 @@ class KullanicilariYonetSayfasi extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        blocked
-                            ? 'Durum: ENGELLİ'
-                            : 'Durum: AKTİF',
+                        kendiHesabin
+                            ? 'Durum: YÖNETİCİ'
+                            : blocked
+                                ? 'Durum: ENGELLİ'
+                                : 'Durum: AKTİF',
                       ),
                       const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
-                        child: blocked
-                            ? ElevatedButton.icon(
-                                onPressed: () {
-                                  engelDegistir(
-                                    context,
-                                    belge.id,
-                                    true,
-                                  );
-                                },
-                                icon:
-                                    const Icon(Icons.lock_open),
-                                label: const Text(
-                                  'ENGELİ KALDIR',
+                        child: kendiHesabin
+                            ? const Center(
+                                child: Text(
+                                  'YÖNETİCİ HESABI',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               )
-                            : OutlinedButton.icon(
-                                onPressed: () {
-                                  engelDegistir(
-                                    context,
-                                    belge.id,
-                                    false,
-                                  );
-                                },
-                                icon:
-                                    const Icon(Icons.block),
-                                label: const Text('ENGELLE'),
-                              ),
+                            : blocked
+                                ? ElevatedButton.icon(
+                                    onPressed: () {
+                                      engelDegistir(
+                                        context,
+                                        belge.id,
+                                        true,
+                                      );
+                                    },
+                                    icon: const Icon(
+                                      Icons.lock_open,
+                                    ),
+                                    label: const Text(
+                                      'ENGELİ KALDIR',
+                                    ),
+                                  )
+                                : OutlinedButton.icon(
+                                    onPressed: () {
+                                      engelDegistir(
+                                        context,
+                                        belge.id,
+                                        false,
+                                      );
+                                    },
+                                    icon: const Icon(Icons.block),
+                                    label: const Text('ENGELLE'),
+                                  ),
                       ),
                     ],
                   ),
