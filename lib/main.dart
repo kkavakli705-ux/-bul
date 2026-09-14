@@ -780,6 +780,17 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
               .where((doc) => eslesiyor(doc.data()))
               .toList();
 
+          ilanlar.sort((a, b) {
+            final aFeatured = a.data()['featured'] == true;
+            final bFeatured = b.data()['featured'] == true;
+
+            if (aFeatured == bFeatured) {
+              return 0;
+            }
+
+            return aFeatured ? -1 : 1;
+          });
+
           return Column(
             children: [
               Padding(
@@ -820,6 +831,7 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
 
                           final telefon = bilgi(data['phone']);
                           final whatsapp = bilgi(data['whatsapp']);
+                          final featured = data['featured'] == true;
 
                           return Card(
                             margin: const EdgeInsets.only(bottom: 12),
@@ -829,6 +841,21 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
                                 crossAxisAlignment:
                                     CrossAxisAlignment.start,
                                 children: [
+                                  if (featured)
+                                    const Row(
+                                      children: [
+                                        Icon(Icons.star),
+                                        SizedBox(width: 6),
+                                        Text(
+                                          'ÖNE ÇIKAN İLAN',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  if (featured)
+                                    const SizedBox(height: 8),
                                   Text(
                                     bilgi(data['title']),
                                     style: const TextStyle(
@@ -937,7 +964,8 @@ class SikayetEtSayfasi extends StatefulWidget {
       _SikayetEtSayfasiState();
 }
 
-class _SikayetEtSayfasiState extends State<SikayetEtSayfasi> {
+class _SikayetEtSayfasiState
+    extends State<SikayetEtSayfasi> {
   final aciklama = TextEditingController();
 
   final nedenler = [
@@ -1206,6 +1234,7 @@ class KendiIlanlarimSayfasi extends StatelessWidget {
             itemBuilder: (context, index) {
               final belge = ilanlar[index];
               final data = belge.data();
+              final featured = data['featured'] == true;
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
@@ -1231,6 +1260,21 @@ class KendiIlanlarimSayfasi extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      if (featured) ...[
+                        const SizedBox(height: 6),
+                        const Row(
+                          children: [
+                            Icon(Icons.star, size: 20),
+                            SizedBox(width: 6),
+                            Text(
+                              'ÖNE ÇIKAN İLAN',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                       const Divider(height: 24),
                       Text(
                         'Kategori: ${bilgi(data['category'])}',
@@ -1364,10 +1408,23 @@ class YonetimPaneli extends StatelessWidget {
               },
             ),
           ),
-          const Card(
+          Card(
             child: ListTile(
-              leading: Icon(Icons.star),
-              title: Text('Öne Çıkan İlanlar'),
+              leading: const Icon(Icons.star),
+              title: const Text('Öne Çıkan İlanlar'),
+              subtitle: const Text(
+                'İlanları öne çıkar veya kaldır',
+              ),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        const OneCikanIlanlarSayfasi(),
+                  ),
+                );
+              },
             ),
           ),
           const Card(
@@ -1377,6 +1434,173 @@ class YonetimPaneli extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class OneCikanIlanlarSayfasi extends StatelessWidget {
+  const OneCikanIlanlarSayfasi({super.key});
+
+  String bilgi(dynamic deger) {
+    final yazi = deger?.toString().trim() ?? '';
+    return yazi.isEmpty ? 'Belirtilmemiş' : yazi;
+  }
+
+  Future<void> oneCikarDegistir(
+    BuildContext context,
+    String id,
+    bool featured,
+  ) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('jobs')
+          .doc(id)
+          .update({
+        'featured': !featured,
+      });
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              featured
+                  ? 'Öne çıkarma kaldırıldı.'
+                  : 'İlan öne çıkarıldı.',
+            ),
+          ),
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('İşlem yapılamadı.'),
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final stream = FirebaseFirestore.instance
+        .collection('jobs')
+        .where('status', isEqualTo: 'approved')
+        .snapshots();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Öne Çıkan İlanlar'),
+      ),
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: stream,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('İlanlar yüklenemedi.'),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          final ilanlar = snapshot.data!.docs;
+
+          if (ilanlar.isEmpty) {
+            return const Center(
+              child: Text('Yayında ilan yok.'),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: ilanlar.length,
+            itemBuilder: (context, index) {
+              final belge = ilanlar[index];
+              final data = belge.data();
+              final featured = data['featured'] == true;
+
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: Padding(
+                  padding: const EdgeInsets.all(15),
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            featured
+                                ? Icons.star
+                                : Icons.star_border,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              bilgi(data['title']),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Firma: ${bilgi(data['company'])}',
+                      ),
+                      Text(
+                        'Konum: ${bilgi(data['city'])}',
+                      ),
+                      Text(
+                        'Kategori: ${bilgi(data['category'])}',
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: featured
+                            ? OutlinedButton.icon(
+                                onPressed: () {
+                                  oneCikarDegistir(
+                                    context,
+                                    belge.id,
+                                    true,
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.star_border,
+                                ),
+                                label: const Text(
+                                  'ÖNE ÇIKARMAYI KALDIR',
+                                ),
+                              )
+                            : ElevatedButton.icon(
+                                onPressed: () {
+                                  oneCikarDegistir(
+                                    context,
+                                    belge.id,
+                                    false,
+                                  );
+                                },
+                                icon: const Icon(Icons.star),
+                                label: const Text(
+                                  'ÖNE ÇIKAR',
+                                ),
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -1466,7 +1690,8 @@ class KullanicilariYonetSayfasi extends StatelessWidget {
               final blocked = data['blocked'] == true;
 
               final kendiHesabin =
-                  belge.id == FirebaseAuth.instance.currentUser?.uid;
+                  belge.id ==
+                      FirebaseAuth.instance.currentUser?.uid;
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
@@ -1526,8 +1751,10 @@ class KullanicilariYonetSayfasi extends StatelessWidget {
                                         false,
                                       );
                                     },
-                                    icon: const Icon(Icons.block),
-                                    label: const Text('ENGELLE'),
+                                    icon:
+                                        const Icon(Icons.block),
+                                    label:
+                                        const Text('ENGELLE'),
                                   ),
                       ),
                     ],
@@ -1631,7 +1858,6 @@ class SikayetlerSayfasi extends StatelessWidget {
             itemBuilder: (context, index) {
               final belge = sikayetler[index];
               final data = belge.data();
-
               final durum = bilgi(data['status']);
 
               return Card(
