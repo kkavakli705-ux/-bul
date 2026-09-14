@@ -360,8 +360,6 @@ class _AnaSayfaState extends State<AnaSayfa> {
     );
   }
 }
-
-class GirisSayfasi extends StatefulWidget {
   
 class GirisSayfasi extends StatefulWidget {
   const GirisSayfasi({super.key});
