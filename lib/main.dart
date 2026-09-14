@@ -1867,7 +1867,22 @@ class YonetimPaneli extends StatelessWidget {
               },
             ),
           ),
-        ],
+       ), 
+       Card(
+  child: ListTile(
+    leading: const Icon(Icons.notifications),
+    title: const Text('Bildirim Gönder'),
+    trailing: const Icon(Icons.arrow_forward_ios),
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const BildirimGonderSayfasi(),
+        ),
+      );
+    },
+  ),
+), 
       ),
     );
   }
