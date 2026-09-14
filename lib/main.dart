@@ -362,6 +362,8 @@ class _AnaSayfaState extends State<AnaSayfa> {
 }
 
 class GirisSayfasi extends StatefulWidget {
+  
+class GirisSayfasi extends StatefulWidget {
   const GirisSayfasi({super.key});
 
   @override
@@ -371,27 +373,52 @@ class GirisSayfasi extends StatefulWidget {
 class _GirisSayfasiState extends State<GirisSayfasi> {
   final email = TextEditingController();
   final sifre = TextEditingController();
+  final sifreTekrar = TextEditingController();
+  final telefon = TextEditingController();
+  final smsKodu = TextEditingController();
 
   bool kayit = false;
   bool bekle = false;
+  bool telefonModu = false;
+  bool smsGonderildi = false;
+
+  String verificationId = '';
 
   Future<void> kullaniciKaydiOlustur(User user) async {
-    final ref = FirebaseFirestore.instance.collection('users').doc(user.uid);
-    final doc = await ref.get();
+    try {
+      final ref =
+          FirebaseFirestore.instance.collection('users').doc(user.uid);
 
-    if (!doc.exists) {
-      await ref.set({
-        'uid': user.uid,
-        'email': user.email ?? '',
-        'blocked': false,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-    }
+      final doc = await ref.get();
+
+      if (!doc.exists) {
+        await ref.set({
+          'uid': user.uid,
+          'email': user.email ?? '',
+          'phone': user.phoneNumber ?? '',
+          'blocked': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (_) {}
   }
 
-  Future<void> giris() async {
-    if (email.text.trim().isEmpty || sifre.text.trim().isEmpty) {
+  Future<void> emailIslemi() async {
+    final eposta = email.text.trim();
+    final parola = sifre.text.trim();
+
+    if (eposta.isEmpty || parola.isEmpty) {
       mesaj(context, 'E-posta ve şifreyi doldurun.');
+      return;
+    }
+
+    if (parola.length < 6) {
+      mesaj(context, 'Şifre en az 6 karakter olmalıdır.');
+      return;
+    }
+
+    if (kayit && parola != sifreTekrar.text.trim()) {
+      mesaj(context, 'Şifreler aynı değil.');
       return;
     }
 
@@ -400,46 +427,303 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
     });
 
     try {
-      UserCredential sonuc;
-
       if (kayit) {
-        sonuc = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: email.text.trim(),
-          password: sifre.text.trim(),
+        final sonuc =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: eposta,
+          password: parola,
         );
+
+        final user = sonuc.user;
+
+        if (user != null) {
+          await kullaniciKaydiOlustur(user);
+
+          await user.sendEmailVerification();
+
+          await FirebaseAuth.instance.signOut();
+
+          if (mounted) {
+            mesaj(
+              context,
+              'Doğrulama bağlantısı e-posta adresine gönderildi. '
+              'E-postanı doğruladıktan sonra giriş yap.',
+            );
+
+            setState(() {
+              kayit = false;
+              sifre.clear();
+              sifreTekrar.clear();
+            });
+          }
+        }
       } else {
-        sonuc = await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: email.text.trim(),
-          password: sifre.text.trim(),
+        final sonuc =
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: eposta,
+          password: parola,
         );
+
+        final user = sonuc.user;
+
+        if (user == null) {
+          throw Exception();
+        }
+
+        await user.reload();
+
+        final guncelUser = FirebaseAuth.instance.currentUser;
+
+        if (guncelUser == null) {
+          throw Exception();
+        }
+
+        if (!guncelUser.emailVerified) {
+          try {
+            await guncelUser.sendEmailVerification();
+          } catch (_) {}
+
+          await FirebaseAuth.instance.signOut();
+
+          if (mounted) {
+            mesaj(
+              context,
+              'E-posta adresin henüz doğrulanmamış. '
+              'Doğrulama e-postanı kontrol et.',
+            );
+          }
+
+          return;
+        }
+
+        await kullaniciKaydiOlustur(guncelUser);
+
+        if (mounted) {
+          Navigator.pop(context);
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      String hata = 'İşlem yapılamadı.';
+
+      switch (e.code) {
+        case 'email-already-in-use':
+          hata = 'Bu e-posta adresi zaten kayıtlı.';
+          break;
+
+        case 'invalid-email':
+          hata = 'Geçerli bir e-posta adresi girin.';
+          break;
+
+        case 'weak-password':
+          hata = 'Şifre çok zayıf.';
+          break;
+
+        case 'user-not-found':
+        case 'invalid-credential':
+        case 'wrong-password':
+          hata = 'E-posta veya şifre hatalı.';
+          break;
+
+        case 'too-many-requests':
+          hata = 'Çok fazla deneme yapıldı. Biraz sonra tekrar deneyin.';
+          break;
+
+        default:
+          hata = e.message ?? hata;
       }
 
-      if (sonuc.user != null) {
+      if (mounted) {
+        mesaj(context, hata);
+      }
+    } catch (_) {
+      if (mounted) {
+        mesaj(context, 'Bir hata oluştu.');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          bekle = false;
+        });
+      }
+    }
+  }
+
+  String telefonDuzenle(String girilen) {
+    String numara = girilen.trim().replaceAll(' ', '');
+
+    if (numara.startsWith('05')) {
+      numara = '+90${numara.substring(1)}';
+    } else if (numara.startsWith('5') && numara.length == 10) {
+      numara = '+90$numara';
+    } else if (numara.startsWith('90')) {
+      numara = '+$numara';
+    }
+
+    return numara;
+  }
+
+  Future<void> smsGonder() async {
+    final numara = telefonDuzenle(telefon.text);
+
+    if (numara.isEmpty) {
+      mesaj(context, 'Telefon numaranı gir.');
+      return;
+    }
+
+    if (!numara.startsWith('+')) {
+      mesaj(
+        context,
+        'Telefon numarasını 05XXXXXXXXX şeklinde gir.',
+      );
+      return;
+    }
+
+    setState(() {
+      bekle = true;
+    });
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: numara,
+
+      verificationCompleted: (PhoneAuthCredential credential) async {
         try {
-          await kullaniciKaydiOlustur(sonuc.user!);
-        } catch (_) {}
+          final sonuc =
+              await FirebaseAuth.instance.signInWithCredential(credential);
+
+          if (sonuc.user != null) {
+            await kullaniciKaydiOlustur(sonuc.user!);
+          }
+
+          if (mounted) {
+            Navigator.pop(context);
+          }
+        } catch (_) {
+          if (mounted) {
+            mesaj(context, 'Telefon doğrulanamadı.');
+          }
+        }
+      },
+
+      verificationFailed: (FirebaseAuthException e) {
+        if (!mounted) return;
+
+        setState(() {
+          bekle = false;
+        });
+
+        String hata = 'SMS gönderilemedi.';
+
+        if (e.code == 'invalid-phone-number') {
+          hata = 'Telefon numarası geçersiz.';
+        } else if (e.code == 'too-many-requests') {
+          hata = 'Çok fazla SMS isteği yapıldı. Daha sonra tekrar deneyin.';
+        } else if (e.message != null) {
+          hata = e.message!;
+        }
+
+        mesaj(context, hata);
+      },
+
+      codeSent: (String id, int? resendToken) {
+        if (!mounted) return;
+
+        setState(() {
+          verificationId = id;
+          smsGonderildi = true;
+          bekle = false;
+        });
+
+        mesaj(context, 'SMS doğrulama kodu gönderildi.');
+      },
+
+      codeAutoRetrievalTimeout: (String id) {
+        verificationId = id;
+
+        if (mounted) {
+          setState(() {
+            bekle = false;
+          });
+        }
+      },
+
+      timeout: const Duration(seconds: 60),
+    );
+  }
+
+  Future<void> smsDogrula() async {
+    if (smsKodu.text.trim().length < 6) {
+      mesaj(context, 'SMS ile gelen 6 haneli kodu gir.');
+      return;
+    }
+
+    if (verificationId.isEmpty) {
+      mesaj(context, 'Önce SMS kodu gönder.');
+      return;
+    }
+
+    setState(() {
+      bekle = true;
+    });
+
+    try {
+      final credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: smsKodu.text.trim(),
+      );
+
+      final sonuc =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
+      if (sonuc.user != null) {
+        await kullaniciKaydiOlustur(sonuc.user!);
       }
 
       if (mounted) {
         Navigator.pop(context);
       }
     } on FirebaseAuthException catch (e) {
-      mesaj(context, e.message ?? 'İşlem yapılamadı.');
-    } catch (_) {
-      mesaj(context, 'Bir hata oluştu.');
-    }
+      String hata = 'Kod doğrulanamadı.';
 
-    if (mounted) {
-      setState(() {
-        bekle = false;
-      });
+      if (e.code == 'invalid-verification-code') {
+        hata = 'SMS kodu yanlış.';
+      } else if (e.code == 'session-expired') {
+        hata = 'SMS kodunun süresi doldu. Tekrar kod gönder.';
+      } else if (e.message != null) {
+        hata = e.message!;
+      }
+
+      if (mounted) {
+        mesaj(context, hata);
+      }
+    } catch (_) {
+      if (mounted) {
+        mesaj(context, 'Telefon doğrulanamadı.');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          bekle = false;
+        });
+      }
     }
+  }
+
+  void moduDegistir(bool telefonSecildi) {
+    setState(() {
+      telefonModu = telefonSecildi;
+      smsGonderildi = false;
+      verificationId = '';
+      smsKodu.clear();
+    });
   }
 
   @override
   void dispose() {
     email.dispose();
     sifre.dispose();
+    sifreTekrar.dispose();
+    telefon.dispose();
+    smsKodu.dispose();
     super.dispose();
   }
 
@@ -447,49 +731,197 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(kayit ? 'Kayıt Ol' : 'Giriş Yap'),
+        title: Text(
+          telefonModu
+              ? 'Telefon ile Giriş'
+              : kayit
+                  ? 'Kayıt Ol'
+                  : 'Giriş Yap',
+        ),
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          TextField(
-            controller: email,
-            keyboardType: TextInputType.emailAddress,
-            decoration: const InputDecoration(
-              labelText: 'E-posta',
-              border: OutlineInputBorder(),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: bekle
+                      ? null
+                      : () {
+                          moduDegistir(false);
+                        },
+                  icon: const Icon(Icons.email),
+                  label: const Text('E-POSTA'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: bekle
+                      ? null
+                      : () {
+                          moduDegistir(true);
+                        },
+                  icon: const Icon(Icons.phone_android),
+                  label: const Text('TELEFON'),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 25),
+
+          if (!telefonModu) ...[
+            TextField(
+              controller: email,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                labelText: 'E-posta',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.email),
+              ),
             ),
-          ),
-          const SizedBox(height: 15),
-          TextField(
-            controller: sifre,
-            obscureText: true,
-            decoration: const InputDecoration(
-              labelText: 'Şifre',
-              border: OutlineInputBorder(),
+
+            const SizedBox(height: 15),
+
+            TextField(
+              controller: sifre,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Şifre',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.lock),
+              ),
             ),
-          ),
-          const SizedBox(height: 15),
-          ElevatedButton(
-            onPressed: bekle ? null : giris,
-            child: Text(kayit ? 'KAYIT OL' : 'GİRİŞ YAP'),
-          ),
-          TextButton(
-            onPressed: () {
-              setState(() {
-                kayit = !kayit;
-              });
-            },
-            child: Text(
-              kayit ? 'Zaten hesabım var' : 'Hesabım yok, kayıt ol',
+
+            if (kayit) ...[
+              const SizedBox(height: 15),
+
+              TextField(
+                controller: sifreTekrar,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Şifre Tekrar',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.lock_outline),
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              onPressed: bekle ? null : emailIslemi,
+              child: Text(
+                bekle
+                    ? 'BEKLEYİN...'
+                    : kayit
+                        ? 'KAYIT OL'
+                        : 'GİRİŞ YAP',
+              ),
             ),
-          ),
+
+            const SizedBox(height: 5),
+
+            TextButton(
+              onPressed: bekle
+                  ? null
+                  : () {
+                      setState(() {
+                        kayit = !kayit;
+                        sifre.clear();
+                        sifreTekrar.clear();
+                      });
+                    },
+              child: Text(
+                kayit
+                    ? 'Zaten hesabım var - Giriş yap'
+                    : 'Hesabım yok - Kayıt ol',
+              ),
+            ),
+
+            if (kayit)
+              const Padding(
+                padding: EdgeInsets.only(top: 10),
+                child: Text(
+                  'Kayıt olduktan sonra e-posta adresine doğrulama bağlantısı gönderilecektir.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+          ],
+
+          if (telefonModu) ...[
+            const Text(
+              'Telefon numaran ile giriş yap veya hesap oluştur.',
+              textAlign: TextAlign.center,
+            ),
+
+            const SizedBox(height: 15),
+
+            TextField(
+              controller: telefon,
+              enabled: !smsGonderildi,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(
+                labelText: 'Telefon Numarası',
+                hintText: '05XXXXXXXXX',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.phone),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            if (!smsGonderildi)
+              ElevatedButton(
+                onPressed: bekle ? null : smsGonder,
+                child: Text(
+                  bekle ? 'GÖNDERİLİYOR...' : 'SMS KODU GÖNDER',
+                ),
+              ),
+
+            if (smsGonderildi) ...[
+              TextField(
+                controller: smsKodu,
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                decoration: const InputDecoration(
+                  labelText: 'SMS Doğrulama Kodu',
+                  hintText: '6 haneli kod',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.sms),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              ElevatedButton(
+                onPressed: bekle ? null : smsDogrula,
+                child: Text(
+                  bekle ? 'DOĞRULANIYOR...' : 'KODU DOĞRULA',
+                ),
+              ),
+
+              TextButton(
+                onPressed: bekle
+                    ? null
+                    : () {
+                        setState(() {
+                          smsGonderildi = false;
+                          verificationId = '';
+                          smsKodu.clear();
+                        });
+                      },
+                child: const Text('Telefon numarasını değiştir'),
+              ),
+            ],
+          ],
         ],
       ),
     );
   }
 }
-
 class IlanVerSayfasi extends StatefulWidget {
   const IlanVerSayfasi({super.key});
 
