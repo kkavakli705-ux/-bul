@@ -2817,7 +2817,7 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
             },
 );
 },
-),class BildirimlerSayfasi extends StatelessWidget {
+class BildirimlerSayfasi extends StatelessWidget {
   const BildirimlerSayfasi({super.key});
 
   @override
