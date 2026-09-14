@@ -1,428 +1,554 @@
-import 'package:flutter/material.dart';
-
-void main() {
-  runApp(const IsBulApp());
-}
-
-class IsBulApp extends StatelessWidget {
-  const IsBulApp({super.key});
+class GirisSayfasi extends StatefulWidget {
+  const GirisSayfasi({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'İş Bul',
-      theme: ThemeData(
-        useMaterial3: true,
-        scaffoldBackgroundColor: const Color(0xFFF8F8FF),
-      ),
-      home: const SettingsScreen(),
+  State<GirisSayfasi> createState() => _GirisSayfasiState();
+}
+
+class _GirisSayfasiState extends State<GirisSayfasi> {
+  final email = TextEditingController();
+  final sifre = TextEditingController();
+  final sifreTekrar = TextEditingController();
+
+  final telefon = TextEditingController();
+  final smsKodu = TextEditingController();
+
+  bool kayit = false;
+  bool bekle = false;
+  bool telefonModu = false;
+  bool smsGonderildi = false;
+
+  String verificationId = '';
+
+  Future<void> kullaniciKaydiOlustur(User user) async {
+    final ref =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
+
+    final doc = await ref.get();
+
+    if (!doc.exists) {
+      await ref.set({
+        'uid': user.uid,
+        'email': user.email ?? '',
+        'phone': user.phoneNumber ?? '',
+        'blocked': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  Future<void> giris() async {
+    if (email.text.trim().isEmpty || sifre.text.trim().isEmpty) {
+      mesaj(context, 'E-posta ve şifreyi doldurun.');
+      return;
+    }
+
+    if (kayit) {
+      if (sifreTekrar.text.trim().isEmpty) {
+        mesaj(context, 'Şifrenizi tekrar yazın.');
+        return;
+      }
+
+      if (sifre.text.trim() != sifreTekrar.text.trim()) {
+        mesaj(context, 'Şifreler aynı değil.');
+        return;
+      }
+
+      if (sifre.text.trim().length < 6) {
+        mesaj(context, 'Şifre en az 6 karakter olmalı.');
+        return;
+      }
+    }
+
+    setState(() {
+      bekle = true;
+    });
+
+    try {
+      if (kayit) {
+        final sonuc =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: email.text.trim(),
+          password: sifre.text.trim(),
+        );
+
+        if (sonuc.user != null) {
+          await kullaniciKaydiOlustur(sonuc.user!);
+
+          await sonuc.user!.sendEmailVerification();
+
+          await FirebaseAuth.instance.signOut();
+
+          if (mounted) {
+            mesaj(
+              context,
+              'Doğrulama bağlantısı e-posta adresine gönderildi. '
+              'E-postanı doğruladıktan sonra giriş yap.',
+            );
+
+            setState(() {
+              kayit = false;
+              sifre.clear();
+              sifreTekrar.clear();
+            });
+          }
+        }
+      } else {
+        final sonuc =
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: email.text.trim(),
+          password: sifre.text.trim(),
+        );
+
+        final user = sonuc.user;
+
+        if (user != null) {
+          await user.reload();
+
+          final yenilenenUser = FirebaseAuth.instance.currentUser;
+
+          if (yenilenenUser != null &&
+              !yenilenenUser.emailVerified) {
+            try {
+              await yenilenenUser.sendEmailVerification();
+            } catch (_) {}
+
+            await FirebaseAuth.instance.signOut();
+
+            if (mounted) {
+              mesaj(
+                context,
+                'E-posta adresin henüz doğrulanmamış. '
+                'Doğrulama bağlantısı tekrar gönderildi.',
+              );
+            }
+
+            return;
+          }
+
+          await kullaniciKaydiOlustur(yenilenenUser ?? user);
+
+          if (mounted) {
+            Navigator.pop(context);
+          }
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      String hata = 'İşlem yapılamadı.';
+
+      if (e.code == 'email-already-in-use') {
+        hata = 'Bu e-posta adresi zaten kayıtlı.';
+      } else if (e.code == 'invalid-email') {
+        hata = 'Geçerli bir e-posta adresi yazın.';
+      } else if (e.code == 'weak-password') {
+        hata = 'Şifre çok zayıf.';
+      } else if (e.code == 'user-not-found') {
+        hata = 'Bu e-posta ile kayıtlı hesap bulunamadı.';
+      } else if (e.code == 'wrong-password' ||
+          e.code == 'invalid-credential') {
+        hata = 'E-posta veya şifre yanlış.';
+      } else if (e.code == 'too-many-requests') {
+        hata = 'Çok fazla deneme yapıldı. Biraz sonra tekrar deneyin.';
+      } else if (e.message != null) {
+        hata = e.message!;
+      }
+
+      if (mounted) {
+        mesaj(context, hata);
+      }
+    } catch (_) {
+      if (mounted) {
+        mesaj(context, 'Bir hata oluştu.');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          bekle = false;
+        });
+      }
+    }
+  }
+
+  Future<void> smsGonder() async {
+    String numara = telefon.text.trim().replaceAll(' ', '');
+
+    if (numara.isEmpty) {
+      mesaj(context, 'Telefon numaranızı yazın.');
+      return;
+    }
+
+    if (numara.startsWith('0')) {
+      numara = '+90${numara.substring(1)}';
+    } else if (!numara.startsWith('+')) {
+      numara = '+90$numara';
+    }
+
+    setState(() {
+      bekle = true;
+    });
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: numara,
+      timeout: const Duration(seconds: 60),
+
+      verificationCompleted:
+          (PhoneAuthCredential credential) async {
+        try {
+          final sonuc =
+              await FirebaseAuth.instance.signInWithCredential(
+            credential,
+          );
+
+          if (sonuc.user != null) {
+            await kullaniciKaydiOlustur(sonuc.user!);
+
+            if (mounted) {
+              Navigator.pop(context);
+            }
+          }
+        } catch (_) {
+          if (mounted) {
+            mesaj(context, 'Telefon doğrulaması yapılamadı.');
+          }
+        }
+
+        if (mounted) {
+          setState(() {
+            bekle = false;
+          });
+        }
+      },
+
+      verificationFailed: (FirebaseAuthException e) {
+        String hata = 'SMS gönderilemedi.';
+
+        if (e.code == 'invalid-phone-number') {
+          hata = 'Telefon numarası geçersiz.';
+        } else if (e.code == 'too-many-requests') {
+          hata = 'Çok fazla SMS istendi. Daha sonra tekrar deneyin.';
+        } else if (e.message != null) {
+          hata = e.message!;
+        }
+
+        if (mounted) {
+          mesaj(context, hata);
+
+          setState(() {
+            bekle = false;
+          });
+        }
+      },
+
+      codeSent: (String id, int? resendToken) {
+        if (mounted) {
+          setState(() {
+            verificationId = id;
+            smsGonderildi = true;
+            bekle = false;
+          });
+
+          mesaj(context, 'SMS doğrulama kodu gönderildi.');
+        }
+      },
+
+      codeAutoRetrievalTimeout: (String id) {
+        verificationId = id;
+
+        if (mounted) {
+          setState(() {
+            bekle = false;
+          });
+        }
+      },
     );
   }
-}
 
-class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  Future<void> smsDogrula() async {
+    if (smsKodu.text.trim().length != 6) {
+      mesaj(context, '6 haneli SMS kodunu yazın.');
+      return;
+    }
+
+    if (verificationId.isEmpty) {
+      mesaj(context, 'Önce SMS kodu gönderin.');
+      return;
+    }
+
+    setState(() {
+      bekle = true;
+    });
+
+    try {
+      final credential = PhoneAuthProvider.credential(
+        verificationId: verificationId,
+        smsCode: smsKodu.text.trim(),
+      );
+
+      final sonuc =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
+      if (sonuc.user != null) {
+        await kullaniciKaydiOlustur(sonuc.user!);
+
+        if (mounted) {
+          Navigator.pop(context);
+        }
+      }
+    } on FirebaseAuthException catch (e) {
+      String hata = 'SMS kodu doğrulanamadı.';
+
+      if (e.code == 'invalid-verification-code') {
+        hata = 'SMS kodu yanlış.';
+      } else if (e.code == 'session-expired') {
+        hata = 'SMS kodunun süresi doldu. Yeniden kod gönderin.';
+      } else if (e.message != null) {
+        hata = e.message!;
+      }
+
+      if (mounted) {
+        mesaj(context, hata);
+      }
+    } catch (_) {
+      if (mounted) {
+        mesaj(context, 'Bir hata oluştu.');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          bekle = false;
+        });
+      }
+    }
+  }
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
-}
-
-class _SettingsScreenState extends State<SettingsScreen> {
-  bool notificationsEnabled = true;
-
-  final String email = "kkavakli705@gmail.com";
+  void dispose() {
+    email.dispose();
+    sifre.dispose();
+    sifreTekrar.dispose();
+    telefon.dispose();
+    smsKodu.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F8FF),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 30),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+      appBar: AppBar(
+        title: Text(
+          telefonModu
+              ? 'Telefon ile Giriş'
+              : kayit
+                  ? 'Kayıt Ol'
+                  : 'Giriş Yap',
+        ),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      size: 34,
-                    ),
-                    onPressed: () {
-                      if (Navigator.canPop(context)) {
-                        Navigator.pop(context);
-                      }
-                    },
-                  ),
-                  const SizedBox(width: 22),
-                  const Text(
-                    "Ayarlar",
-                    style: TextStyle(
-                      fontSize: 31,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 38),
-
-              settingsCard(
-                height: 125,
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.account_circle,
-                      size: 44,
-                      color: Color(0xFF555960),
-                    ),
-                    const SizedBox(width: 25),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Hesabım",
-                            style: TextStyle(
-                              fontSize: 23,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 7),
-                          Text(
-                            email,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Color(0xFF555960),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: bekle
+                      ? null
+                      : () {
+                          setState(() {
+                            telefonModu = false;
+                            smsGonderildi = false;
+                          });
+                        },
+                  icon: const Icon(Icons.email),
+                  label: const Text('E-POSTA'),
                 ),
               ),
-
-              const SizedBox(height: 14),
-
-              settingsButton(
-                icon: Icons.lock_reset,
-                title: "Şifremi Değiştir",
-                subtitle:
-                    "E-posta adresine şifre sıfırlama bağlantısı gönder",
-                onTap: showPasswordDialog,
-              ),
-
-              const SizedBox(height: 14),
-
-              settingsCard(
-                height: 125,
-                child: Row(
-                  children: [
-                    const Icon(
-                      Icons.notifications,
-                      size: 38,
-                      color: Color(0xFF555960),
-                    ),
-                    const SizedBox(width: 27),
-                    Expanded(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Bildirimler",
-                            style: TextStyle(
-                              fontSize: 23,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 7),
-                          Text(
-                            notificationsEnabled
-                                ? "Bildirimler açık"
-                                : "Bildirimler kapalı",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Color(0xFF555960),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Switch(
-                      value: notificationsEnabled,
-                      activeTrackColor: const Color(0xFF3478A8),
-                      onChanged: (value) {
-                        setState(() {
-                          notificationsEnabled = value;
-                        });
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            duration: const Duration(seconds: 1),
-                            content: Text(
-                              value
-                                  ? "Bildirimler açıldı"
-                                  : "Bildirimler kapatıldı",
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: bekle
+                      ? null
+                      : () {
+                          setState(() {
+                            telefonModu = true;
+                          });
+                        },
+                  icon: const Icon(Icons.phone),
+                  label: const Text('TELEFON'),
                 ),
-              ),
-
-              const SizedBox(height: 14),
-
-              settingsButton(
-                icon: Icons.security,
-                title: "Gizlilik Politikası",
-                onTap: showPrivacyDialog,
-              ),
-
-              const SizedBox(height: 14),
-
-              settingsButton(
-                icon: Icons.description,
-                title: "Kullanım Koşulları",
-                onTap: showTermsDialog,
-              ),
-
-              const SizedBox(height: 14),
-
-              settingsButton(
-                icon: Icons.info,
-                title: "Uygulama Hakkında",
-                subtitle: "İş Bul - Sürüm 0.4.0",
-                onTap: showAboutDialog,
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
 
-  Widget settingsCard({
-    required Widget child,
-    double? height,
-  }) {
-    return Container(
-      width: double.infinity,
-      height: height,
-      padding: const EdgeInsets.symmetric(horizontal: 25),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF0F0F8),
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.10),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
+          const SizedBox(height: 25),
+
+          if (!telefonModu) ...[
+            TextField(
+              controller: email,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                labelText: 'E-posta',
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            TextField(
+              controller: sifre,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'Şifre',
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            if (kayit) ...[
+              const SizedBox(height: 15),
+              TextField(
+                controller: sifreTekrar,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Şifre Tekrar',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 15),
+
+            ElevatedButton.icon(
+              onPressed: bekle ? null : giris,
+              icon: bekle
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Icon(
+                      kayit ? Icons.person_add : Icons.login,
+                    ),
+              label: Text(
+                kayit ? 'KAYIT OL' : 'GİRİŞ YAP',
+              ),
+            ),
+
+            TextButton(
+              onPressed: bekle
+                  ? null
+                  : () {
+                      setState(() {
+                        kayit = !kayit;
+                        sifre.clear();
+                        sifreTekrar.clear();
+                      });
+                    },
+              child: Text(
+                kayit
+                    ? 'Zaten hesabım var'
+                    : 'Hesabım yok, kayıt ol',
+              ),
+            ),
+
+            if (kayit)
+              const Padding(
+                padding: EdgeInsets.only(top: 10),
+                child: Text(
+                  'Kayıt tamamlanınca e-posta adresine doğrulama '
+                  'bağlantısı gönderilir. E-posta doğrulanmadan '
+                  'hesaba giriş yapılamaz.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
+          ],
+
+          if (telefonModu) ...[
+            TextField(
+              controller: telefon,
+              enabled: !smsGonderildi,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(
+                labelText: 'Telefon Numarası',
+                hintText: '05XX XXX XX XX',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.phone),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            if (!smsGonderildi)
+              ElevatedButton.icon(
+                onPressed: bekle ? null : smsGonder,
+                icon: bekle
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Icon(Icons.sms),
+                label: const Text('SMS KODU GÖNDER'),
+              ),
+
+            if (smsGonderildi) ...[
+              TextField(
+                controller: smsKodu,
+                keyboardType: TextInputType.number,
+                maxLength: 6,
+                decoration: const InputDecoration(
+                  labelText: 'SMS Doğrulama Kodu',
+                  hintText: '6 haneli kod',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.lock),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              ElevatedButton.icon(
+                onPressed: bekle ? null : smsDogrula,
+                icon: bekle
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Icon(Icons.verified),
+                label: const Text('KODU DOĞRULA'),
+              ),
+
+              TextButton(
+                onPressed: bekle
+                    ? null
+                    : () {
+                        setState(() {
+                          smsGonderildi = false;
+                          smsKodu.clear();
+                          verificationId = '';
+                        });
+                      },
+                child: const Text(
+                  'Telefon numarasını değiştir / Yeni kod iste',
+                ),
+              ),
+            ],
+
+            const Padding(
+              padding: EdgeInsets.only(top: 15),
+              child: Text(
+                'Telefon ile girişte ayrıca şifre gerekmez. '
+                'Telefonuna gelen SMS kodu hesabı doğrular.',
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
         ],
       ),
-      child: child,
-    );
-  }
-
-  Widget settingsButton({
-    required IconData icon,
-    required String title,
-    String? subtitle,
-    required VoidCallback onTap,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(22),
-        onTap: onTap,
-        child: Container(
-          width: double.infinity,
-          constraints: const BoxConstraints(
-            minHeight: 105,
-          ),
-          padding: const EdgeInsets.symmetric(
-            horizontal: 25,
-            vertical: 20,
-          ),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF0F0F8),
-            borderRadius: BorderRadius.circular(22),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.10),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                size: 38,
-                color: const Color(0xFF555960),
-              ),
-              const SizedBox(width: 27),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          color: Color(0xFF555960),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              const Icon(
-                Icons.arrow_forward_ios,
-                size: 26,
-                color: Color(0xFF555960),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void showPasswordDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Şifremi Değiştir"),
-          content: Text(
-            "$email adresine şifre sıfırlama bağlantısı gönderilecek.",
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text("İptal"),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.pop(context);
-
-                ScaffoldMessenger.of(this.context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      "Şifre sıfırlama sistemi hazırlanıyor.",
-                    ),
-                  ),
-                );
-              },
-              child: const Text("Gönder"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void showPrivacyDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Gizlilik Politikası"),
-          content: const SingleChildScrollView(
-            child: Text(
-              "İş Bul uygulaması, iş arayanlar ile işverenleri "
-              "buluşturmak amacıyla geliştirilmiştir.\n\n"
-              "Kullanıcı bilgileri izinsiz olarak üçüncü kişilerle "
-              "paylaşılmaz.\n\n"
-              "Uygulamanın çalışması için gerekli kullanıcı bilgileri "
-              "güvenli şekilde işlenir.",
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text("Tamam"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void showTermsDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Kullanım Koşulları"),
-          content: const SingleChildScrollView(
-            child: Text(
-              "İş Bul uygulamasında yayınlanan ilanların doğruluğundan "
-              "ilanı oluşturan kullanıcı sorumludur.\n\n"
-              "Sahte, yanıltıcı, yasa dışı veya kötüye kullanım içeren "
-              "ilanlar kaldırılabilir.\n\n"
-              "Uygulamayı kullanan kullanıcılar bu koşulları kabul "
-              "etmiş sayılır.",
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text("Tamam"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void showAboutDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("İş Bul"),
-          content: const Text(
-            "İş Bul\n\n"
-            "Sürüm: 0.4.0\n\n"
-            "İş arayanlar ile işverenleri hızlı ve kolay şekilde "
-            "buluşturmak için geliştirilmektedir.",
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: const Text("Tamam"),
-            ),
-          ],
-        );
-      },
     );
   }
 }
