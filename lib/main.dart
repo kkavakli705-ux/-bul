@@ -2903,7 +2903,7 @@ class BildirimlerSayfasi extends StatelessWidget {
             },
           );
         },
-            },
+           ), 
     );
   }
 }
