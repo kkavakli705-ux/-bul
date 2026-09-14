@@ -28,7 +28,9 @@ class IsBulApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'İş Bul',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blue,
+        ),
         useMaterial3: true,
       ),
       home: const AnaSayfa(),
@@ -74,7 +76,10 @@ class _AnaSayfaState extends State<AnaSayfa> {
 
       if (mounted) {
         setState(() {
-          admin = doc.exists && doc.data()?['role'] == 'admin';
+          admin =
+              doc.exists &&
+              doc.data()?['role'] == 'admin';
+
           kontrol = false;
         });
       }
@@ -130,7 +135,9 @@ class _AnaSayfaState extends State<AnaSayfa> {
               child: ElevatedButton.icon(
                 onPressed: girisAc,
                 icon: const Icon(Icons.login),
-                label: const Text('GİRİŞ YAP / KAYIT OL'),
+                label: const Text(
+                  'GİRİŞ YAP / KAYIT OL',
+                ),
               ),
             )
           : ListView(
@@ -155,7 +162,8 @@ class _AnaSayfaState extends State<AnaSayfa> {
                         const Text(
                           'Giriş yapıldı',
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                            fontWeight:
+                                FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 5),
@@ -170,7 +178,8 @@ class _AnaSayfaState extends State<AnaSayfa> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const IsAraSayfasi(),
+                        builder: (_) =>
+                            const IsAraSayfasi(),
                       ),
                     );
                   },
@@ -183,17 +192,23 @@ class _AnaSayfaState extends State<AnaSayfa> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const IlanVerSayfasi(),
+                        builder: (_) =>
+                            const IlanVerSayfasi(),
                       ),
                     );
                   },
-                  icon: const Icon(Icons.add_business),
-                  label: const Text('İŞ İLANI VER'),
+                  icon: const Icon(
+                    Icons.add_business,
+                  ),
+                  label: const Text(
+                    'İŞ İLANI VER',
+                  ),
                 ),
                 const SizedBox(height: 15),
                 if (kontrol)
                   const Center(
-                    child: CircularProgressIndicator(),
+                    child:
+                        CircularProgressIndicator(),
                   ),
                 if (admin)
                   ElevatedButton.icon(
@@ -201,12 +216,17 @@ class _AnaSayfaState extends State<AnaSayfa> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const YonetimPaneli(),
+                          builder: (_) =>
+                              const YonetimPaneli(),
                         ),
                       );
                     },
-                    icon: const Icon(Icons.admin_panel_settings),
-                    label: const Text('YÖNETİM PANELİ'),
+                    icon: const Icon(
+                      Icons.admin_panel_settings,
+                    ),
+                    label: const Text(
+                      'YÖNETİM PANELİ',
+                    ),
                   ),
                 const SizedBox(height: 15),
                 OutlinedButton.icon(
@@ -224,10 +244,12 @@ class GirisSayfasi extends StatefulWidget {
   const GirisSayfasi({super.key});
 
   @override
-  State<GirisSayfasi> createState() => _GirisSayfasiState();
+  State<GirisSayfasi> createState() =>
+      _GirisSayfasiState();
 }
 
-class _GirisSayfasiState extends State<GirisSayfasi> {
+class _GirisSayfasiState
+    extends State<GirisSayfasi> {
   final email = TextEditingController();
   final sifre = TextEditingController();
 
@@ -249,12 +271,14 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
 
     try {
       if (kayit) {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        await FirebaseAuth.instance
+            .createUserWithEmailAndPassword(
           email: eposta,
           password: parola,
         );
       } else {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
+        await FirebaseAuth.instance
+            .signInWithEmailAndPassword(
           email: eposta,
           password: parola,
         );
@@ -278,7 +302,9 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
 
   void mesaj(String yazi) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(yazi)),
+      SnackBar(
+        content: Text(yazi),
+      ),
     );
   }
 
@@ -293,14 +319,16 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(kayit ? 'Kayıt Ol' : 'Giriş Yap'),
+        title:
+            Text(kayit ? 'Kayıt Ol' : 'Giriş Yap'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           TextField(
             controller: email,
-            keyboardType: TextInputType.emailAddress,
+            keyboardType:
+                TextInputType.emailAddress,
             decoration: const InputDecoration(
               labelText: 'E-posta',
               border: OutlineInputBorder(),
@@ -318,7 +346,9 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
           const SizedBox(height: 15),
           ElevatedButton(
             onPressed: bekle ? null : giris,
-            child: Text(kayit ? 'KAYIT OL' : 'GİRİŞ YAP'),
+            child: Text(
+              kayit ? 'KAYIT OL' : 'GİRİŞ YAP',
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -327,7 +357,9 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
               });
             },
             child: Text(
-              kayit ? 'Zaten hesabım var' : 'Hesabım yok, kayıt ol',
+              kayit
+                  ? 'Zaten hesabım var'
+                  : 'Hesabım yok, kayıt ol',
             ),
           ),
         ],
@@ -340,18 +372,39 @@ class IlanVerSayfasi extends StatefulWidget {
   const IlanVerSayfasi({super.key});
 
   @override
-  State<IlanVerSayfasi> createState() => _IlanVerSayfasiState();
+  State<IlanVerSayfasi> createState() =>
+      _IlanVerSayfasiState();
 }
 
-class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
+class _IlanVerSayfasiState
+    extends State<IlanVerSayfasi> {
   final baslik = TextEditingController();
   final firma = TextEditingController();
   final konum = TextEditingController();
-  final aciklama = TextEditingController();
   final telefon = TextEditingController();
   final whatsapp = TextEditingController();
   final ucret = TextEditingController();
+  final aciklama = TextEditingController();
 
+  final List<String> kategoriler = [
+    'İnşaat',
+    'Boya / Alçı',
+    'Elektrik',
+    'Tesisat',
+    'Şoför',
+    'Garson / Restoran',
+    'Temizlik',
+    'Fabrika / Üretim',
+    'Mağaza / Satış',
+    'Ofis',
+    'Güvenlik',
+    'Nakliye',
+    'Oto / Sanayi',
+    'Tarım',
+    'Diğer',
+  ];
+
+  String? kategori;
   bool bekle = false;
 
   Future<void> gonder() async {
@@ -365,10 +418,11 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
     if (baslik.text.trim().isEmpty ||
         firma.text.trim().isEmpty ||
         konum.text.trim().isEmpty ||
-        aciklama.text.trim().isEmpty ||
         telefon.text.trim().isEmpty ||
         whatsapp.text.trim().isEmpty ||
-        ucret.text.trim().isEmpty) {
+        ucret.text.trim().isEmpty ||
+        aciklama.text.trim().isEmpty ||
+        kategori == null) {
       mesaj('Bütün alanları doldurun.');
       return;
     }
@@ -378,27 +432,35 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
     });
 
     try {
-      await FirebaseFirestore.instance.collection('jobs').add({
+      await FirebaseFirestore.instance
+          .collection('jobs')
+          .add({
         'title': baslik.text.trim(),
         'company': firma.text.trim(),
         'city': konum.text.trim(),
-        'description': aciklama.text.trim(),
+        'category': kategori,
         'phone': telefon.text.trim(),
         'whatsapp': whatsapp.text.trim(),
         'salary': ucret.text.trim(),
+        'description': aciklama.text.trim(),
         'ownerUid': user.uid,
         'ownerEmail': user.email ?? '',
         'status': 'pending',
         'featured': false,
-        'createdAt': FieldValue.serverTimestamp(),
+        'createdAt':
+            FieldValue.serverTimestamp(),
       });
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
           const SnackBar(
-            content: Text('İlan yönetici onayına gönderildi.'),
+            content: Text(
+              'İlan yönetici onayına gönderildi.',
+            ),
           ),
         );
+
         Navigator.pop(context);
       }
     } catch (_) {
@@ -414,7 +476,9 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
 
   void mesaj(String yazi) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(yazi)),
+      SnackBar(
+        content: Text(yazi),
+      ),
     );
   }
 
@@ -423,10 +487,10 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
     baslik.dispose();
     firma.dispose();
     konum.dispose();
-    aciklama.dispose();
     telefon.dispose();
     whatsapp.dispose();
     ucret.dispose();
+    aciklama.dispose();
     super.dispose();
   }
 
@@ -445,6 +509,30 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
               labelText: 'İş başlığı',
               border: OutlineInputBorder(),
             ),
+          ),
+          const SizedBox(height: 12),
+          DropdownButtonFormField<String>(
+            value: kategori,
+            decoration: const InputDecoration(
+              labelText: 'Meslek / Kategori',
+              border: OutlineInputBorder(),
+              prefixIcon:
+                  Icon(Icons.category),
+            ),
+            items: kategoriler
+                .map(
+                  (item) =>
+                      DropdownMenuItem<String>(
+                    value: item,
+                    child: Text(item),
+                  ),
+                )
+                .toList(),
+            onChanged: (value) {
+              setState(() {
+                kategori = value;
+              });
+            },
           ),
           const SizedBox(height: 12),
           TextField(
@@ -489,9 +577,11 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
             controller: ucret,
             decoration: const InputDecoration(
               labelText: 'Ücret / Maaş',
-              hintText: 'Örnek: Günlük 2.000 TL',
+              hintText:
+                  'Örnek: Günlük 2.000 TL',
               border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.payments),
+              prefixIcon:
+                  Icon(Icons.payments),
             ),
           ),
           const SizedBox(height: 12),
@@ -508,7 +598,9 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
             onPressed: bekle ? null : gonder,
             icon: const Icon(Icons.send),
             label: Text(
-              bekle ? 'GÖNDERİLİYOR...' : 'İLANI ONAYA GÖNDER',
+              bekle
+                  ? 'GÖNDERİLİYOR...'
+                  : 'İLANI ONAYA GÖNDER',
             ),
           ),
         ],
@@ -517,116 +609,275 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
   }
 }
 
-class IsAraSayfasi extends StatelessWidget {
+class IsAraSayfasi extends StatefulWidget {
   const IsAraSayfasi({super.key});
 
+  @override
+  State<IsAraSayfasi> createState() =>
+      _IsAraSayfasiState();
+}
+
+class _IsAraSayfasiState
+    extends State<IsAraSayfasi> {
+  final arama = TextEditingController();
+
   String bilgi(dynamic deger) {
-    final yazi = deger?.toString().trim() ?? '';
-    return yazi.isEmpty ? 'Belirtilmemiş' : yazi;
+    final yazi =
+        deger?.toString().trim() ?? '';
+
+    return yazi.isEmpty
+        ? 'Belirtilmemiş'
+        : yazi;
+  }
+
+  bool eslesiyor(
+    Map<String, dynamic> data,
+    String kelime,
+  ) {
+    if (kelime.isEmpty) {
+      return true;
+    }
+
+    final aranan = kelime.toLowerCase();
+
+    final metin = [
+      data['title'],
+      data['category'],
+      data['company'],
+      data['city'],
+      data['description'],
+    ].map(
+      (e) => (e ?? '').toString().toLowerCase(),
+    ).join(' ');
+
+    return metin.contains(aranan);
+  }
+
+  @override
+  void dispose() {
+    arama.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final ilanStream = FirebaseFirestore.instance
         .collection('jobs')
-        .where('status', isEqualTo: 'approved')
+        .where(
+          'status',
+          isEqualTo: 'approved',
+        )
         .snapshots();
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('İş Ara'),
       ),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      body:
+          StreamBuilder<
+              QuerySnapshot<Map<String, dynamic>>>(
         stream: ilanStream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(
-              child: Text('İlanlar yüklenemedi.'),
+              child: Text(
+                'İlanlar yüklenemedi.',
+              ),
             );
           }
 
           if (!snapshot.hasData) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child:
+                  CircularProgressIndicator(),
             );
           }
 
-          final ilanlar = snapshot.data!.docs;
+          final tumIlanlar =
+              snapshot.data!.docs;
 
-          if (ilanlar.isEmpty) {
-            return const Center(
-              child: Text('Henüz onaylanmış ilan yok.'),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: ilanlar.length,
-            itemBuilder: (context, index) {
-              final data = ilanlar[index].data();
-
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.work),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              bilgi(data['title']),
-                              style: const TextStyle(
-                                fontSize: 19,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      Text('Firma: ${bilgi(data['company'])}'),
-                      Text('Konum: ${bilgi(data['city'])}'),
-                      Text(
-                        'Ücret / Maaş: ${bilgi(data['salary'])}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Divider(height: 24),
-                      Text(bilgi(data['description'])),
-                      const Divider(height: 24),
-                      Row(
-                        children: [
-                          const Icon(Icons.phone, size: 20),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              'Telefon: ${bilgi(data['phone'])}',
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          const Icon(Icons.chat, size: 20),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              'WhatsApp: ${bilgi(data['whatsapp'])}',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+          final ilanlar = tumIlanlar.where(
+            (belge) {
+              return eslesiyor(
+                belge.data(),
+                arama.text.trim(),
               );
             },
+          ).toList();
+
+          return Column(
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.all(12),
+                child: TextField(
+                  controller: arama,
+                  onChanged: (_) {
+                    setState(() {});
+                  },
+                  decoration:
+                      InputDecoration(
+                    labelText: 'İş ara',
+                    hintText:
+                        'Örnek: boya, şoför, Edremit',
+                    prefixIcon:
+                        const Icon(Icons.search),
+                    suffixIcon:
+                        arama.text.isEmpty
+                            ? null
+                            : IconButton(
+                                onPressed: () {
+                                  arama.clear();
+
+                                  setState(() {});
+                                },
+                                icon: const Icon(
+                                  Icons.clear,
+                                ),
+                              ),
+                    border:
+                        const OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: ilanlar.isEmpty
+                    ? Center(
+                        child: Text(
+                          arama.text.isEmpty
+                              ? 'Henüz onaylanmış ilan yok.'
+                              : 'Aramanıza uygun ilan bulunamadı.',
+                        ),
+                      )
+                    : ListView.builder(
+                        padding:
+                            const EdgeInsets.all(
+                          12,
+                        ),
+                        itemCount:
+                            ilanlar.length,
+                        itemBuilder:
+                            (context, index) {
+                          final data =
+                              ilanlar[index]
+                                  .data();
+
+                          return Card(
+                            margin:
+                                const EdgeInsets.only(
+                              bottom: 12,
+                            ),
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets
+                                      .all(15),
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment
+                                        .start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.work,
+                                      ),
+                                      const SizedBox(
+                                        width: 8,
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          bilgi(
+                                            data[
+                                                'title'],
+                                          ),
+                                          style:
+                                              const TextStyle(
+                                            fontSize:
+                                                19,
+                                            fontWeight:
+                                                FontWeight
+                                                    .bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 8,
+                                  ),
+                                  Text(
+                                    'Kategori: ${bilgi(data['category'])}',
+                                  ),
+                                  Text(
+                                    'Firma: ${bilgi(data['company'])}',
+                                  ),
+                                  Text(
+                                    'Konum: ${bilgi(data['city'])}',
+                                  ),
+                                  Text(
+                                    'Ücret / Maaş: ${bilgi(data['salary'])}',
+                                    style:
+                                        const TextStyle(
+                                      fontWeight:
+                                          FontWeight
+                                              .bold,
+                                    ),
+                                  ),
+                                  const Divider(
+                                    height: 24,
+                                  ),
+                                  Text(
+                                    bilgi(
+                                      data[
+                                          'description'],
+                                    ),
+                                  ),
+                                  const Divider(
+                                    height: 24,
+                                  ),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.phone,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(
+                                        width: 6,
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          'Telefon: ${bilgi(data['phone'])}',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    height: 6,
+                                  ),
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.chat,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(
+                                        width: 6,
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          'WhatsApp: ${bilgi(data['whatsapp'])}',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
           );
         },
       ),
@@ -641,7 +892,8 @@ class YonetimPaneli extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Yönetim Paneli'),
+        title:
+            const Text('Yönetim Paneli'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -661,7 +913,8 @@ class YonetimPaneli extends StatelessWidget {
                     'Yönetici hesabı',
                     style: TextStyle(
                       fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                      fontWeight:
+                          FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: 5),
@@ -675,17 +928,23 @@ class YonetimPaneli extends StatelessWidget {
           const SizedBox(height: 12),
           Card(
             child: ListTile(
-              leading: const Icon(Icons.work),
-              title: const Text('İş İlanlarını Yönet'),
+              leading:
+                  const Icon(Icons.work),
+              title: const Text(
+                'İş İlanlarını Yönet',
+              ),
               subtitle: const Text(
                 'Bekleyen ilanları onayla veya reddet',
               ),
-              trailing: const Icon(Icons.arrow_forward_ios),
+              trailing: const Icon(
+                Icons.arrow_forward_ios,
+              ),
               onTap: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const BekleyenIlanlarSayfasi(),
+                    builder: (_) =>
+                        const BekleyenIlanlarSayfasi(),
                   ),
                 );
               },
@@ -694,7 +953,8 @@ class YonetimPaneli extends StatelessWidget {
           const Card(
             child: ListTile(
               leading: Icon(Icons.people),
-              title: Text('Kullanıcıları Yönet'),
+              title:
+                  Text('Kullanıcıları Yönet'),
             ),
           ),
           const Card(
@@ -706,7 +966,8 @@ class YonetimPaneli extends StatelessWidget {
           const Card(
             child: ListTile(
               leading: Icon(Icons.star),
-              title: Text('Öne Çıkan İlanlar'),
+              title:
+                  Text('Öne Çıkan İlanlar'),
             ),
           ),
           const Card(
@@ -721,12 +982,19 @@ class YonetimPaneli extends StatelessWidget {
   }
 }
 
-class BekleyenIlanlarSayfasi extends StatelessWidget {
-  const BekleyenIlanlarSayfasi({super.key});
+class BekleyenIlanlarSayfasi
+    extends StatelessWidget {
+  const BekleyenIlanlarSayfasi({
+    super.key,
+  });
 
   String bilgi(dynamic deger) {
-    final yazi = deger?.toString().trim() ?? '';
-    return yazi.isEmpty ? 'Belirtilmemiş' : yazi;
+    final yazi =
+        deger?.toString().trim() ?? '';
+
+    return yazi.isEmpty
+        ? 'Belirtilmemiş'
+        : yazi;
   }
 
   Future<void> durumDegistir(
@@ -744,17 +1012,25 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
 
       if (context.mounted) {
         final yazi =
-            durum == 'approved' ? 'İlan onaylandı.' : 'İlan reddedildi.';
+            durum == 'approved'
+                ? 'İlan onaylandı.'
+                : 'İlan reddedildi.';
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(yazi)),
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
+          SnackBar(
+            content: Text(yazi),
+          ),
         );
       }
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
           const SnackBar(
-            content: Text('İşlem yapılamadı.'),
+            content: Text(
+              'İşlem yapılamadı.',
+            ),
           ),
         );
       }
@@ -763,72 +1039,122 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bekleyenStream = FirebaseFirestore.instance
-        .collection('jobs')
-        .where('status', isEqualTo: 'pending')
-        .snapshots();
+    final bekleyenStream =
+        FirebaseFirestore.instance
+            .collection('jobs')
+            .where(
+              'status',
+              isEqualTo: 'pending',
+            )
+            .snapshots();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bekleyen İlanlar'),
+        title:
+            const Text('Bekleyen İlanlar'),
       ),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      body:
+          StreamBuilder<
+              QuerySnapshot<Map<String, dynamic>>>(
         stream: bekleyenStream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return const Center(
-              child: Text('İlanlar yüklenemedi.'),
+              child: Text(
+                'İlanlar yüklenemedi.',
+              ),
             );
           }
 
           if (!snapshot.hasData) {
             return const Center(
-              child: CircularProgressIndicator(),
+              child:
+                  CircularProgressIndicator(),
             );
           }
 
-          final ilanlar = snapshot.data!.docs;
+          final ilanlar =
+              snapshot.data!.docs;
 
           if (ilanlar.isEmpty) {
             return const Center(
-              child: Text('Onay bekleyen ilan yok.'),
+              child: Text(
+                'Onay bekleyen ilan yok.',
+              ),
             );
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(12),
+            padding:
+                const EdgeInsets.all(12),
             itemCount: ilanlar.length,
             itemBuilder: (context, index) {
-              final belge = ilanlar[index];
+              final belge =
+                  ilanlar[index];
+
               final data = belge.data();
 
               return Card(
-                margin: const EdgeInsets.only(bottom: 12),
+                margin:
+                    const EdgeInsets.only(
+                  bottom: 12,
+                ),
                 child: Padding(
-                  padding: const EdgeInsets.all(15),
+                  padding:
+                      const EdgeInsets.all(
+                    15,
+                  ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                        CrossAxisAlignment
+                            .start,
                     children: [
                       Text(
                         bilgi(data['title']),
-                        style: const TextStyle(
+                        style:
+                            const TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontWeight:
+                              FontWeight.bold,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text('Firma: ${bilgi(data['company'])}'),
-                      Text('Konum: ${bilgi(data['city'])}'),
-                      Text('Ücret / Maaş: ${bilgi(data['salary'])}'),
-                      Text('Telefon: ${bilgi(data['phone'])}'),
-                      Text('WhatsApp: ${bilgi(data['whatsapp'])}'),
-                      const SizedBox(height: 8),
-                      Text(bilgi(data['description'])),
-                      const SizedBox(height: 12),
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      Text(
+                        'Kategori: ${bilgi(data['category'])}',
+                      ),
+                      Text(
+                        'Firma: ${bilgi(data['company'])}',
+                      ),
+                      Text(
+                        'Konum: ${bilgi(data['city'])}',
+                      ),
+                      Text(
+                        'Ücret / Maaş: ${bilgi(data['salary'])}',
+                      ),
+                      Text(
+                        'Telefon: ${bilgi(data['phone'])}',
+                      ),
+                      Text(
+                        'WhatsApp: ${bilgi(data['whatsapp'])}',
+                      ),
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      Text(
+                        bilgi(
+                          data['description'],
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
                       Row(
                         children: [
                           Expanded(
-                            child: ElevatedButton.icon(
+                            child:
+                                ElevatedButton.icon(
                               onPressed: () {
                                 durumDegistir(
                                   context,
@@ -836,13 +1162,21 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
                                   'approved',
                                 );
                               },
-                              icon: const Icon(Icons.check),
-                              label: const Text('ONAYLA'),
+                              icon: const Icon(
+                                Icons.check,
+                              ),
+                              label:
+                                  const Text(
+                                'ONAYLA',
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(
+                            width: 8,
+                          ),
                           Expanded(
-                            child: OutlinedButton.icon(
+                            child:
+                                OutlinedButton.icon(
                               onPressed: () {
                                 durumDegistir(
                                   context,
@@ -850,8 +1184,13 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
                                   'rejected',
                                 );
                               },
-                              icon: const Icon(Icons.close),
-                              label: const Text('REDDET'),
+                              icon: const Icon(
+                                Icons.close,
+                              ),
+                              label:
+                                  const Text(
+                                'REDDET',
+                              ),
                             ),
                           ),
                         ],
