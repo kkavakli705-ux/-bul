@@ -1882,8 +1882,8 @@ class YonetimPaneli extends StatelessWidget {
       );
     },
   ),
-), 
-      ),
+ 
+ ],     ),
     );
   }
 }
@@ -2919,6 +2919,213 @@ class BildirimlerSayfasi extends StatelessWidget {
           );
         },
            ), 
+    );
+  }
+}
+
+class BildirimGonderSayfasi extends StatefulWidget {
+  const BildirimGonderSayfasi({super.key});
+
+  @override
+  State<BildirimGonderSayfasi> createState() =>
+      _BildirimGonderSayfasiState();
+}
+
+class _BildirimGonderSayfasiState
+    extends State<BildirimGonderSayfasi> {
+  final TextEditingController baslikController =
+      TextEditingController();
+  final TextEditingController mesajController =
+      TextEditingController();
+
+  bool tumKullanicilar = true;
+  bool yukleniyor = false;
+
+  String? secilenUid;
+  String? secilenEmail;
+
+  List<Map<String, String>> kullanicilar = [];
+
+  @override
+  void initState() {
+    super.initState();
+    kullanicilariYukle();
+  }
+
+  Future<void> kullanicilariYukle() async {
+    final snapshot =
+        await FirebaseFirestore.instance.collection('users').get();
+
+    final liste = snapshot.docs.map((doc) {
+      final data = doc.data();
+
+      return {
+        'uid': doc.id,
+        'email': (data['email'] ?? 'E-posta yok').toString(),
+      };
+    }).toList();
+
+    if (!mounted) return;
+
+    setState(() {
+      kullanicilar = liste;
+    });
+  }
+
+  Future<void> bildirimGonder() async {
+    final baslik = baslikController.text.trim();
+    final mesaj = mesajController.text.trim();
+
+    if (baslik.isEmpty || mesaj.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Başlık ve mesaj boş bırakılamaz.'),
+        ),
+      );
+      return;
+    }
+
+    if (!tumKullanicilar && secilenUid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bir kullanıcı seçin.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      yukleniyor = true;
+    });
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('bildirimler')
+          .add({
+        'baslik': baslik,
+        'mesaj': mesaj,
+        'tarih': FieldValue.serverTimestamp(),
+        'hedefUid':
+            tumKullanicilar ? 'all' : secilenUid,
+        'hedefEmail':
+            tumKullanicilar ? 'Tüm Kullanıcılar' : secilenEmail,
+      });
+
+      baslikController.clear();
+      mesajController.clear();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bildirim başarıyla gönderildi.'),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Hata: $e'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          yukleniyor = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    baslikController.dispose();
+    mesajController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Bildirim Gönder'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          SwitchListTile(
+            title: const Text('Tüm Kullanıcılara Gönder'),
+            value: tumKullanicilar,
+            onChanged: (value) {
+              setState(() {
+                tumKullanicilar = value;
+                secilenUid = null;
+                secilenEmail = null;
+              });
+            },
+          ),
+
+          if (!tumKullanicilar)
+            DropdownButtonFormField<String>(
+              value: secilenUid,
+              decoration: const InputDecoration(
+                labelText: 'Kullanıcı Seç',
+                border: OutlineInputBorder(),
+              ),
+              items: kullanicilar.map((kullanici) {
+                return DropdownMenuItem<String>(
+                  value: kullanici['uid'],
+                  child: Text(
+                    kullanici['email'] ?? '',
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) {
+                final kullanici = kullanicilar.firstWhere(
+                  (k) => k['uid'] == value,
+                );
+
+                setState(() {
+                  secilenUid = value;
+                  secilenEmail = kullanici['email'];
+                });
+              },
+            ),
+
+          const SizedBox(height: 16),
+
+          TextField(
+            controller: baslikController,
+            decoration: const InputDecoration(
+              labelText: 'Bildirim Başlığı',
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          TextField(
+            controller: mesajController,
+            maxLines: 5,
+            decoration: const InputDecoration(
+              labelText: 'Bildirim Mesajı',
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          ElevatedButton.icon(
+            onPressed: yukleniyor ? null : bildirimGonder,
+            icon: const Icon(Icons.send),
+            label: Text(
+              yukleniyor ? 'Gönderiliyor...' : 'BİLDİRİM GÖNDER',
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
