@@ -1929,8 +1929,141 @@ class _AyarlarSayfasiState extends State<AyarlarSayfasi> {
       }
     }
   }
-  Future<void> hesabiSil() async {
+Future<void> hesabiSil() async {
   final user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    mesaj(context, 'Oturum bulunamadı.');
+    return;
+  }
+
+  final sifreKontrol = TextEditingController();
+
+  final sifreIleGiris = user.providerData.any(
+    (provider) => provider.providerId == 'password',
+  );
+
+  final onay = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (dialogContext) {
+      return AlertDialog(
+        title: const Text('Hesabı Sil'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Hesabınızı kalıcı olarak silmek istediğinize emin misiniz? '
+              'Bu işlem geri alınamaz.',
+            ),
+            if (sifreIleGiris) ...[
+              const SizedBox(height: 15),
+              TextField(
+                controller: sifreKontrol,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'Şifrenizi girin',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext, false);
+            },
+            child: const Text('VAZGEÇ'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogContext, true);
+            },
+            child: const Text('HESABI SİL'),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (onay != true) {
+    sifreKontrol.dispose();
+    return;
+  }
+
+  try {
+    // E-posta + şifre ile açılmış hesaplarda
+    // silmeden önce kullanıcıyı tekrar doğrula.
+    if (sifreIleGiris) {
+      final email = user.email;
+
+      if (email == null || email.isEmpty) {
+        sifreKontrol.dispose();
+        mesaj(context, 'Hesabın e-posta adresi bulunamadı.');
+        return;
+      }
+
+      if (sifreKontrol.text.trim().isEmpty) {
+        sifreKontrol.dispose();
+        mesaj(context, 'Hesabı silmek için şifrenizi girin.');
+        return;
+      }
+
+      final credential = EmailAuthProvider.credential(
+        email: email,
+        password: sifreKontrol.text,
+      );
+
+      await user.reauthenticateWithCredential(credential);
+    }
+
+    final uid = user.uid;
+
+    // Önce Firebase Authentication hesabını sil.
+    await user.delete();
+
+    // Sonra Firestore kullanıcı kaydını silmeyi dene.
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .delete();
+    } catch (_) {
+      // Auth hesabı silindiyse Firestore hatası işlemi durdurmasın.
+    }
+
+    sifreKontrol.dispose();
+
+    if (!mounted) return;
+
+    Navigator.of(context).popUntil((route) => route.isFirst);
+
+    mesaj(context, 'Hesabınız kalıcı olarak silindi.');
+  } on FirebaseAuthException catch (e) {
+    sifreKontrol.dispose();
+
+    if (!mounted) return;
+
+    if (e.code == 'wrong-password' ||
+        e.code == 'invalid-credential') {
+      mesaj(context, 'Şifre yanlış. Hesap silinmedi.');
+    } else if (e.code == 'requires-recent-login') {
+      mesaj(
+        context,
+        'Güvenlik nedeniyle yeniden giriş yapıp tekrar deneyin.',
+      );
+    } else {
+      mesaj(context, e.message ?? 'Hesap silinemedi.');
+    }
+  } catch (_) {
+    sifreKontrol.dispose();
+
+    if (mounted) {
+      mesaj(context, 'Hesap silinemedi.');
+    }
+  }
+}  
 
   if (user == null) {
     mesaj(context, 'Oturum bulunamadı.');
