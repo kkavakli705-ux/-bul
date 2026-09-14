@@ -300,6 +300,7 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
         children: [
           TextField(
             controller: email,
+            keyboardType: TextInputType.emailAddress,
             decoration: const InputDecoration(
               labelText: 'E-posta',
               border: OutlineInputBorder(),
@@ -326,9 +327,7 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
               });
             },
             child: Text(
-              kayit
-                  ? 'Zaten hesabım var'
-                  : 'Hesabım yok, kayıt ol',
+              kayit ? 'Zaten hesabım var' : 'Hesabım yok, kayıt ol',
             ),
           ),
         ],
@@ -350,8 +349,9 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
   final konum = TextEditingController();
   final aciklama = TextEditingController();
   final telefon = TextEditingController();
-final whatsapp = TextEditingController();
-final ucret = TextEditingController();
+  final whatsapp = TextEditingController();
+  final ucret = TextEditingController();
+
   bool bekle = false;
 
   Future<void> gonder() async {
@@ -363,12 +363,12 @@ final ucret = TextEditingController();
     }
 
     if (baslik.text.trim().isEmpty ||
-    firma.text.trim().isEmpty ||
-    konum.text.trim().isEmpty ||
-    aciklama.text.trim().isEmpty ||
-    telefon.text.trim().isEmpty ||
-    whatsapp.text.trim().isEmpty ||
-    ucret.text.trim().isEmpty) {
+        firma.text.trim().isEmpty ||
+        konum.text.trim().isEmpty ||
+        aciklama.text.trim().isEmpty ||
+        telefon.text.trim().isEmpty ||
+        whatsapp.text.trim().isEmpty ||
+        ucret.text.trim().isEmpty) {
       mesaj('Bütün alanları doldurun.');
       return;
     }
@@ -383,11 +383,13 @@ final ucret = TextEditingController();
         'company': firma.text.trim(),
         'city': konum.text.trim(),
         'description': aciklama.text.trim(),
-        'ownerUid': user.uid,
         'phone': telefon.text.trim(),
-'whatsapp': whatsapp.text.trim(),
-'salary': ucret.text.trim(),
+        'whatsapp': whatsapp.text.trim(),
+        'salary': ucret.text.trim(),
+        'ownerUid': user.uid,
+        'ownerEmail': user.email ?? '',
         'status': 'pending',
+        'featured': false,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
@@ -422,6 +424,9 @@ final ucret = TextEditingController();
     firma.dispose();
     konum.dispose();
     aciklama.dispose();
+    telefon.dispose();
+    whatsapp.dispose();
+    ucret.dispose();
     super.dispose();
   }
 
@@ -459,6 +464,38 @@ final ucret = TextEditingController();
           ),
           const SizedBox(height: 12),
           TextField(
+            controller: telefon,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'Telefon numarası',
+              hintText: '05xx xxx xx xx',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.phone),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: whatsapp,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'WhatsApp numarası',
+              hintText: '05xx xxx xx xx',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.chat),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: ucret,
+            decoration: const InputDecoration(
+              labelText: 'Ücret / Maaş',
+              hintText: 'Örnek: Günlük 2.000 TL',
+              border: OutlineInputBorder(),
+              prefixIcon: Icon(Icons.payments),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
             controller: aciklama,
             maxLines: 5,
             decoration: const InputDecoration(
@@ -470,7 +507,9 @@ final ucret = TextEditingController();
           ElevatedButton.icon(
             onPressed: bekle ? null : gonder,
             icon: const Icon(Icons.send),
-            label: const Text('İLANI ONAYA GÖNDER'),
+            label: Text(
+              bekle ? 'GÖNDERİLİYOR...' : 'İLANI ONAYA GÖNDER',
+            ),
           ),
         ],
       ),
@@ -480,6 +519,11 @@ final ucret = TextEditingController();
 
 class IsAraSayfasi extends StatelessWidget {
   const IsAraSayfasi({super.key});
+
+  String bilgi(dynamic deger) {
+    final yazi = deger?.toString().trim() ?? '';
+    return yazi.isEmpty ? 'Belirtilmemiş' : yazi;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -523,16 +567,61 @@ class IsAraSayfasi extends StatelessWidget {
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
-                child: ListTile(
-                  leading: const Icon(Icons.work),
-                  title: Text(data['title'] ?? ''),
-                  subtitle: Column(
+                child: Padding(
+                  padding: const EdgeInsets.all(15),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(data['company'] ?? ''),
-                      Text(data['city'] ?? ''),
-                      const SizedBox(height: 5),
-                      Text(data['description'] ?? ''),
+                      Row(
+                        children: [
+                          const Icon(Icons.work),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              bilgi(data['title']),
+                              style: const TextStyle(
+                                fontSize: 19,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text('Firma: ${bilgi(data['company'])}'),
+                      Text('Konum: ${bilgi(data['city'])}'),
+                      Text(
+                        'Ücret / Maaş: ${bilgi(data['salary'])}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Divider(height: 24),
+                      Text(bilgi(data['description'])),
+                      const Divider(height: 24),
+                      Row(
+                        children: [
+                          const Icon(Icons.phone, size: 20),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Telefon: ${bilgi(data['phone'])}',
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          const Icon(Icons.chat, size: 20),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'WhatsApp: ${bilgi(data['whatsapp'])}',
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -635,6 +724,11 @@ class YonetimPaneli extends StatelessWidget {
 class BekleyenIlanlarSayfasi extends StatelessWidget {
   const BekleyenIlanlarSayfasi({super.key});
 
+  String bilgi(dynamic deger) {
+    final yazi = deger?.toString().trim() ?? '';
+    return yazi.isEmpty ? 'Belirtilmemiş' : yazi;
+  }
+
   Future<void> durumDegistir(
     BuildContext context,
     String id,
@@ -716,22 +810,25 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        data['title'] ?? '',
+                        bilgi(data['title']),
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text('Firma: ${data['company'] ?? ''}'),
-                      Text('Konum: ${data['city'] ?? ''}'),
+                      Text('Firma: ${bilgi(data['company'])}'),
+                      Text('Konum: ${bilgi(data['city'])}'),
+                      Text('Ücret / Maaş: ${bilgi(data['salary'])}'),
+                      Text('Telefon: ${bilgi(data['phone'])}'),
+                      Text('WhatsApp: ${bilgi(data['whatsapp'])}'),
                       const SizedBox(height: 8),
-                      Text(data['description'] ?? ''),
+                      Text(bilgi(data['description'])),
                       const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
-                            child: ElevatedButton(
+                            child: ElevatedButton.icon(
                               onPressed: () {
                                 durumDegistir(
                                   context,
@@ -739,12 +836,13 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
                                   'approved',
                                 );
                               },
-                              child: const Text('ONAYLA'),
+                              icon: const Icon(Icons.check),
+                              label: const Text('ONAYLA'),
                             ),
                           ),
                           const SizedBox(width: 8),
                           Expanded(
-                            child: OutlinedButton(
+                            child: OutlinedButton.icon(
                               onPressed: () {
                                 durumDegistir(
                                   context,
@@ -752,7 +850,8 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
                                   'rejected',
                                 );
                               },
-                              child: const Text('REDDET'),
+                              icon: const Icon(Icons.close),
+                              label: const Text('REDDET'),
                             ),
                           ),
                         ],
