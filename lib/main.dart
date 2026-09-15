@@ -1773,7 +1773,9 @@ class YonetimPaneli extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Yönetim Paneli')),
+      appBar: AppBar(
+        title: const Text('Yönetim Paneli'),
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -1792,6 +1794,7 @@ class YonetimPaneli extends StatelessWidget {
               },
             ),
           ),
+
           Card(
             child: ListTile(
               leading: const Icon(Icons.people),
@@ -1807,6 +1810,7 @@ class YonetimPaneli extends StatelessWidget {
               },
             ),
           ),
+
           Card(
             child: ListTile(
               leading: const Icon(Icons.report),
@@ -1822,9 +1826,10 @@ class YonetimPaneli extends StatelessWidget {
               },
             ),
           ),
+
           Card(
             child: ListTile(
-              leading: const Icon(Icons.monetization_on),
+              leading: const Icon(Icons.star_border),
               title: const Text('Öne Çıkarma Talepleri'),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
@@ -1837,6 +1842,7 @@ class YonetimPaneli extends StatelessWidget {
               },
             ),
           ),
+
           Card(
             child: ListTile(
               leading: const Icon(Icons.star),
@@ -1852,6 +1858,7 @@ class YonetimPaneli extends StatelessWidget {
               },
             ),
           ),
+
           Card(
             child: ListTile(
               leading: const Icon(Icons.settings),
@@ -1867,23 +1874,24 @@ class YonetimPaneli extends StatelessWidget {
               },
             ),
           ),
-       ), 
-       Card(
-  child: ListTile(
-    leading: const Icon(Icons.notifications),
-    title: const Text('Bildirim Gönder'),
-    trailing: const Icon(Icons.arrow_forward_ios),
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const BildirimGonderSayfasi(),
-        ),
-      );
-    },
-  ),
- 
- ],     ),
+
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.notifications),
+              title: const Text('Bildirim Gönder'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const BildirimGonderSayfasi(),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
