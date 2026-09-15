@@ -1217,7 +1217,7 @@ class IlanlarimSayfasi extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => const BildirimGonderSayfasi(),
+                  builder: (_) =>  BildirimGonderSayfasi(),
                 ),
               );
             },
@@ -1238,7 +1238,7 @@ class IlanlarimSayfasi extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const KullaniciYonetimiSayfasi(),
+                          builder: (_) =>  KullaniciYonetimiSayfasi(),
                         ),
                       );
                     },
@@ -1253,7 +1253,7 @@ class IlanlarimSayfasi extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const BildirimGonderSayfasi(),
+                          builder: (_) => BildirimGonderSayfasi(),
                         ),
                       );
                     },
