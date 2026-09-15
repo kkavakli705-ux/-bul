@@ -208,21 +208,36 @@ class _AnaSayfaState extends State<AnaSayfa> {
       });
     }
   }
-
-  @override
+    @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
+    const lacivert = Color(0xFF0B1F3A);
+    const kirmizi = Color(0xFFE53935);
+    const arkaPlan = Color(0xFFF4F6F9);
+
     if (kontrol) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: CircularProgressIndicator(
+            color: lacivert,
+          ),
+        ),
       );
     }
 
     if (user != null && engelli) {
       return Scaffold(
+        backgroundColor: arkaPlan,
         appBar: AppBar(
-          title: const Text('İŞ BUL'),
+          backgroundColor: lacivert,
+          foregroundColor: Colors.white,
+          title: const Text(
+            'İŞ BUL',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           centerTitle: true,
         ),
         body: Center(
@@ -231,7 +246,11 @@ class _AnaSayfaState extends State<AnaSayfa> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.block, size: 70),
+                const Icon(
+                  Icons.block,
+                  size: 70,
+                  color: kirmizi,
+                ),
                 const SizedBox(height: 20),
                 const Text(
                   'Hesabınız engellenmiştir.',
@@ -239,147 +258,36 @@ class _AnaSayfaState extends State<AnaSayfa> {
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
+                    color: lacivert,
                   ),
                 ),
-                const SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: cikis,
-                  icon: const Icon(Icons.logout),
-                  label: const Text('ÇIKIŞ YAP'),
+                const SizedBox(height: 25),
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: kirmizi,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    onPressed: cikis,
+                    icon: const Icon(Icons.logout),
+                    label: const Text(
+                      
+                    'ÇIKIŞ YAP',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-    return Scaffold(
-  appBar: AppBar(
-    title: const Text('İŞ BUL'),
-    centerTitle: true,
-    actions: [
-      IconButton(
-        icon: const Icon(Icons.notifications),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const BildirimlerSayfasi(),
-            ),
-          );
-        },
-      ),
-    ],
-  ),
-      body: user == null
-          ? Center(
-              child: ElevatedButton.icon(
-                onPressed: girisAc,
-                icon: const Icon(Icons.login),
-                label: const Text('GİRİŞ YAP / KAYIT OL'),
               ),
-            )
-          : ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                const SizedBox(height: 15),
-                const Center(
-                  child: Text(
-                    'İş Bul',
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 15),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(15),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Giriş yapıldı',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(user.email ?? ''),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 15),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const IsAraSayfasi()),
-                    );
-                  },
-                  icon: const Icon(Icons.search),
-                  label: const Text('İŞ ARA'),
-                ),
-                const SizedBox(height: 10),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const IlanVerSayfasi()),
-                    );
-                  },
-                  icon: const Icon(Icons.add_business),
-                  label: const Text('ÜCRETSİZ İŞ İLANI VER'),
-                ),
-                const SizedBox(height: 10),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const KendiIlanlarimSayfasi(),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.list_alt),
-                  label: const Text('KENDİ İLANLARIM'),
-                ),
-                const SizedBox(height: 10),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AyarlarSayfasi(),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.settings),
-                  label: const Text('AYARLAR'),
-                ),
-                const SizedBox(height: 15),
-                if (admin)
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const YonetimPaneli()),
-                      );
-                    },
-                    icon: const Icon(Icons.admin_panel_settings),
-                    label: const Text('YÖNETİM PANELİ'),
-                  ),
-                const SizedBox(height: 15),
-                OutlinedButton.icon(
-                  onPressed: cikis,
-                  icon: const Icon(Icons.logout),
-                  label: const Text('ÇIKIŞ YAP'),
-                ),
-              ],
-            ),
+            ],
+          ),
     );
   }
 }
-  
 class GirisSayfasi extends StatefulWidget {
   const GirisSayfasi({super.key});
 
