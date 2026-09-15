@@ -277,15 +277,46 @@ class _AnaSayfaState extends State<AnaSayfa> {
               padding: const EdgeInsets.all(20),
               children: [
                 const SizedBox(height: 15),
-                const Center(
-                  child: Text(
-                    'İş Bul',
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                Center(
+  child: Column(
+    children: [
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.search,
+            size: 46,
+            color: Colors.blue,
+          ),
+          const SizedBox(width: 6),
+          const Icon(
+            Icons.work,
+            size: 42,
+            color: Colors.blue,
+          ),
+        ],
+      ),
+      const SizedBox(height: 4),
+      const Text(
+        'İŞ BUL',
+        style: TextStyle(
+          fontSize: 30,
+          fontWeight: FontWeight.bold,
+          color: Colors.blue,
+          letterSpacing: 1.5,
+        ),
+      ),
+      const Text(
+        'Doğru İş, Daha İyi Yarın',
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w500,
+          color: Colors.black54,
+        ),
+      ),
+    ],
+  ),
+),
                 const SizedBox(height: 15),
                 Card(
                   child: Padding(
