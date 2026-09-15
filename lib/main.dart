@@ -391,72 +391,30 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
   final email = TextEditingController();
   final sifre = TextEditingController();
   final sifreTekrar = TextEditingController();
-  final telefon = TextEditingController();
-  final smsKodu = TextEditingController();
 
   bool kayit = false;
   bool bekle = false;
-  bool telefonModu = false;
-  bool smsGonderildi = false;
+  bool sifreGizli = true;
 
-  String verificationId = '';
-    bool animasyonOynuyor = false;
-  int animasyonAsama = 0;
-    Future<void> girisAnimasyonuOynat() async {
-    if (!mounted) return;
+  static const Color lacivert = Color(0xFF082B5C);
+  static const Color mavi = Color(0xFF0787F9);
+  static const Color turuncu = Color(0xFFFF8A00);
 
-    setState(() {
-      animasyonOynuyor = true;
-      animasyonAsama = 1;
-    });
-
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (!mounted) return;
-
-    setState(() {
-      animasyonAsama = 2;
-    });
-
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (!mounted) return;
-
-    setState(() {
-      animasyonAsama = 3;
-    });
-
-    await Future.delayed(const Duration(milliseconds: 500));
-    if (!mounted) return;
-
-    setState(() {
-      animasyonAsama = 4;
-    });
-
-    await Future.delayed(const Duration(milliseconds: 300));
-  }
-  Future<void> kullaniciKaydiOlustur(User user) async {
-    try {
-      final ref =
-          FirebaseFirestore.instance.collection('users').doc(user.uid);
-
-      final doc = await ref.get();
-
-      if (!doc.exists) {
-        await ref.set({
-          'uid': user.uid,
-          'email': user.email ?? '',
-          'phone': user.phoneNumber ?? '',
-          'blocked': false,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-      }
-    } catch (_) {}
+  @override
+  void dispose() {
+    email.dispose();
+    sifre.dispose();
+    sifreTekrar.dispose();
+    super.dispose();
   }
 
   Future<void> emailIslemi() async {
-    final eposta = email.text.trim();
+    FocusScope.of(context).unfocus();
+
+    final mail = email.text.trim();
     final parola = sifre.text.trim();
 
-    if (eposta.isEmpty || parola.isEmpty) {
+    if (mail.isEmpty || parola.isEmpty) {
       mesaj(context, 'E-posta ve şifreyi doldurun.');
       return;
     }
@@ -479,121 +437,151 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
       if (kayit) {
         final sonuc =
             await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: eposta,
+          email: mail,
           password: parola,
         );
 
         final user = sonuc.user;
 
         if (user != null) {
-          await kullaniciKaydiOlustur(user);
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .set({
+            'uid': user.uid,
+            'email': user.email ?? mail,
+            'blocked': false,
+            'createdAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
 
           await user.sendEmailVerification();
-
-          await FirebaseAuth.instance.signOut();
-
-          if (mounted) {
-            mesaj(
-              context,
-              'Doğrulama bağlantısı e-posta adresine gönderildi. '
-              'E-postanı doğruladıktan sonra giriş yap.',
-            );
-
-            setState(() {
-              kayit = false;
-              sifre.clear();
-              sifreTekrar.clear();
-            });
-          }
         }
+
+        await FirebaseAuth.instance.signOut();
+
+        if (!mounted) return;
+
+        mesaj(
+          context,
+          'Kayıt başarılı. E-posta adresinize doğrulama bağlantısı gönderdik.',
+        );
+
+        setState(() {
+          kayit = false;
+          sifre.clear();
+          sifreTekrar.clear();
+        });
       } else {
         final sonuc =
             await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: eposta,
+          email: mail,
           password: parola,
         );
 
-        final user = sonuc.user;
+        await sonuc.user?.reload();
+
+        final user = FirebaseAuth.instance.currentUser;
 
         if (user == null) {
-          throw Exception();
+          throw Exception('Kullanıcı bulunamadı.');
         }
 
-        await user.reload();
-
-        final guncelUser = FirebaseAuth.instance.currentUser;
-
-        if (guncelUser == null) {
-          throw Exception();
-        }
-
-        if (!guncelUser.emailVerified) {
-          try {
-            await guncelUser.sendEmailVerification();
-          } catch (_) {}
-
+        if (!user.emailVerified) {
+          await user.sendEmailVerification();
           await FirebaseAuth.instance.signOut();
 
-          if (mounted) {
-            mesaj(
-              context,
-              'E-posta adresin henüz doğrulanmamış. '
-              'Doğrulama e-postanı kontrol et.',
-            );
-          }
+          if (!mounted) return;
 
+          mesaj(
+            context,
+            'E-posta adresiniz doğrulanmamış. Yeni doğrulama bağlantısı gönderdik.',
+          );
           return;
         }
 
-        await kullaniciKaydiOlustur(guncelUser);
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .get();
 
-        
-          if (mounted) {
-  await girisAnimasyonuOynat();
+        if (userDoc.exists) {
+          final data = userDoc.data();
 
-  if (mounted) {
-    Navigator.pop(context);
-  }
-}
+          if (data != null && data['blocked'] == true) {
+            await FirebaseAuth.instance.signOut();
+
+            if (!mounted) return;
+
+            mesaj(
+              context,
+              'Bu hesap yönetici tarafından engellenmiştir.',
+            );
+            return;
+          }
+        } else {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .set({
+            'uid': user.uid,
+            'email': user.email ?? mail,
+            'blocked': false,
+            'createdAt': FieldValue.serverTimestamp(),
+          }, SetOptions(merge: true));
         }
+
+        if (!mounted) return;
+
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+            builder: (_) => const AnaSayfa(),
+          ),
+          (route) => false,
+        );
       }
     } on FirebaseAuthException catch (e) {
-      String hata = 'İşlem yapılamadı.';
+      if (!mounted) return;
+
+      String yazi;
 
       switch (e.code) {
-        case 'email-already-in-use':
-          hata = 'Bu e-posta adresi zaten kayıtlı.';
+        case 'invalid-email':
+          yazi = 'E-posta adresi geçersiz.';
           break;
 
-        case 'invalid-email':
-          hata = 'Geçerli bir e-posta adresi girin.';
+        case 'email-already-in-use':
+          yazi = 'Bu e-posta adresi zaten kayıtlı.';
           break;
 
         case 'weak-password':
-          hata = 'Şifre çok zayıf.';
+          yazi = 'Şifre çok zayıf. En az 6 karakter kullanın.';
           break;
 
         case 'user-not-found':
-        case 'invalid-credential':
+          yazi = 'Bu e-posta ile kayıtlı kullanıcı bulunamadı.';
+          break;
+
         case 'wrong-password':
-          hata = 'E-posta veya şifre hatalı.';
+        case 'invalid-credential':
+          yazi = 'E-posta veya şifre hatalı.';
           break;
 
         case 'too-many-requests':
-          hata = 'Çok fazla deneme yapıldı. Biraz sonra tekrar deneyin.';
+          yazi = 'Çok fazla deneme yapıldı. Biraz sonra tekrar deneyin.';
+          break;
+
+        case 'network-request-failed':
+          yazi = 'İnternet bağlantısını kontrol edin.';
           break;
 
         default:
-          hata = e.message ?? hata;
+          yazi = 'Giriş işlemi başarısız: ${e.message ?? e.code}';
       }
 
-      if (mounted) {
-        mesaj(context, hata);
-      }
-    } catch (_) {
-      if (mounted) {
-        mesaj(context, 'Bir hata oluştu.');
-      }
+      mesaj(context, yazi);
+    } catch (e) {
+      if (!mounted) return;
+      mesaj(context, 'Bir hata oluştu: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -603,460 +591,343 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
     }
   }
 
-  String telefonDuzenle(String girilen) {
-    String numara = girilen.trim().replaceAll(' ', '');
+  Future<void> sifremiUnuttum() async {
+    final mail = email.text.trim();
 
-    if (numara.startsWith('05')) {
-      numara = '+90${numara.substring(1)}';
-    } else if (numara.startsWith('5') && numara.length == 10) {
-      numara = '+90$numara';
-    } else if (numara.startsWith('90')) {
-      numara = '+$numara';
-    }
-
-    return numara;
-  }
-
-  Future<void> smsGonder() async {
-    final numara = telefonDuzenle(telefon.text);
-
-    if (numara.isEmpty) {
-      mesaj(context, 'Telefon numaranı gir.');
-      return;
-    }
-
-    if (!numara.startsWith('+')) {
+    if (mail.isEmpty) {
       mesaj(
         context,
-        'Telefon numarasını 05XXXXXXXXX şeklinde gir.',
+        'Önce e-posta adresinizi yazın.',
       );
       return;
     }
-
-    setState(() {
-      bekle = true;
-    });
-
-    await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: numara,
-
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        try {
-          final sonuc =
-              await FirebaseAuth.instance.signInWithCredential(credential);
-
-          if (sonuc.user != null) {
-            await kullaniciKaydiOlustur(sonuc.user!);
-          }
-
-          if (mounted) {
-            Navigator.pop(context);
-          }
-        } catch (_) {
-          if (mounted) {
-            mesaj(context, 'Telefon doğrulanamadı.');
-          }
-        }
-      },
-
-      verificationFailed: (FirebaseAuthException e) {
-        if (!mounted) return;
-
-        setState(() {
-          bekle = false;
-        });
-
-        String hata = 'SMS gönderilemedi.';
-
-        if (e.code == 'invalid-phone-number') {
-          hata = 'Telefon numarası geçersiz.';
-        } else if (e.code == 'too-many-requests') {
-          hata = 'Çok fazla SMS isteği yapıldı. Daha sonra tekrar deneyin.';
-        } else if (e.message != null) {
-          hata = e.message!;
-        }
-
-        mesaj(context, hata);
-      },
-
-      codeSent: (String id, int? resendToken) {
-        if (!mounted) return;
-
-        setState(() {
-          verificationId = id;
-          smsGonderildi = true;
-          bekle = false;
-        });
-
-        mesaj(context, 'SMS doğrulama kodu gönderildi.');
-      },
-
-      codeAutoRetrievalTimeout: (String id) {
-        verificationId = id;
-
-        if (mounted) {
-          setState(() {
-            bekle = false;
-          });
-        }
-      },
-
-      timeout: const Duration(seconds: 60),
-    );
-  }
-
-  Future<void> smsDogrula() async {
-    if (smsKodu.text.trim().length < 6) {
-      mesaj(context, 'SMS ile gelen 6 haneli kodu gir.');
-      return;
-    }
-
-    if (verificationId.isEmpty) {
-      mesaj(context, 'Önce SMS kodu gönder.');
-      return;
-    }
-
-    setState(() {
-      bekle = true;
-    });
 
     try {
-      final credential = PhoneAuthProvider.credential(
-        verificationId: verificationId,
-        smsCode: smsKodu.text.trim(),
+      await FirebaseAuth.instance.sendPasswordResetEmail(
+        email: mail,
       );
 
-      final sonuc =
-          await FirebaseAuth.instance.signInWithCredential(credential);
+      if (!mounted) return;
 
-      if (sonuc.user != null) {
-        await kullaniciKaydiOlustur(sonuc.user!);
-      }
-
-      if (mounted) {
-        Navigator.pop(context);
-      }
+      mesaj(
+        context,
+        'Şifre yenileme bağlantısı e-posta adresinize gönderildi.',
+      );
     } on FirebaseAuthException catch (e) {
-      String hata = 'Kod doğrulanamadı.';
+      if (!mounted) return;
 
-      if (e.code == 'invalid-verification-code') {
-        hata = 'SMS kodu yanlış.';
-      } else if (e.code == 'session-expired') {
-        hata = 'SMS kodunun süresi doldu. Tekrar kod gönder.';
-      } else if (e.message != null) {
-        hata = e.message!;
-      }
-
-      if (mounted) {
-        mesaj(context, hata);
-      }
-    } catch (_) {
-      if (mounted) {
-        mesaj(context, 'Telefon doğrulanamadı.');
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          bekle = false;
-        });
-      }
-    }
-  }
-
-  void moduDegistir(bool telefonSecildi) {
-    setState(() {
-      telefonModu = telefonSecildi;
-      smsGonderildi = false;
-      verificationId = '';
-      smsKodu.clear();
-    });
-  }
-
-  @override
-  void dispose() {
-    email.dispose();
-    sifre.dispose();
-    sifreTekrar.dispose();
-    telefon.dispose();
-    smsKodu.dispose();
-    super.dispose();
-  }
-
-  @override
-    @override
-  Widget build(BuildContext context) {
-    const mavi = Color(0xFF087CF0);
-    const lacivert = Color(0xFF092A5E);
-
-    InputDecoration alanTasarimi({
-      required String label,
-      required IconData icon,
-      String? hint,
-    }) {
-      return InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: Icon(icon, color: mavi),
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: Color(0xFFD9E5F2)),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: Color(0xFFD9E5F2)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: mavi, width: 2),
-        ),
+      mesaj(
+        context,
+        e.message ?? 'Şifre yenileme bağlantısı gönderilemedi.',
       );
     }
+  }
 
-    ButtonStyle anaButon = ElevatedButton.styleFrom(
-      backgroundColor: mavi,
-      foregroundColor: Colors.white,
-      elevation: 3,
-      minimumSize: const Size(double.infinity, 58),
-      shape: RoundedRectangleBorder(
+  InputDecoration alanTasarimi({
+    required String baslik,
+    required IconData ikon,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      labelText: baslik,
+      prefixIcon: Icon(
+        ikon,
+        color: mavi,
+      ),
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 18,
+        vertical: 18,
+      ),
+      border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(18),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(
+          color: Color(0xFFDCE8F5),
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(18),
+        borderSide: const BorderSide(
+          color: mavi,
+          width: 2,
+        ),
       ),
     );
+  }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F9FF),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F9FF),
-        elevation: 0,
-        foregroundColor: lacivert,
-        centerTitle: true,
-        title: Text(
-          telefonModu
-              ? 'Telefon ile Giriş'
-              : kayit
-                  ? 'Kayıt Ol'
-                  : 'Giriş Yap',
-          style: const TextStyle(
-            fontWeight: FontWeight.w800,
-            color: lacivert,
-          ),
+  Widget ozellikKarti({
+    required IconData ikon,
+    required String baslik,
+    required String aciklama,
+    required Color renk,
+  }) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 8,
+          vertical: 14,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x14000000),
+              blurRadius: 12,
+              offset: Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Icon(
+              ikon,
+              color: renk,
+              size: 34,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              baslik,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: lacivert,
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              aciklama,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFF708399),
+                fontSize: 10,
+              ),
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF4F9FF),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 30),
+          padding: const EdgeInsets.fromLTRB(
+            20,
+            24,
+            20,
+            35,
+          ),
           children: [
+            Container(
+              width: 105,
+              height: 105,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF063E88),
+                    Color(0xFF0797FF),
+                  ],
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x330078FF),
+                    blurRadius: 20,
+                    offset: Offset(0, 8),
+                  ),
+                ],
+                border: Border.all(
+                  color: Colors.white,
+                  width: 5,
+                ),
+              ),
+              child: const Icon(
+                Icons.business_center_rounded,
+                color: Colors.white,
+                size: 54,
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
             const Text(
               'İŞ BUL',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.w900,
                 color: mavi,
+                fontSize: 45,
+                height: 1,
+                fontWeight: FontWeight.w900,
                 letterSpacing: 1,
               ),
             ),
-            const SizedBox(height: 3),
+
+            const SizedBox(height: 8),
+
             const Text(
               'Doğru İş, Daha İyi Yarın',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
                 color: lacivert,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 14),
-            
-        if (animasyonOynuyor) ...[
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            margin: const EdgeInsets.only(bottom: 14),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 10,
-                  offset: Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  animasyonAsama >= 3
-                      ? Icons.construction
-                      : Icons.work_outline,
-                  color: animasyonAsama >= 3
-                      ? Colors.orange
-                      : mavi,
-                  size: 32,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  animasyonAsama == 1
-                      ? 'Yeni iş ilanı geldi!'
-                      : animasyonAsama == 2
-                          ? 'İlan gösteriliyor...'
-                          : animasyonAsama == 3
-                              ? 'GÜM! 🔨'
-                              : 'İş bulundu! 🎉',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
 
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 250),
-            child: Container(
-              key: ValueKey(animasyonAsama),
-              height: 155,
-              alignment: Alignment.center,
-              child: Stack(
-                alignment: Alignment.center,
+            const SizedBox(height: 25),
+
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 18,
+                vertical: 22,
+              ),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF07336A),
+                    Color(0xFF087BEA),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: Column(
                 children: [
-                  Image.asset(
-                    'file_0000000043a88210aa303ce3db3df68d.png',
-                    height: 125,
-                    fit: BoxFit.contain,
+                  Text(
+                    kayit
+                        ? 'Geleceğini bugün kur.'
+                        : 'İşini bul,\ngeleceğini kur.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 30,
+                      height: 1.15,
+                      fontWeight: FontWeight.w900,
+                    ),
                   ),
-
-                  if (animasyonAsama == 1)
-                    Positioned(
-                      top: 0,
-                      right: 35,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 5,
-                            ),
-                          ],
-                        ),
-                        child: const Text(
-                          '📋 Yeni İş İlanı!',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ),
+                  const SizedBox(height: 10),
+                  Text(
+                    kayit
+                        ? 'Ücretsiz hesabını oluştur ve fırsatları keşfet.'
+                        : 'Binlerce iş ilanı ve doğru fırsatlar burada.',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
                     ),
-
-                  if (animasyonAsama == 2)
-                    const Positioned(
-                      top: 3,
-                      right: 28,
-                      child: Text(
-                        '📋 İŞ BUL',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-
-                  if (animasyonAsama == 3)
-                    const Positioned(
-                      top: 12,
-                      right: 65,
-                      child: Text(
-                        '🔨💥',
-                        style: TextStyle(fontSize: 35),
-                      ),
-                    ),
-
-                  if (animasyonAsama == 4)
-                    const Positioned(
-                      top: 5,
-                      right: 55,
-                      child: Text(
-                        '⭐😵⭐',
-                        style: TextStyle(fontSize: 24),
-                      ),
-                    ),
+                  ),
                 ],
               ),
             ),
-          ),
-        ],
 
-        const SizedBox(height: 16),
+            const SizedBox(height: 18),
 
-        const SizedBox(height: 16),
-            const SizedBox(height: 16),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ozellikKarti(
+                  ikon: Icons.search_rounded,
+                  baslik: 'İş Ara',
+                  aciklama: 'Sana uygun fırsatları keşfet',
+                  renk: mavi,
+                ),
+                const SizedBox(width: 8),
+                ozellikKarti(
+                  ikon: Icons.post_add_rounded,
+                  baslik: 'İş İlanı Ver',
+                  aciklama: 'Doğru adaya ulaş',
+                  renk: turuncu,
+                ),
+                const SizedBox(width: 8),
+                ozellikKarti(
+                  ikon: Icons.verified_user_rounded,
+                  baslik: 'Güvenli',
+                  aciklama: 'Kontrollü ilan sistemi',
+                  renk: Color(0xFF7A28E8),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 25),
 
             Container(
-              padding: const EdgeInsets.all(5),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: const Color(0xFFE8F1FB),
-                borderRadius: BorderRadius.circular(20),
+                color: const Color(0xFFE5EFF9),
+                borderRadius: BorderRadius.circular(18),
               ),
               child: Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: bekle
-                          ? null
-                          : () {
-                              moduDegistir(false);
-                            },
-                      icon: const Icon(Icons.email_outlined),
-                      label: const Text('E-POSTA'),
-                      style: ElevatedButton.styleFrom(
-                        elevation: telefonModu ? 0 : 2,
-                        backgroundColor:
-                            telefonModu ? Colors.transparent : Colors.white,
-                        foregroundColor:
-                            telefonModu ? Colors.blueGrey : mavi,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () {
+                        setState(() {
+                          kayit = false;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 13,
                         ),
-                        minimumSize: const Size(0, 50),
+                        decoration: BoxDecoration(
+                          color: !kayit
+                              ? Colors.white
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Text(
+                          'GİRİŞ YAP',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: !kayit
+                                ? mavi
+                                : const Color(0xFF708399),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 6),
                   Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: bekle
-                          ? null
-                          : () {
-                              moduDegistir(true);
-                            },
-                      icon: const Icon(Icons.phone_android),
-                      label: const Text('TELEFON'),
-                      style: ElevatedButton.styleFrom(
-                        elevation: telefonModu ? 2 : 0,
-                        backgroundColor:
-                            telefonModu ? Colors.white : Colors.transparent,
-                        foregroundColor:
-                            telefonModu ? mavi : Colors.blueGrey,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () {
+                        setState(() {
+                          kayit = true;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 13,
                         ),
-                        minimumSize: const Size(0, 50),
+                        decoration: BoxDecoration(
+                          color: kayit
+                              ? Colors.white
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Text(
+                          'KAYIT OL',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: kayit
+                                ? mavi
+                                : const Color(0xFF708399),
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -1064,211 +935,189 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
               ),
             ),
 
-            const SizedBox(height: 22),
+            const SizedBox(height: 20),
 
-            if (!telefonModu) ...[
-              TextField(
-                controller: email,
-                keyboardType: TextInputType.emailAddress,
-                decoration: alanTasarimi(
-                  label: 'E-posta',
-                  icon: Icons.email_outlined,
-                  hint: 'E-posta adresini yaz',
+            TextField(
+              controller: email,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
+              decoration: alanTasarimi(
+                baslik: 'E-posta',
+                ikon: Icons.email_outlined,
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            TextField(
+              controller: sifre,
+              obscureText: sifreGizli,
+              textInputAction:
+                  kayit ? TextInputAction.next : TextInputAction.done,
+              onSubmitted: (_) {
+                if (!kayit && !bekle) {
+                  emailIslemi();
+                }
+              },
+              decoration: alanTasarimi(
+                baslik: 'Şifre',
+                ikon: Icons.lock_outline_rounded,
+                suffixIcon: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      sifreGizli = !sifreGizli;
+                    });
+                  },
+                  icon: Icon(
+                    sifreGizli
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                  ),
                 ),
               ),
+            ),
 
+            if (kayit) ...[
               const SizedBox(height: 14),
-
               TextField(
-                controller: sifre,
-                obscureText: true,
+                controller: sifreTekrar,
+                obscureText: sifreGizli,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) {
+                  if (!bekle) {
+                    emailIslemi();
+                  }
+                },
                 decoration: alanTasarimi(
-                  label: 'Şifre',
-                  icon: Icons.lock_outline,
-                  hint: 'Şifreni yaz',
+                  baslik: 'Şifre Tekrar',
+                  ikon: Icons.lock_reset_rounded,
                 ),
               ),
-
-              if (kayit) ...[
-                const SizedBox(height: 14),
-                TextField(
-                  controller: sifreTekrar,
-                  obscureText: true,
-                  decoration: alanTasarimi(
-                    label: 'Şifre Tekrar',
-                    icon: Icons.lock_reset,
-                    hint: 'Şifreni tekrar yaz',
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 20),
-
-              ElevatedButton.icon(
-                onPressed: bekle ? null : emailIslemi,
-                style: anaButon,
-                icon: Icon(
-                  kayit ? Icons.person_add_alt_1 : Icons.login,
-                ),
-                label: Text(
-                  bekle
-                      ? 'BEKLEYİN...'
-                      : kayit
-                          ? 'KAYIT OL'
-                          : 'GİRİŞ YAP',
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              TextButton(
-                onPressed: bekle
-                    ? null
-                    : () {
-                        setState(() {
-                          kayit = !kayit;
-                          sifre.clear();
-                          sifreTekrar.clear();
-                        });
-                      },
-                child: Text(
-                  kayit
-                      ? 'Zaten hesabım var - Giriş yap'
-                      : 'Hesabım yok - Kayıt ol',
-                  style: const TextStyle(
-                    color: mavi,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-
-              if (kayit)
-                const Padding(
-                  padding: EdgeInsets.only(top: 6),
-                  child: Text(
-                    'Kayıt olduktan sonra e-posta adresine doğrulama bağlantısı gönderilir.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.blueGrey,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
             ],
 
-            if (telefonModu) ...[
-              const Text(
-                'Telefon numaran ile giriş yap veya hesap oluştur.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: lacivert,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              TextField(
-                controller: telefon,
-                enabled: !smsGonderildi,
-                keyboardType: TextInputType.phone,
-                decoration: alanTasarimi(
-                  label: 'Telefon Numarası',
-                  icon: Icons.phone_outlined,
-                  hint: '05XXXXXXXXX',
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              if (!smsGonderildi)
-                ElevatedButton.icon(
-                  onPressed: bekle ? null : smsGonder,
-                  style: anaButon,
-                  icon: const Icon(Icons.sms_outlined),
-                  label: Text(
-                    bekle ? 'GÖNDERİLİYOR...' : 'SMS KODU GÖNDER',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-
-              if (smsGonderildi) ...[
-                TextField(
-                  controller: smsKodu,
-                  keyboardType: TextInputType.number,
-                  maxLength: 6,
-                  decoration: alanTasarimi(
-                    label: 'SMS Doğrulama Kodu',
-                    icon: Icons.sms_outlined,
-                    hint: '6 haneli kod',
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                ElevatedButton.icon(
-                  onPressed: bekle ? null : smsDogrula,
-                  style: anaButon,
-                  icon: const Icon(Icons.verified_outlined),
-                  label: Text(
-                    bekle ? 'DOĞRULANIYOR...' : 'KODU DOĞRULA',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 5),
-
-                TextButton(
-                  onPressed: bekle
-                      ? null
-                      : () {
-                          setState(() {
-                            smsGonderildi = false;
-                            verificationId = '';
-                            smsKodu.clear();
-                          });
-                        },
+            if (!kayit) ...[
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: bekle ? null : sifremiUnuttum,
                   child: const Text(
-                    'Telefon numarasını değiştir',
+                    'Şifremi Unuttum',
                     style: TextStyle(
                       color: mavi,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
-              ],
-            ],
+              ),
+            ] else
+              const SizedBox(height: 18),
 
-            const SizedBox(height: 25),
+            SizedBox(
+              height: 58,
+              child: ElevatedButton(
+                onPressed: bekle ? null : emailIslemi,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: mavi,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor:
+                      const Color(0xFF9BCBF3),
+                  elevation: 3,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+                child: bekle
+                    ? const SizedBox(
+                        width: 25,
+                        height: 25,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            kayit
+                                ? Icons.person_add_alt_1_rounded
+                                : Icons.login_rounded,
+                          ),
+                          const SizedBox(width: 10),
+                          Text(
+                            kayit
+                                ? 'KAYIT OL'
+                                : 'GİRİŞ YAP',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 17,
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+
+            const SizedBox(height: 22),
+
+            Row(
+              children: [
+                const Expanded(
+                  child: Divider(),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                  ),
+                  child: Text(
+                    kayit
+                        ? 'HESABINI OLUŞTUR'
+                        : 'GÜVENLİ GİRİŞ',
+                    style: const TextStyle(
+                      color: Color(0xFF8A9BAE),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const Expanded(
+                  child: Divider(),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 20),
 
             const Text(
-              'İşini bul, geleceğini kur.',
+              'İŞ BUL',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFF708399),
-                fontWeight: FontWeight.w600,
+                color: Color(0xFF7890AA),
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+
+            const SizedBox(height: 4),
+
+            const Text(
+              'Doğru İnsan, Doğru İş, Daha İyi Yarın',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFFA0AFC0),
+                fontSize: 12,
               ),
             ),
           ],
-               ),
-    ),
-  );  
-  
-  
-}
-class IlanVerSayfasi extends StatefulWidget {
-  const IlanVerSayfasi({super.key});
-
-  @override
-  State<IlanVerSayfasi> createState() => _IlanVerSayfasiState();
+        ),
+      ),
+    );
+  }
 }
 
 class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
