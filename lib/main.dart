@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,13 +15,7 @@ Future<void> main() async {
       storageBucket: 'is-bul-1652d.firebasestorage.app',
     ),
   );
-await FirebaseMessaging.instance.requestPermission(
-  alert: true,
-  badge: true,
-  sound: true,
-);
 
-await FirebaseMessaging.instance.subscribeToTopic('yeni_ilanlar');
   runApp(const IsBulApp());
 }
 
@@ -37,349 +28,45 @@ class IsBulApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'İş Bul',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF087CF0),
+        ),
         useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFF5F9FF),
       ),
-      home: const AnaSayfa(),
+      home: const Baslangic(),
     );
   }
 }
 
-String bilgi(dynamic deger) {
-  final yazi = deger?.toString().trim() ?? '';
-  return yazi.isEmpty ? 'Belirtilmemiş' : yazi;
-}
-
-void mesaj(BuildContext context, String yazi) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(yazi)),
-  );
-}
-
-bool aktifOneCikan(Map<String, dynamic> data) {
-  if (data['featured'] != true) {
-    return false;
-  }
-
-  final until = data['featuredUntil'];
-
-  if (until == null) {
-    return true;
-  }
-
-  if (until is Timestamp) {
-    return until.toDate().isAfter(DateTime.now());
-  }
-
-  return true;
-}
-
-String kalanSure(Map<String, dynamic> data) {
-  final until = data['featuredUntil'];
-
-  if (until is! Timestamp) {
-    return 'Süresiz';
-  }
-
-  final fark = until.toDate().difference(DateTime.now());
-
-  if (fark.isNegative) {
-    return 'Süresi doldu';
-  }
-
-  if (fark.inDays == 0) {
-    return '1 günden az kaldı';
-  }
-
-  return '${fark.inDays} gün kaldı';
-}
-
-int paketFiyati(int gun) {
-  if (gun == 3) return 49;
-  if (gun == 7) return 89;
-  if (gun == 15) return 149;
-  if (gun == 30) return 249;
-  return 0;
-}
-
-class AnaSayfa extends StatefulWidget {
-  const AnaSayfa({super.key});
-
-  @override
-  State<AnaSayfa> createState() => _AnaSayfaState();
-}
-
-class _AnaSayfaState extends State<AnaSayfa> {
-  bool admin = false;
-  bool engelli = false;
-  bool kontrol = true;
-
-  @override
-  void initState() {
-    super.initState();
-    hesapKontrol();
-  }
-
-  Future<void> kullaniciKaydiOlustur(User user) async {
-    try {
-      final ref = FirebaseFirestore.instance.collection('users').doc(user.uid);
-      final doc = await ref.get();
-
-      if (!doc.exists) {
-        await ref.set({
-          'uid': user.uid,
-          'email': user.email ?? '',
-          'blocked': false,
-          'createdAt': FieldValue.serverTimestamp(),
-        });
-      }
-    } catch (_) {}
-  }
-
-  Future<void> hesapKontrol() async {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      if (mounted) {
-        setState(() {
-          admin = false;
-          engelli = false;
-          kontrol = false;
-        });
-      }
-      return;
-    }
-
-    await kullaniciKaydiOlustur(user);
-
-    bool yeniAdmin = false;
-    bool yeniEngelli = false;
-
-    try {
-      final adminDoc = await FirebaseFirestore.instance
-          .collection('admins')
-          .doc(user.uid)
-          .get();
-
-      yeniAdmin = adminDoc.exists && adminDoc.data()?['role'] == 'admin';
-    } catch (_) {}
-
-    try {
-      final userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(user.uid)
-          .get();
-
-      yeniEngelli = userDoc.data()?['blocked'] == true;
-    } catch (_) {}
-
-    if (mounted) {
-      setState(() {
-        admin = yeniAdmin;
-        engelli = yeniAdmin ? false : yeniEngelli;
-        kontrol = false;
-      });
-    }
-  }
-
-  Future<void> girisAc() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const GirisSayfasi()),
-    );
-
-    if (mounted) {
-      setState(() {
-        kontrol = true;
-      });
-    }
-
-    await hesapKontrol();
-  }
-
-  Future<void> cikis() async {
-    await FirebaseAuth.instance.signOut();
-
-    if (mounted) {
-      setState(() {
-        admin = false;
-        engelli = false;
-        kontrol = false;
-      });
-    }
-  }
+class Baslangic extends StatelessWidget {
+  const Baslangic({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (kontrol) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (user != null && engelli) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('İŞ BUL'),
-          centerTitle: true,
-        ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(25),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.block, size: 70),
-                const SizedBox(height: 20),
-                const Text(
-                  'Hesabınız engellenmiştir.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: cikis,
-                  icon: const Icon(Icons.logout),
-                  label: const Text('ÇIKIŞ YAP'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-    return Scaffold(
-  appBar: AppBar(
-    title: const Text('İŞ BUL'),
-    centerTitle: true,
-    actions: [
-      IconButton(
-        icon: const Icon(Icons.notifications),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const BildirimlerSayfasi(),
-            ),
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
           );
-        },
-      ),
-    ],
-  ),
-      body: user == null
-          ? Center(
-              child: ElevatedButton.icon(
-                onPressed: girisAc,
-                icon: const Icon(Icons.login),
-                label: const Text('GİRİŞ YAP / KAYIT OL'),
-              ),
-            )
-          : ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                const SizedBox(height: 15),
-                const Center(
-                  child: Text(
-                    'İş Bul',
-                    style: TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 15),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(15),
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Giriş yapıldı',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(user.email ?? ''),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 15),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const IsAraSayfasi()),
-                    );
-                  },
-                  icon: const Icon(Icons.search),
-                  label: const Text('İŞ ARA'),
-                ),
-                const SizedBox(height: 10),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const IlanVerSayfasi()),
-                    );
-                  },
-                  icon: const Icon(Icons.add_business),
-                  label: const Text('ÜCRETSİZ İŞ İLANI VER'),
-                ),
-                const SizedBox(height: 10),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const KendiIlanlarimSayfasi(),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.list_alt),
-                  label: const Text('KENDİ İLANLARIM'),
-                ),
-                const SizedBox(height: 10),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AyarlarSayfasi(),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.settings),
-                  label: const Text('AYARLAR'),
-                ),
-                const SizedBox(height: 15),
-                if (admin)
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const YonetimPaneli()),
-                      );
-                    },
-                    icon: const Icon(Icons.admin_panel_settings),
-                    label: const Text('YÖNETİM PANELİ'),
-                  ),
-                const SizedBox(height: 15),
-                OutlinedButton.icon(
-                  onPressed: cikis,
-                  icon: const Icon(Icons.logout),
-                  label: const Text('ÇIKIŞ YAP'),
-                ),
-              ],
-            ),
+        }
+
+        if (snapshot.data != null) {
+          return const AnaSayfa();
+        }
+
+        return const GirisSayfasi();
+      },
     );
   }
 }
-  
+
+// =====================================================
+// GİRİŞ / KAYIT
+// =====================================================
+
 class GirisSayfasi extends StatefulWidget {
   const GirisSayfasi({super.key});
 
@@ -393,12 +80,65 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
   final sifreTekrar = TextEditingController();
 
   bool kayit = false;
-  bool bekle = false;
-  bool sifreGizli = true;
+  bool yukleniyor = false;
+  bool gizli = true;
 
-  static const Color lacivert = Color(0xFF082B5C);
-  static const Color mavi = Color(0xFF0787F9);
-  static const Color turuncu = Color(0xFFFF8A00);
+  Future<void> islemiYap() async {
+    final eposta = email.text.trim();
+    final parola = sifre.text.trim();
+
+    if (eposta.isEmpty || parola.length < 6) {
+      mesaj('Geçerli e-posta ve en az 6 karakter şifre girin.');
+      return;
+    }
+
+    if (kayit && parola != sifreTekrar.text.trim()) {
+      mesaj('Şifreler aynı değil.');
+      return;
+    }
+
+    setState(() => yukleniyor = true);
+
+    try {
+      if (kayit) {
+        final sonuc =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: eposta,
+          password: parola,
+        );
+
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(sonuc.user!.uid)
+            .set({
+          'uid': sonuc.user!.uid,
+          'email': eposta,
+          'blocked': false,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        mesaj('Kayıt başarılı.');
+      } else {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: eposta,
+          password: parola,
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      mesaj(e.message ?? 'Giriş işlemi başarısız.');
+    } catch (e) {
+      mesaj('İşlem başarısız: $e');
+    } finally {
+      if (mounted) setState(() => yukleniyor = false);
+    }
+  }
+
+  void mesaj(String yazi) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(yazi)),
+    );
+  }
 
   @override
   void dispose() {
@@ -408,709 +148,142 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
     super.dispose();
   }
 
-  Future<void> emailIslemi() async {
-    FocusScope.of(context).unfocus();
-
-    final mail = email.text.trim();
-    final parola = sifre.text.trim();
-
-    if (mail.isEmpty || parola.isEmpty) {
-      mesaj(context, 'E-posta ve şifreyi doldurun.');
-      return;
-    }
-
-    if (parola.length < 6) {
-      mesaj(context, 'Şifre en az 6 karakter olmalıdır.');
-      return;
-    }
-
-    if (kayit && parola != sifreTekrar.text.trim()) {
-      mesaj(context, 'Şifreler aynı değil.');
-      return;
-    }
-
-    setState(() {
-      bekle = true;
-    });
-
-    try {
-      if (kayit) {
-        final sonuc =
-            await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: mail,
-          password: parola,
-        );
-
-        final user = sonuc.user;
-
-        if (user != null) {
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .set({
-            'uid': user.uid,
-            'email': user.email ?? mail,
-            'blocked': false,
-            'createdAt': FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true));
-
-          await user.sendEmailVerification();
-        }
-
-        await FirebaseAuth.instance.signOut();
-
-        if (!mounted) return;
-
-        mesaj(
-          context,
-          'Kayıt başarılı. E-posta adresinize doğrulama bağlantısı gönderdik.',
-        );
-
-        setState(() {
-          kayit = false;
-          sifre.clear();
-          sifreTekrar.clear();
-        });
-      } else {
-        final sonuc =
-            await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: mail,
-          password: parola,
-        );
-
-        await sonuc.user?.reload();
-
-        final user = FirebaseAuth.instance.currentUser;
-
-        if (user == null) {
-          throw Exception('Kullanıcı bulunamadı.');
-        }
-
-        if (!user.emailVerified) {
-          await user.sendEmailVerification();
-          await FirebaseAuth.instance.signOut();
-
-          if (!mounted) return;
-
-          mesaj(
-            context,
-            'E-posta adresiniz doğrulanmamış. Yeni doğrulama bağlantısı gönderdik.',
-          );
-          return;
-        }
-
-        final userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-
-        if (userDoc.exists) {
-          final data = userDoc.data();
-
-          if (data != null && data['blocked'] == true) {
-            await FirebaseAuth.instance.signOut();
-
-            if (!mounted) return;
-
-            mesaj(
-              context,
-              'Bu hesap yönetici tarafından engellenmiştir.',
-            );
-            return;
-          }
-        } else {
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(user.uid)
-              .set({
-            'uid': user.uid,
-            'email': user.email ?? mail,
-            'blocked': false,
-            'createdAt': FieldValue.serverTimestamp(),
-          }, SetOptions(merge: true));
-        }
-
-        if (!mounted) return;
-
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-            builder: (_) => const AnaSayfa(),
-          ),
-          (route) => false,
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-
-      String yazi;
-
-      switch (e.code) {
-        case 'invalid-email':
-          yazi = 'E-posta adresi geçersiz.';
-          break;
-
-        case 'email-already-in-use':
-          yazi = 'Bu e-posta adresi zaten kayıtlı.';
-          break;
-
-        case 'weak-password':
-          yazi = 'Şifre çok zayıf. En az 6 karakter kullanın.';
-          break;
-
-        case 'user-not-found':
-          yazi = 'Bu e-posta ile kayıtlı kullanıcı bulunamadı.';
-          break;
-
-        case 'wrong-password':
-        case 'invalid-credential':
-          yazi = 'E-posta veya şifre hatalı.';
-          break;
-
-        case 'too-many-requests':
-          yazi = 'Çok fazla deneme yapıldı. Biraz sonra tekrar deneyin.';
-          break;
-
-        case 'network-request-failed':
-          yazi = 'İnternet bağlantısını kontrol edin.';
-          break;
-
-        default:
-          yazi = 'Giriş işlemi başarısız: ${e.message ?? e.code}';
-      }
-
-      mesaj(context, yazi);
-    } catch (e) {
-      if (!mounted) return;
-      mesaj(context, 'Bir hata oluştu: $e');
-    } finally {
-      if (mounted) {
-        setState(() {
-          bekle = false;
-        });
-      }
-    }
-  }
-
-  Future<void> sifremiUnuttum() async {
-    final mail = email.text.trim();
-
-    if (mail.isEmpty) {
-      mesaj(
-        context,
-        'Önce e-posta adresinizi yazın.',
-      );
-      return;
-    }
-
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(
-        email: mail,
-      );
-
-      if (!mounted) return;
-
-      mesaj(
-        context,
-        'Şifre yenileme bağlantısı e-posta adresinize gönderildi.',
-      );
-    } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-
-      mesaj(
-        context,
-        e.message ?? 'Şifre yenileme bağlantısı gönderilemedi.',
-      );
-    }
-  }
-
-  InputDecoration alanTasarimi({
-    required String baslik,
-    required IconData ikon,
-    Widget? suffixIcon,
-  }) {
-    return InputDecoration(
-      labelText: baslik,
-      prefixIcon: Icon(
-        ikon,
-        color: mavi,
-      ),
-      suffixIcon: suffixIcon,
-      filled: true,
-      fillColor: Colors.white,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 18,
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-        borderSide: BorderSide.none,
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(
-          color: Color(0xFFDCE8F5),
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(18),
-        borderSide: const BorderSide(
-          color: mavi,
-          width: 2,
-        ),
-      ),
-    );
-  }
-
-  Widget ozellikKarti({
-    required IconData ikon,
-    required String baslik,
-    required String aciklama,
-    required Color renk,
-  }) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 8,
-          vertical: 14,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x14000000),
-              blurRadius: 12,
-              offset: Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(
-              ikon,
-              color: renk,
-              size: 34,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              baslik,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: lacivert,
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              aciklama,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF708399),
-                fontSize: 10,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    const mavi = Color(0xFF087CF0);
+    const lacivert = Color(0xFF082D67);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F9FF),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(
-            20,
-            24,
-            20,
-            35,
-          ),
+          padding: const EdgeInsets.all(24),
           children: [
-            Container(
-              width: 105,
-              height: 105,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF063E88),
-                    Color(0xFF0797FF),
-                  ],
-                ),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x330078FF),
-                    blurRadius: 20,
-                    offset: Offset(0, 8),
-                  ),
-                ],
-                border: Border.all(
-                  color: Colors.white,
-                  width: 5,
-                ),
-              ),
-              child: const Icon(
-                Icons.business_center_rounded,
-                color: Colors.white,
-                size: 54,
-              ),
+            const SizedBox(height: 35),
+            const Icon(
+              Icons.work_rounded,
+              size: 90,
+              color: mavi,
             ),
-
-            const SizedBox(height: 15),
-
+            const SizedBox(height: 10),
             const Text(
               'İŞ BUL',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: mavi,
-                fontSize: 45,
-                height: 1,
+                fontSize: 42,
                 fontWeight: FontWeight.w900,
-                letterSpacing: 1,
+                color: lacivert,
               ),
             ),
-
-            const SizedBox(height: 8),
-
             const Text(
               'Doğru İş, Daha İyi Yarın',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: lacivert,
-                fontSize: 18,
+                fontSize: 17,
+                color: Color(0xFF536A85),
                 fontWeight: FontWeight.w600,
               ),
             ),
-
-            const SizedBox(height: 25),
-
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 18,
-                vertical: 22,
-              ),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [
-                    Color(0xFF07336A),
-                    Color(0xFF087BEA),
+            const SizedBox(height: 35),
+            Card(
+              elevation: 3,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    Text(
+                      kayit ? 'Hesap Oluştur' : 'Giriş Yap',
+                      style: const TextStyle(
+                        fontSize: 25,
+                        fontWeight: FontWeight.bold,
+                        color: lacivert,
+                      ),
+                    ),
+                    const SizedBox(height: 22),
+                    TextField(
+                      controller: email,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        labelText: 'E-posta',
+                        prefixIcon: Icon(Icons.email_outlined),
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: sifre,
+                      obscureText: gizli,
+                      decoration: InputDecoration(
+                        labelText: 'Şifre',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        border: const OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() => gizli = !gizli);
+                          },
+                          icon: Icon(
+                            gizli
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (kayit) ...[
+                      const SizedBox(height: 14),
+                      TextField(
+                        controller: sifreTekrar,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Şifre Tekrar',
+                          prefixIcon: Icon(Icons.lock_outline),
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                        onPressed: yukleniyor ? null : islemiYap,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: mavi,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text(
+                          yukleniyor
+                              ? 'BEKLEYİN...'
+                              : kayit
+                                  ? 'KAYIT OL'
+                                  : 'GİRİŞ YAP',
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        setState(() => kayit = !kayit);
+                      },
+                      child: Text(
+                        kayit
+                            ? 'Zaten hesabın var mı? Giriş Yap'
+                            : 'Hesabın yok mu? Kayıt Ol',
+                      ),
+                    ),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    kayit
-                        ? 'Geleceğini bugün kur.'
-                        : 'İşini bul,\ngeleceğini kur.',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 30,
-                      height: 1.15,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    kayit
-                        ? 'Ücretsiz hesabını oluştur ve fırsatları keşfet.'
-                        : 'Binlerce iş ilanı ve doğru fırsatlar burada.',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
-                    ),
-                  ),
-                ],
               ),
             ),
-
-            const SizedBox(height: 18),
-
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ozellikKarti(
-                  ikon: Icons.search_rounded,
-                  baslik: 'İş Ara',
-                  aciklama: 'Sana uygun fırsatları keşfet',
-                  renk: mavi,
-                ),
-                const SizedBox(width: 8),
-                ozellikKarti(
-                  ikon: Icons.post_add_rounded,
-                  baslik: 'İş İlanı Ver',
-                  aciklama: 'Doğru adaya ulaş',
-                  renk: turuncu,
-                ),
-                const SizedBox(width: 8),
-                ozellikKarti(
-                  ikon: Icons.verified_user_rounded,
-                  baslik: 'Güvenli',
-                  aciklama: 'Kontrollü ilan sistemi',
-                  renk: Color(0xFF7A28E8),
-                ),
-              ],
-            ),
-
             const SizedBox(height: 25),
-
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE5EFF9),
-                borderRadius: BorderRadius.circular(18),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: () {
-                        setState(() {
-                          kayit = false;
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 13,
-                        ),
-                        decoration: BoxDecoration(
-                          color: !kayit
-                              ? Colors.white
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Text(
-                          'GİRİŞ YAP',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: !kayit
-                                ? mavi
-                                : const Color(0xFF708399),
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
-                      onTap: () {
-                        setState(() {
-                          kayit = true;
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 13,
-                        ),
-                        decoration: BoxDecoration(
-                          color: kayit
-                              ? Colors.white
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Text(
-                          'KAYIT OL',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: kayit
-                                ? mavi
-                                : const Color(0xFF708399),
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            TextField(
-              controller: email,
-              keyboardType: TextInputType.emailAddress,
-              textInputAction: TextInputAction.next,
-              decoration: alanTasarimi(
-                baslik: 'E-posta',
-                ikon: Icons.email_outlined,
-              ),
-            ),
-
-            const SizedBox(height: 14),
-
-            TextField(
-              controller: sifre,
-              obscureText: sifreGizli,
-              textInputAction:
-                  kayit ? TextInputAction.next : TextInputAction.done,
-              onSubmitted: (_) {
-                if (!kayit && !bekle) {
-                  emailIslemi();
-                }
-              },
-              decoration: alanTasarimi(
-                baslik: 'Şifre',
-                ikon: Icons.lock_outline_rounded,
-                suffixIcon: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      sifreGizli = !sifreGizli;
-                    });
-                  },
-                  icon: Icon(
-                    sifreGizli
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                  ),
-                ),
-              ),
-            ),
-
-            if (kayit) ...[
-              const SizedBox(height: 14),
-              TextField(
-                controller: sifreTekrar,
-                obscureText: sifreGizli,
-                textInputAction: TextInputAction.done,
-                onSubmitted: (_) {
-                  if (!bekle) {
-                    emailIslemi();
-                  }
-                },
-                decoration: alanTasarimi(
-                  baslik: 'Şifre Tekrar',
-                  ikon: Icons.lock_reset_rounded,
-                ),
-              ),
-            ],
-
-            if (!kayit) ...[
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: bekle ? null : sifremiUnuttum,
-                  child: const Text(
-                    'Şifremi Unuttum',
-                    style: TextStyle(
-                      color: mavi,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-              ),
-            ] else
-              const SizedBox(height: 18),
-
-            SizedBox(
-              height: 58,
-              child: ElevatedButton(
-                onPressed: bekle ? null : emailIslemi,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: mavi,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor:
-                      const Color(0xFF9BCBF3),
-                  elevation: 3,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                ),
-                child: bekle
-                    ? const SizedBox(
-                        width: 25,
-                        height: 25,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                          color: Colors.white,
-                        ),
-                      )
-                    : Row(
-                        mainAxisAlignment:
-                            MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            kayit
-                                ? Icons.person_add_alt_1_rounded
-                                : Icons.login_rounded,
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            kayit
-                                ? 'KAYIT OL'
-                                : 'GİRİŞ YAP',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          const Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            size: 17,
-                          ),
-                        ],
-                      ),
-              ),
-            ),
-
-            const SizedBox(height: 22),
-
-            Row(
-              children: [
-                const Expanded(
-                  child: Divider(),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                  ),
-                  child: Text(
-                    kayit
-                        ? 'HESABINI OLUŞTUR'
-                        : 'GÜVENLİ GİRİŞ',
-                    style: const TextStyle(
-                      color: Color(0xFF8A9BAE),
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                const Expanded(
-                  child: Divider(),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 20),
-
             const Text(
-              'İŞ BUL',
+              'İşini bul, geleceğini kur.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFF7890AA),
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-
-            const SizedBox(height: 4),
-
-            const Text(
-              'Doğru İnsan, Doğru İş, Daha İyi Yarın',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Color(0xFFA0AFC0),
-                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF708399),
               ),
             ),
           ],
@@ -1119,12 +292,304 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
     );
   }
 }
+
+// =====================================================
+// ANA SAYFA
+// =====================================================
+
+class AnaSayfa extends StatefulWidget {
+  const AnaSayfa({super.key});
+
+  @override
+  State<AnaSayfa> createState() => _AnaSayfaState();
+}
+
+class _AnaSayfaState extends State<AnaSayfa> {
+  bool admin = false;
+  bool kontrol = true;
+
+  @override
+  void initState() {
+    super.initState();
+    adminKontrol();
+  }
+
+  Future<void> adminKontrol() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      if (mounted) setState(() => kontrol = false);
+      return;
+    }
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('admins')
+          .doc(user.uid)
+          .get();
+
+      if (mounted) {
+        setState(() {
+          admin = doc.exists && doc.data()?['role'] == 'admin';
+          kontrol = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => kontrol = false);
+    }
+  }
+
+  void ac(Widget sayfa) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => sayfa),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (kontrol) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Row(
+          children: [
+            CircleAvatar(
+              child: Icon(Icons.work),
+            ),
+            SizedBox(width: 10),
+            Text(
+              'İŞ BUL',
+              style: TextStyle(fontWeight: FontWeight.w900),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Bildirimler',
+            onPressed: () => ac(const BildirimlerSayfasi()),
+            icon: const Icon(Icons.notifications_outlined),
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Text(
+            'Merhaba 👋',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          Text(
+            user?.email ?? '',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF082D67),
+            ),
+          ),
+          const SizedBox(height: 18),
+
+          Container(
+            padding: const EdgeInsets.all(22),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF073A80),
+                  Color(0xFF168FF2),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  Icons.engineering,
+                  size: 48,
+                  color: Colors.white,
+                ),
+                SizedBox(height: 15),
+                Text(
+                  'Hayalindeki işe\nbir adım daha yakın!',
+                  style: TextStyle(
+                    fontSize: 27,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Yeni iş fırsatlarını keşfet.',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          Row(
+            children: [
+              Expanded(
+                child: AnaKart(
+                  renk: const Color(0xFF087CF0),
+                  ikon: Icons.search,
+                  baslik: 'İŞ ARA',
+                  alt: 'Fırsatları keşfet',
+                  onTap: () => ac(const IsAraSayfasi()),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AnaKart(
+                  renk: const Color(0xFFFF8A00),
+                  ikon: Icons.add_circle_outline,
+                  baslik: 'İŞ İLANI VER',
+                  alt: 'Ücretsiz ilan oluştur',
+                  onTap: () => ac(const IlanVerSayfasi()),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          Row(
+            children: [
+              Expanded(
+                child: AnaKart(
+                  renk: const Color(0xFF09A85A),
+                  ikon: Icons.description_outlined,
+                  baslik: 'İLANLARIM',
+                  alt: 'İlanlarını yönet',
+                  onTap: () => ac(const IlanlarimSayfasi()),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AnaKart(
+                  renk: const Color(0xFF7557E8),
+                  ikon: Icons.notifications,
+                  baslik: 'BİLDİRİMLER',
+                  alt: 'Mesajları görüntüle',
+                  onTap: () => ac(const BildirimlerSayfasi()),
+                ),
+              ),
+            ],
+          ),
+
+          if (admin) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 60,
+              child: ElevatedButton.icon(
+                onPressed: () => ac(const YonetimPaneli()),
+                icon: const Icon(Icons.admin_panel_settings),
+                label: const Text(
+                  'YÖNETİM PANELİ',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 12),
+
+          OutlinedButton.icon(
+            onPressed: () async {
+              await FirebaseAuth.instance.signOut();
+            },
+            icon: const Icon(Icons.logout),
+            label: const Text('ÇIKIŞ YAP'),
+          ),
+
+          const SizedBox(height: 30),
+          const Center(
+            child: Text(
+              'İŞ BUL • Doğru İnsan, Doğru İş',
+              style: TextStyle(
+                color: Color(0xFF708399),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class AnaKart extends StatelessWidget {
+  final Color renk;
+  final IconData ikon;
+  final String baslik;
+  final String alt;
+  final VoidCallback onTap;
+
+  const AnaKart({
+    super.key,
+    required this.renk,
+    required this.ikon,
+    required this.baslik,
+    required this.alt,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: renk,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onTap,
+        child: Container(
+          height: 150,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(ikon, color: Colors.white, size: 37),
+              const Spacer(),
+              Text(
+                baslik,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 17,
+                ),
+              ),
+              Text(
+                alt,
+                style: const TextStyle(color: Colors.white),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// =====================================================
+// İLAN VER
+// =====================================================
+
 class IlanVerSayfasi extends StatefulWidget {
   const IlanVerSayfasi({super.key});
 
   @override
   State<IlanVerSayfasi> createState() => _IlanVerSayfasiState();
 }
+
 class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
   final baslik = TextEditingController();
   final firma = TextEditingController();
@@ -1134,7 +599,10 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
   final ucret = TextEditingController();
   final aciklama = TextEditingController();
 
-  final kategoriler = [
+  String kategori = 'İnşaat';
+  bool bekle = false;
+
+  final kategoriler = const [
     'İnşaat',
     'Boya / Alçı',
     'Elektrik',
@@ -1152,32 +620,20 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
     'Diğer',
   ];
 
-  String? kategori;
-  bool bekle = false;
-
   Future<void> gonder() async {
     final user = FirebaseAuth.instance.currentUser;
 
-    if (user == null) {
-      mesaj(context, 'Önce giriş yapmalısınız.');
-      return;
-    }
+    if (user == null) return;
 
     if (baslik.text.trim().isEmpty ||
         firma.text.trim().isEmpty ||
         konum.text.trim().isEmpty ||
-        telefon.text.trim().isEmpty ||
-        whatsapp.text.trim().isEmpty ||
-        ucret.text.trim().isEmpty ||
-        aciklama.text.trim().isEmpty ||
-        kategori == null) {
-      mesaj(context, 'Bütün alanları doldurun.');
+        aciklama.text.trim().isEmpty) {
+      mesaj('Zorunlu alanları doldurun.');
       return;
     }
 
-    setState(() {
-      bekle = true;
-    });
+    setState(() => bekle = true);
 
     try {
       await FirebaseFirestore.instance.collection('jobs').add({
@@ -1196,19 +652,46 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
-      if (mounted) {
-        mesaj(context, 'Ücretsiz ilan yönetici onayına gönderildi.');
-        Navigator.pop(context);
-      }
-    } catch (_) {
-      mesaj(context, 'İlan gönderilemedi.');
-    }
+      if (!mounted) return;
 
-    if (mounted) {
-      setState(() {
-        bekle = false;
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('İlan yönetici onayına gönderildi.'),
+        ),
+      );
+
+      Navigator.pop(context);
+    } catch (e) {
+      mesaj('İlan gönderilemedi: $e');
+    } finally {
+      if (mounted) setState(() => bekle = false);
     }
+  }
+
+  void mesaj(String yazi) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(yazi)),
+    );
+  }
+
+  Widget alan(
+    TextEditingController controller,
+    String isim, {
+    TextInputType? tip,
+    int satir = 1,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 13),
+      child: TextField(
+        controller: controller,
+        keyboardType: tip,
+        maxLines: satir,
+        decoration: InputDecoration(
+          labelText: isim,
+          border: const OutlineInputBorder(),
+        ),
+      ),
+    );
   }
 
   @override
@@ -1226,105 +709,58 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Ücretsiz İş İlanı Ver')),
+      appBar: AppBar(title: const Text('İş İlanı Ver')),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         children: [
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(14),
-              child: Text(
-                'Normal iş ilanı vermek ücretsizdir. İlan yayınlandıktan sonra isterseniz ücretli olarak öne çıkarabilirsiniz.',
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: baslik,
-            decoration: const InputDecoration(
-              labelText: 'İş başlığı',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 12),
+          alan(baslik, 'İş Başlığı *'),
+          alan(firma, 'Firma / İşveren *'),
+          alan(konum, 'Şehir / İlçe *'),
           DropdownButtonFormField<String>(
-            value: kategori,
+            initialValue: kategori,
             decoration: const InputDecoration(
-              labelText: 'Meslek / Kategori',
+              labelText: 'Kategori',
               border: OutlineInputBorder(),
             ),
             items: kategoriler
                 .map(
-                  (item) => DropdownMenuItem<String>(
-                    value: item,
-                    child: Text(item),
+                  (e) => DropdownMenuItem(
+                    value: e,
+                    child: Text(e),
                   ),
                 )
                 .toList(),
-            onChanged: (value) {
-              setState(() {
-                kategori = value;
-              });
+            onChanged: (v) {
+              if (v != null) setState(() => kategori = v);
             },
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: firma,
-            decoration: const InputDecoration(
-              labelText: 'Firma / İşveren',
-              border: OutlineInputBorder(),
-            ),
+          const SizedBox(height: 13),
+          alan(
+            telefon,
+            'Telefon',
+            tip: TextInputType.phone,
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: konum,
-            decoration: const InputDecoration(
-              labelText: 'Şehir / İlçe',
-              border: OutlineInputBorder(),
-            ),
+          alan(
+            whatsapp,
+            'WhatsApp',
+            tip: TextInputType.phone,
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: telefon,
-            keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(
-              labelText: 'Telefon numarası',
-              border: OutlineInputBorder(),
-            ),
+          alan(ucret, 'Maaş / Ücret'),
+          alan(
+            aciklama,
+            'İlan Açıklaması *',
+            satir: 5,
           ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: whatsapp,
-            keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(
-              labelText: 'WhatsApp numarası',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: ucret,
-            decoration: const InputDecoration(
-              labelText: 'Ücret / Maaş',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: aciklama,
-            maxLines: 5,
-            decoration: const InputDecoration(
-              labelText: 'İlan açıklaması',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 15),
-          ElevatedButton.icon(
-            onPressed: bekle ? null : gonder,
-            icon: const Icon(Icons.send),
-            label: Text(
-              bekle ? 'GÖNDERİLİYOR...' : 'ÜCRETSİZ İLANI ONAYA GÖNDER',
+          SizedBox(
+            height: 55,
+            child: ElevatedButton.icon(
+              onPressed: bekle ? null : gonder,
+              icon: const Icon(Icons.send),
+              label: Text(
+                bekle
+                    ? 'GÖNDERİLİYOR...'
+                    : 'İLANI ONAYA GÖNDER',
+              ),
             ),
           ),
         ],
@@ -1332,6 +768,10 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
     );
   }
 }
+
+// =====================================================
+// İŞ ARA
+// =====================================================
 
 class IsAraSayfasi extends StatefulWidget {
   const IsAraSayfasi({super.key});
@@ -1341,375 +781,110 @@ class IsAraSayfasi extends StatefulWidget {
 }
 
 class _IsAraSayfasiState extends State<IsAraSayfasi> {
-  final arama = TextEditingController();
-
-  String sadeceRakam(String numara) {
-    return numara.replaceAll(RegExp(r'[^0-9]'), '');
-  }
-
-  String whatsappNumarasi(String numara) {
-    String rakam = sadeceRakam(numara);
-
-    if (rakam.startsWith('0')) {
-      rakam = '90${rakam.substring(1)}';
-    } else if (!rakam.startsWith('90')) {
-      rakam = '90$rakam';
-    }
-
-    return rakam;
-  }
-
-  Future<void> telefonAra(String numara) async {
-    final uri = Uri(
-      scheme: 'tel',
-      path: sadeceRakam(numara),
-    );
-
-    await launchUrl(uri);
-  }
-
-  Future<void> whatsappAc(String numara) async {
-    final uri = Uri.parse(
-      'https://wa.me/${whatsappNumarasi(numara)}',
-    );
-
-    await launchUrl(
-      uri,
-      mode: LaunchMode.externalApplication,
-    );
-  }
-
-  bool eslesiyor(Map<String, dynamic> data) {
-    final kelime = arama.text.trim().toLowerCase();
-
-    if (kelime.isEmpty) return true;
-
-    final metin = [
-      data['title'],
-      data['category'],
-      data['company'],
-      data['city'],
-      data['description'],
-    ].map((e) => (e ?? '').toString().toLowerCase()).join(' ');
-
-    return metin.contains(kelime);
-  }
-
-  @override
-  void dispose() {
-    arama.dispose();
-    super.dispose();
-  }
+  String arama = '';
 
   @override
   Widget build(BuildContext context) {
-    final stream = FirebaseFirestore.instance
-        .collection('jobs')
-        .where('status', isEqualTo: 'approved')
-        .snapshots();
-
     return Scaffold(
       appBar: AppBar(title: const Text('İş Ara')),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: stream,
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(child: Text('İlanlar yüklenemedi.'));
-          }
-
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final ilanlar = snapshot.data!.docs
-              .where((doc) => eslesiyor(doc.data()))
-              .toList();
-
-          ilanlar.sort((a, b) {
-            final af = aktifOneCikan(a.data());
-            final bf = aktifOneCikan(b.data());
-
-            if (af == bf) return 0;
-            return af ? -1 : 1;
-          });
-
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: TextField(
-                  controller: arama,
-                  onChanged: (_) {
-                    setState(() {});
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'İş ara',
-                    hintText: 'Örnek: boya, şoför, Edremit',
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: arama.text.isEmpty
-                        ? null
-                        : IconButton(
-                            onPressed: () {
-                              arama.clear();
-                              setState(() {});
-                            },
-                            icon: const Icon(Icons.clear),
-                          ),
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: TextField(
+              onChanged: (v) {
+                setState(() => arama = v.toLowerCase().trim());
+              },
+              decoration: const InputDecoration(
+                hintText: 'Şehir, meslek veya firma ara...',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
               ),
-              Expanded(
-                child: ilanlar.isEmpty
-                    ? const Center(child: Text('Uygun ilan bulunamadı.'))
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(12),
-                        itemCount: ilanlar.length,
-                        itemBuilder: (context, index) {
-                          final belge = ilanlar[index];
-                          final data = belge.data();
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('jobs')
+                  .where('status', isEqualTo: 'approved')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
 
-                          final telefon = bilgi(data['phone']);
-                          final whatsapp = bilgi(data['whatsapp']);
-                          final featured = aktifOneCikan(data);
+                final docs = snapshot.data!.docs.where((doc) {
+                  final d = doc.data() as Map<String, dynamic>;
 
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            child: Padding(
-                              padding: const EdgeInsets.all(15),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (featured)
-                                    Row(
-                                      children: [
-                                        const Icon(Icons.star),
-                                        const SizedBox(width: 6),
-                                        const Text(
-                                          'ÖNE ÇIKAN İLAN',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const Spacer(),
-                                        Text(kalanSure(data)),
-                                      ],
-                                    ),
-                                  if (featured) const SizedBox(height: 8),
-                                  Text(
-                                    bilgi(data['title']),
-                                    style: const TextStyle(
-                                      fontSize: 19,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text('Kategori: ${bilgi(data['category'])}'),
-                                  Text('Firma: ${bilgi(data['company'])}'),
-                                  Text('Konum: ${bilgi(data['city'])}'),
-                                  Text(
-                                    'Ücret / Maaş: ${bilgi(data['salary'])}',
-                                  ),
-                                  const Divider(height: 24),
-                                  Text(bilgi(data['description'])),
-                                  const Divider(height: 24),
-                                  Text('Telefon: $telefon'),
-                                  Text('WhatsApp: $whatsapp'),
-                                  const SizedBox(height: 12),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: ElevatedButton.icon(
-                                          onPressed: telefon == 'Belirtilmemiş'
-                                              ? null
-                                              : () {
-                                                  telefonAra(telefon);
-                                                },
-                                          icon: const Icon(Icons.phone),
-                                          label: const Text('ARA'),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: ElevatedButton.icon(
-                                          onPressed: whatsapp == 'Belirtilmemiş'
-                                              ? null
-                                              : () {
-                                                  whatsappAc(whatsapp);
-                                                },
-                                          icon: const Icon(Icons.chat),
-                                          label: const Text('WHATSAPP'),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: OutlinedButton.icon(
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => SikayetEtSayfasi(
-                                              jobId: belge.id,
-                                              jobTitle: bilgi(data['title']),
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                      icon: const Icon(Icons.flag),
-                                      label: const Text('ŞİKAYET ET'),
-                                    ),
-                                  ),
-                                ],
+                  final metin =
+                      '${d['title'] ?? ''} ${d['company'] ?? ''} ${d['city'] ?? ''} ${d['category'] ?? ''}'
+                          .toLowerCase();
+
+                  return arama.isEmpty || metin.contains(arama);
+                }).toList();
+
+                if (docs.isEmpty) {
+                  return const Center(
+                    child: Text('Uygun ilan bulunamadı.'),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    final d =
+                        docs[index].data() as Map<String, dynamic>;
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${d['title'] ?? 'İş İlanı'}',
+                              style: const TextStyle(
+                                fontSize: 19,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                          );
-                        },
+                            const SizedBox(height: 5),
+                            Text('${d['company'] ?? ''}'),
+                            Text('📍 ${d['city'] ?? ''}'),
+                            Text(
+                              'Kategori: ${d['category'] ?? ''}',
+                            ),
+                            if ('${d['salary'] ?? ''}'.isNotEmpty)
+                              Text(
+                                'Ücret: ${d['salary']}',
+                              ),
+                            const Divider(),
+                            Text('${d['description'] ?? ''}'),
+                            if ('${d['phone'] ?? ''}'.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              Text(
+                                'Telefon: ${d['phone']}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                            if ('${d['whatsapp'] ?? ''}'.isNotEmpty)
+                              Text(
+                                'WhatsApp: ${d['whatsapp']}',
+                              ),
+                          ],
+                        ),
                       ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-class SikayetEtSayfasi extends StatefulWidget {
-  final String jobId;
-  final String jobTitle;
-
-  const SikayetEtSayfasi({
-    super.key,
-    required this.jobId,
-    required this.jobTitle,
-  });
-
-  @override
-  State<SikayetEtSayfasi> createState() => _SikayetEtSayfasiState();
-}
-
-class _SikayetEtSayfasiState extends State<SikayetEtSayfasi> {
-  final aciklama = TextEditingController();
-
-  final nedenler = [
-    'Sahte ilan',
-    'Yanlış bilgi',
-    'Uygunsuz içerik',
-    'Dolandırıcılık şüphesi',
-    'Spam / Tekrarlanan ilan',
-    'Diğer',
-  ];
-
-  String? neden;
-  bool bekle = false;
-
-  Future<void> sikayetGonder() async {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      mesaj(context, 'Önce giriş yapmalısınız.');
-      return;
-    }
-
-    if (neden == null) {
-      mesaj(context, 'Şikayet nedenini seçin.');
-      return;
-    }
-
-    setState(() {
-      bekle = true;
-    });
-
-    try {
-      await FirebaseFirestore.instance.collection('complaints').add({
-        'jobId': widget.jobId,
-        'jobTitle': widget.jobTitle,
-        'reason': neden,
-        'details': aciklama.text.trim(),
-        'reporterUid': user.uid,
-        'reporterEmail': user.email ?? '',
-        'status': 'open',
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-
-      if (mounted) {
-        mesaj(context, 'Şikayet yöneticiye gönderildi.');
-        Navigator.pop(context);
-      }
-    } catch (_) {
-      mesaj(context, 'Şikayet gönderilemedi.');
-    }
-
-    if (mounted) {
-      setState(() {
-        bekle = false;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    aciklama.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Şikayet Et')),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(15),
-              child: Text(
-                widget.jobTitle,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+                    );
+                  },
+                );
+              },
             ),
-          ),
-          const SizedBox(height: 15),
-          DropdownButtonFormField<String>(
-            value: neden,
-            decoration: const InputDecoration(
-              labelText: 'Şikayet nedeni',
-              border: OutlineInputBorder(),
-            ),
-            items: nedenler
-                .map(
-                  (item) => DropdownMenuItem<String>(
-                    value: item,
-                    child: Text(item),
-                  ),
-                )
-                .toList(),
-            onChanged: (value) {
-              setState(() {
-                neden = value;
-              });
-            },
-          ),
-          const SizedBox(height: 15),
-          TextField(
-            controller: aciklama,
-            maxLines: 5,
-            decoration: const InputDecoration(
-              labelText: 'Açıklama',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 15),
-          ElevatedButton.icon(
-            onPressed: bekle ? null : sikayetGonder,
-            icon: const Icon(Icons.send),
-            label: const Text('ŞİKAYETİ GÖNDER'),
           ),
         ],
       ),
@@ -1717,237 +892,108 @@ class _SikayetEtSayfasiState extends State<SikayetEtSayfasi> {
   }
 }
 
-class KendiIlanlarimSayfasi extends StatelessWidget {
-  const KendiIlanlarimSayfasi({super.key});
+// =====================================================
+// KENDİ İLANLARIM
+// =====================================================
 
-  String durumYazisi(String durum) {
-    if (durum == 'approved') return 'YAYINDA';
-    if (durum == 'rejected') return 'REDDEDİLDİ';
-    return 'ONAY BEKLİYOR';
-  }
-
-  Future<int?> paketSec(BuildContext context) async {
-    return showDialog<int>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Ücretli Öne Çıkarma'),
-          content: const Text(
-            'İlanınızın öne çıkacağı paketi seçin.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, 3),
-              child: const Text('3 GÜN - 49 TL'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, 7),
-              child: const Text('7 GÜN - 89 TL'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, 15),
-              child: const Text('15 GÜN - 149 TL'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, 30),
-              child: const Text('30 GÜN - 249 TL'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> oneCikarmaTalebi(
-    BuildContext context,
-    String jobId,
-    Map<String, dynamic> data,
-  ) async {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) return;
-
-    final gun = await paketSec(context);
-    if (gun == null) return;
-
-    final fiyat = paketFiyati(gun);
-
-    try {
-      final mevcut = await FirebaseFirestore.instance
-          .collection('featuredRequests')
-          .where('ownerUid', isEqualTo: user.uid)
-          .get();
-
-      final zatenVar = mevcut.docs.any((doc) {
-        final d = doc.data();
-        return d['jobId'] == jobId && d['status'] == 'pending';
-      });
-
-      if (zatenVar) {
-        if (context.mounted) {
-          mesaj(context, 'Bu ilan için zaten bekleyen talep var.');
-        }
-        return;
-      }
-
-      await FirebaseFirestore.instance.collection('featuredRequests').add({
-        'jobId': jobId,
-        'jobTitle': bilgi(data['title']),
-        'ownerUid': user.uid,
-        'ownerEmail': user.email ?? '',
-        'days': gun,
-        'price': fiyat,
-        'packageName': '$gun Gün - $fiyat TL',
-        'paymentStatus': 'not_paid',
-        'status': 'pending',
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-
-      if (context.mounted) {
-        mesaj(
-          context,
-          '$gun günlük, $fiyat TL öne çıkarma paketi seçildi.',
-        );
-      }
-    } catch (_) {
-      if (context.mounted) {
-        mesaj(context, 'Talep gönderilemedi.');
-      }
-    }
-  }
-
-  Future<void> ilanSil(BuildContext context, String id) async {
-    final cevap = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('İlanı Sil'),
-          content: const Text('Bu ilanı silmek istediğine emin misin?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('VAZGEÇ'),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('SİL'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (cevap != true) return;
-
-    try {
-      await FirebaseFirestore.instance.collection('jobs').doc(id).delete();
-
-      if (context.mounted) {
-        mesaj(context, 'İlan silindi.');
-      }
-    } catch (_) {
-      if (context.mounted) {
-        mesaj(context, 'İlan silinemedi.');
-      }
-    }
-  }
+class IlanlarimSayfasi extends StatelessWidget {
+  const IlanlarimSayfasi({super.key});
 
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
 
-    if (user == null) {
-      return const Scaffold(
-        body: Center(child: Text('Önce giriş yapmalısınız.')),
-      );
-    }
-
-    final stream = FirebaseFirestore.instance
-        .collection('jobs')
-        .where('ownerUid', isEqualTo: user.uid)
-        .snapshots();
-
     return Scaffold(
       appBar: AppBar(title: const Text('Kendi İlanlarım')),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: stream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: user == null
+          ? const Center(child: Text('Giriş yapılmamış.'))
+          : StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('jobs')
+                  .where('ownerUid', isEqualTo: user.uid)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
 
-          final ilanlar = snapshot.data!.docs;
+                final docs = snapshot.data!.docs;
 
-          if (ilanlar.isEmpty) {
-            return const Center(child: Text('Henüz ilanınız yok.'));
-          }
+                if (docs.isEmpty) {
+                  return const Center(
+                    child: Text('Henüz ilan vermediniz.'),
+                  );
+                }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: ilanlar.length,
-            itemBuilder: (context, index) {
-              final belge = ilanlar[index];
-              final data = belge.data();
-              final durum = bilgi(data['status']);
-              final featured = aktifOneCikan(data);
+                return ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    final doc = docs[index];
+                    final d =
+                        doc.data() as Map<String, dynamic>;
+                    final status =
+                        '${d['status'] ?? 'pending'}';
 
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        bilgi(data['title']),
-                        style: const TextStyle(
-                          fontSize: 19,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(durumYazisi(durum)),
-                      if (featured) ...[
-                        const SizedBox(height: 8),
-                        Text('★ ÖNE ÇIKAN İLAN - ${kalanSure(data)}'),
-                      ],
-                      const SizedBox(height: 12),
-                      if (durum == 'approved' && !featured)
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              oneCikarmaTalebi(context, belge.id, data);
-                            },
-                            icon: const Icon(Icons.star),
-                            label: const Text('ÜCRETLİ ÖNE ÇIKAR'),
+                    String durum;
+
+                    if (status == 'approved') {
+                      durum = 'ONAYLANDI';
+                    } else if (status == 'rejected') {
+                      durum = 'REDDEDİLDİ';
+                    } else {
+                      durum = 'ONAY BEKLİYOR';
+                    }
+
+                    return Card(
+                      child: ListTile(
+                        title: Text(
+                          '${d['title'] ?? 'İlan'}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            ilanSil(context, belge.id);
+                        subtitle: Text(
+                          '${d['company'] ?? ''}\nDurum: $durum',
+                        ),
+                        isThreeLine: true,
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: () async {
+                            await FirebaseFirestore.instance
+                                .collection('jobs')
+                                .doc(doc.id)
+                                .delete();
                           },
-                          icon: const Icon(Icons.delete),
-                          label: const Text('İLANI SİL'),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
+                    );
+                  },
+                );
+              },
+            ),
     );
   }
 }
 
+// =====================================================
+// YÖNETİM PANELİ
+// =====================================================
+
 class YonetimPaneli extends StatelessWidget {
   const YonetimPaneli({super.key});
+
+  Future<void> durumDegistir(
+    String id,
+    String durum,
+  ) async {
+    await FirebaseFirestore.instance
+        .collection('jobs')
+        .doc(id)
+        .update({'status': durum});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1955,1002 +1001,21 @@ class YonetimPaneli extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Yönetim Paneli'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.work),
-              title: const Text('İş İlanlarını Yönet'),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const BekleyenIlanlarSayfasi(),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.people),
-              title: const Text('Kullanıcıları Yönet'),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const KullanicilariYonetSayfasi(),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.report),
-              title: const Text('Şikayetler'),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const SikayetlerSayfasi(),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.star_border),
-              title: const Text('Öne Çıkarma Talepleri'),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const OneCikarmaTalepleriSayfasi(),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.star),
-              title: const Text('Öne Çıkan İlanlar'),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const OneCikanIlanlarSayfasi(),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Ayarlar'),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const AyarlarSayfasi(),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.notifications),
-              title: const Text('Bildirim Gönder'),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const BildirimGonderSayfasi(),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class AyarlarSayfasi extends StatefulWidget {
-  const AyarlarSayfasi({super.key});
-
-  @override
-  State<AyarlarSayfasi> createState() => _AyarlarSayfasiState();
-}
-
-class _AyarlarSayfasiState extends State<AyarlarSayfasi> {
-  bool bildirimler = true;
-  bool yukleniyor = true;
-
-  @override
-  void initState() {
-    super.initState();
-    ayarlariYukle();
-  }
-
-  Future<void> ayarlariYukle() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    if (!mounted) return;
-
-    setState(() {
-      bildirimler = prefs.getBool('bildirimler') ?? true;
-      yukleniyor = false;
-    });
-  }
-
-  Future<void> bildirimDegistir(bool deger) async {
-    final prefs = await SharedPreferences.getInstance();
-
-    await prefs.setBool('bildirimler', deger);
-
-    if (!mounted) return;
-
-    setState(() {
-      bildirimler = deger;
-    });
-
-    mesaj(
-      context,
-      deger ? 'Bildirimler açıldı.' : 'Bildirimler kapatıldı.',
-    );
-  }
-
-  Future<void> sifreSifirla() async {
-    final user = FirebaseAuth.instance.currentUser;
-    final email = user?.email;
-
-    if (email == null || email.isEmpty) {
-      mesaj(context, 'Hesabınıza ait e-posta bulunamadı.');
-      return;
-    }
-
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(
-        email: email,
-      );
-
-      if (mounted) {
-        mesaj(
-          context,
-          'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.',
-        );
-      }
-    } on FirebaseAuthException catch (e) {
-      if (mounted) {
-        mesaj(context, e.message ?? 'E-posta gönderilemedi.');
-      }
-    } catch (_) {
-      if (mounted) {
-        mesaj(context, 'E-posta gönderilemedi.');
-      }
-    }
-  }
-Future<void> hesabiSil() async {
-  final user = FirebaseAuth.instance.currentUser;
-
-  if (user == null) {
-    mesaj(context, 'Oturum bulunamadı.');
-    return;
-  }
-
-  final sifreKontrol = TextEditingController();
-
-  final sifreIleGiris = user.providerData.any(
-    (provider) => provider.providerId == 'password',
-  );
-
-  final onay = await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (dialogContext) {
-      return AlertDialog(
-        title: const Text('Hesabı Sil'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Hesabınızı kalıcı olarak silmek istediğinize emin misiniz? '
-              'Bu işlem geri alınamaz.',
-            ),
-            if (sifreIleGiris) ...[
-              const SizedBox(height: 15),
-              TextField(
-                controller: sifreKontrol,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Şifrenizi girin',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogContext, false);
-            },
-            child: const Text('VAZGEÇ'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(dialogContext, true);
-            },
-            child: const Text('HESABI SİL'),
-          ),
-        ],
-      );
-    },
-  );
-
-  if (onay != true) {
-    sifreKontrol.dispose();
-    return;
-  }
-
-  try {
-    // E-posta + şifre ile açılmış hesaplarda
-    // silmeden önce kullanıcıyı tekrar doğrula.
-    if (sifreIleGiris) {
-      final email = user.email;
-
-      if (email == null || email.isEmpty) {
-        sifreKontrol.dispose();
-        mesaj(context, 'Hesabın e-posta adresi bulunamadı.');
-        return;
-      }
-
-      if (sifreKontrol.text.trim().isEmpty) {
-        sifreKontrol.dispose();
-        mesaj(context, 'Hesabı silmek için şifrenizi girin.');
-        return;
-      }
-
-      final credential = EmailAuthProvider.credential(
-        email: email,
-        password: sifreKontrol.text,
-      );
-
-      await user.reauthenticateWithCredential(credential);
-    }
-
-    final uid = user.uid;
-
-    // Önce Firebase Authentication hesabını sil.
-    await user.delete();
-
-    // Sonra Firestore kullanıcı kaydını silmeyi dene.
-    try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .delete();
-    } catch (_) {
-      // Auth hesabı silindiyse Firestore hatası işlemi durdurmasın.
-    }
-
-    sifreKontrol.dispose();
-
-    if (!mounted) return;
-
-    Navigator.of(context).popUntil((route) => route.isFirst);
-
-    mesaj(context, 'Hesabınız kalıcı olarak silindi.');
-  } on FirebaseAuthException catch (e) {
-    sifreKontrol.dispose();
-
-    if (!mounted) return;
-
-    if (e.code == 'wrong-password' ||
-        e.code == 'invalid-credential') {
-      mesaj(context, 'Şifre yanlış. Hesap silinmedi.');
-    } else if (e.code == 'requires-recent-login') {
-      mesaj(
-        context,
-        'Güvenlik nedeniyle yeniden giriş yapıp tekrar deneyin.',
-      );
-    } else {
-      mesaj(context, e.message ?? 'Hesap silinemedi.');
-    }
-  } catch (_) {
-    sifreKontrol.dispose();
-
-    if (mounted) {
-      mesaj(context, 'Hesap silinemedi.');
-    }
-  }
-}  
-  void metinAc(String baslik, String metin) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => MetinSayfasi(
-          baslik: baslik,
-          metin: metin,
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (yukleniyor) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ayarlar'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(12),
-        children: [
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.account_circle),
-              title: const Text('Hesabım'),
-              subtitle: Text(user?.email ?? 'E-posta bulunamadı'),
-            ),
-          ),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.lock_reset),
-              title: const Text('Şifremi Değiştir'),
-              subtitle: const Text(
-                'E-posta adresine şifre sıfırlama bağlantısı gönder',
-              ),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: sifreSifirla,
-            ),
-          ),
-           Card(
-  child: ListTile(
-    leading: const Icon(Icons.delete_forever),
-    title: const Text('HESABIMI SİL'),
-    subtitle: const Text('Hesabımı kalıcı olarak sil'),
-    trailing: const Icon(Icons.arrow_forward_ios),
-    onTap: hesabiSil,
-  ),
-),
-          Card (        child: SwitchListTile(
-              secondary: const Icon(Icons.notifications),
-              title: const Text('Bildirimler'),
-              subtitle: Text(
-                bildirimler ? 'Bildirimler açık' : 'Bildirimler kapalı',
-              ),
-              value: bildirimler,
-              onChanged: bildirimDegistir,
-            ),
-          ),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.privacy_tip),
-              title: const Text('Gizlilik Politikası'),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                metinAc(
-                  'Gizlilik Politikası',
-                  '''
-İş Bul uygulaması kullanıcı gizliliğine önem verir.
-
-Uygulama; hesap oluşturma, ilan yayınlama, ilan yönetimi ve iletişim özelliklerini sağlamak amacıyla gerekli kullanıcı bilgilerini işler.
-
-Kullanıcıların e-posta adresleri hesap işlemleri için kullanılabilir.
-
-İlanlarda kullanıcı tarafından eklenen telefon ve WhatsApp bilgileri, ilanla ilgilenen kişiler tarafından görülebilir.
-
-Kullanıcı bilgileri izinsiz olarak üçüncü kişilere satılmaz.
-
-Uygunsuz kullanım, sahte ilan ve güvenlik ihlallerine karşı gerekli kayıtlar tutulabilir.
-
-Bu metin uygulama Play Store'a gönderilmeden önce nihai hukuki metinle güncellenecektir.
-''',
-                );
-              },
-            ),
-          ),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.description),
-              title: const Text('Kullanım Koşulları'),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                metinAc(
-                  'Kullanım Koşulları',
-                  '''
-İş Bul uygulamasını kullanan kişiler doğru ve güncel bilgi vermekle yükümlüdür.
-
-Sahte, yanıltıcı, hukuka aykırı veya uygunsuz iş ilanları yayınlanamaz.
-
-Kullanıcılar diğer kullanıcıları yanıltamaz veya dolandırıcılık amacıyla uygulamayı kullanamaz.
-
-Yönetici, uygulama kurallarına aykırı ilanları kaldırabilir ve kullanıcı hesaplarını engelleyebilir.
-
-İlanlarda yapılan iş teklifleri ve kullanıcılar arasındaki anlaşmalar tarafların kendi sorumluluğundadır.
-
-Bu koşullar uygulamanın geliştirilme sürecinde güncellenebilir.
-''',
-                );
-              },
-            ),
-          ),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.info),
-              title: const Text('Uygulama Hakkında'),
-              subtitle: const Text('İş Bul - Sürüm 0.4.0'),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: () {
-                metinAc(
-                  'Uygulama Hakkında',
-                  '''
-İş Bul
-
-İş arayanlarla işverenleri bir araya getirmek amacıyla geliştirilen iş ilanı uygulamasıdır.
-
-Normal iş ilanı vermek ücretsizdir.
-
-Kullanıcılar ilan arayabilir, işverenle telefon veya WhatsApp üzerinden iletişime geçebilir ve uygunsuz ilanları şikayet edebilir.
-
-Uygulama geliştirme aşamasındadır.
-
-Sürüm: 0.4.0
-''',
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class MetinSayfasi extends StatelessWidget {
-  final String baslik;
-  final String metin;
-
-  const MetinSayfasi({
-    super.key,
-    required this.baslik,
-    required this.metin,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(baslik),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Text(
-          metin,
-          style: const TextStyle(
-            fontSize: 16,
-            height: 1.5,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class OneCikarmaTalepleriSayfasi extends StatelessWidget {
-  const OneCikarmaTalepleriSayfasi({super.key});
-
-  Future<void> onayla(
-    BuildContext context,
-    String requestId,
-    String jobId,
-    int gun,
-  ) async {
-    try {
-      final jobRef =
-          FirebaseFirestore.instance.collection('jobs').doc(jobId);
-
-      final jobDoc = await jobRef.get();
-
-      if (!jobDoc.exists) {
-        mesaj(context, 'İlan artık mevcut değil.');
-        return;
-      }
-
-      final bitis = DateTime.now().add(Duration(days: gun));
-
-      await jobRef.update({
-        'featured': true,
-        'featuredUntil': Timestamp.fromDate(bitis),
-        'featuredDays': gun,
-      });
-
-      await FirebaseFirestore.instance
-          .collection('featuredRequests')
-          .doc(requestId)
-          .update({
-        'status': 'approved',
-        'approvedAt': FieldValue.serverTimestamp(),
-      });
-
-      if (context.mounted) {
-        mesaj(context, 'İlan $gun gün öne çıkarıldı.');
-      }
-    } catch (_) {
-      if (context.mounted) {
-        mesaj(context, 'İşlem yapılamadı.');
-      }
-    }
-  }
-
-  Future<void> reddet(
-    BuildContext context,
-    String requestId,
-  ) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('featuredRequests')
-          .doc(requestId)
-          .update({
-        'status': 'rejected',
-      });
-
-      if (context.mounted) {
-        mesaj(context, 'Talep reddedildi.');
-      }
-    } catch (_) {}
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final stream = FirebaseFirestore.instance
-        .collection('featuredRequests')
-        .snapshots();
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Öne Çıkarma Talepleri')),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: stream,
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('jobs')
+            .where('status', isEqualTo: 'pending')
+            .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
 
-          final talepler = snapshot.data!.docs
-              .where((doc) => doc.data()['status'] == 'pending')
-              .toList();
+          final docs = snapshot.data!.docs;
 
-          if (talepler.isEmpty) {
-            return const Center(child: Text('Bekleyen talep yok.'));
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: talepler.length,
-            itemBuilder: (context, index) {
-              final belge = talepler[index];
-              final data = belge.data();
-
-              final gun = data['days'] is int
-                  ? data['days'] as int
-                  : int.tryParse(data['days']?.toString() ?? '') ?? 3;
-
-              final fiyat = data['price'] is int
-                  ? data['price'] as int
-                  : paketFiyati(gun);
-
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        bilgi(data['jobTitle']),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text('Paket: $gun Gün'),
-                      Text('Fiyat: $fiyat TL'),
-                      Text('Sahibi: ${bilgi(data['ownerEmail'])}'),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                onayla(
-                                  context,
-                                  belge.id,
-                                  bilgi(data['jobId']),
-                                  gun,
-                                );
-                              },
-                              child: const Text('ONAYLA'),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () {
-                                reddet(context, belge.id);
-                              },
-                              child: const Text('REDDET'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-}
-
-class OneCikanIlanlarSayfasi extends StatelessWidget {
-  const OneCikanIlanlarSayfasi({super.key});
-
-  Future<void> degistir(
-    BuildContext context,
-    String id,
-    bool featured,
-  ) async {
-    final ref = FirebaseFirestore.instance.collection('jobs').doc(id);
-
-    try {
-      if (featured) {
-        await ref.update({
-          'featured': false,
-          'featuredUntil': FieldValue.delete(),
-          'featuredDays': FieldValue.delete(),
-        });
-      } else {
-        await ref.update({
-          'featured': true,
-          'featuredUntil': FieldValue.delete(),
-          'featuredDays': FieldValue.delete(),
-        });
-      }
-    } catch (_) {}
-
-    if (context.mounted) {
-      mesaj(
-        context,
-        featured ? 'Öne çıkarma kaldırıldı.' : 'İlan öne çıkarıldı.',
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final stream = FirebaseFirestore.instance
-        .collection('jobs')
-        .where('status', isEqualTo: 'approved')
-        .snapshots();
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Öne Çıkan İlanlar')),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: stream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final ilanlar = snapshot.data!.docs;
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: ilanlar.length,
-            itemBuilder: (context, index) {
-              final belge = ilanlar[index];
-              final data = belge.data();
-              final featured = aktifOneCikan(data);
-
-              return Card(
-                child: ListTile(
-                  title: Text(bilgi(data['title'])),
-                  subtitle: Text(
-                    featured
-                        ? 'Öne çıkan - ${kalanSure(data)}'
-                        : 'Normal ilan',
-                  ),
-                  trailing: ElevatedButton(
-                    onPressed: () {
-                      degistir(context, belge.id, featured);
-                    },
-                    child: Text(
-                      featured ? 'KALDIR' : 'ÖNE ÇIKAR',
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-}
-
-class KullanicilariYonetSayfasi extends StatelessWidget {
-  const KullanicilariYonetSayfasi({super.key});
-
-  Future<void> engelDegistir(
-    BuildContext context,
-    String uid,
-    bool blocked,
-  ) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .update({
-        'blocked': !blocked,
-      });
-    } catch (_) {}
-
-    if (context.mounted) {
-      mesaj(
-        context,
-        blocked ? 'Engel kaldırıldı.' : 'Kullanıcı engellendi.',
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final stream =
-        FirebaseFirestore.instance.collection('users').snapshots();
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Kullanıcıları Yönet')),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: stream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final kullanicilar = snapshot.data!.docs;
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: kullanicilar.length,
-            itemBuilder: (context, index) {
-              final belge = kullanicilar[index];
-              final data = belge.data();
-
-              final blocked = data['blocked'] == true;
-              final kendi =
-                  belge.id == FirebaseAuth.instance.currentUser?.uid;
-
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(bilgi(data['email'])),
-                      const SizedBox(height: 6),
-                      Text(
-                        kendi
-                            ? 'Durum: YÖNETİCİ'
-                            : blocked
-                                ? 'Durum: ENGELLİ'
-                                : 'Durum: AKTİF',
-                      ),
-                      const SizedBox(height: 10),
-                      if (kendi)
-                        const Text(
-                          'YÖNETİCİ HESABI',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        )
-                      else
-                        ElevatedButton(
-                          onPressed: () {
-                            engelDegistir(
-                              context,
-                              belge.id,
-                              blocked,
-                            );
-                          },
-                          child: Text(
-                            blocked ? 'ENGELİ KALDIR' : 'ENGELLE',
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-}
-
-class SikayetlerSayfasi extends StatelessWidget {
-  const SikayetlerSayfasi({super.key});
-
-  Future<void> cozuldu(
-    BuildContext context,
-    String id,
-  ) async {
-    await FirebaseFirestore.instance
-        .collection('complaints')
-        .doc(id)
-        .update({
-      'status': 'resolved',
-    });
-  }
-
-  Future<void> sil(
-    BuildContext context,
-    String id,
-  ) async {
-    await FirebaseFirestore.instance
-        .collection('complaints')
-        .doc(id)
-        .delete();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final stream =
-        FirebaseFirestore.instance.collection('complaints').snapshots();
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Şikayetler')),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: stream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final liste = snapshot.data!.docs;
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: liste.length,
-            itemBuilder: (context, index) {
-              final belge = liste[index];
-              final data = belge.data();
-
-              final resolved = data['status'] == 'resolved';
-
-              return Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(bilgi(data['jobTitle'])),
-                      Text('Neden: ${bilgi(data['reason'])}'),
-                      Text('Açıklama: ${bilgi(data['details'])}'),
-                      Text('Bildiren: ${bilgi(data['reporterEmail'])}'),
-                      Text(
-                        resolved ? 'Durum: ÇÖZÜLDÜ' : 'Durum: AÇIK',
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: resolved
-                                  ? null
-                                  : () {
-                                      cozuldu(context, belge.id);
-                                    },
-                              child: const Text('ÇÖZÜLDÜ'),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () {
-                                sil(context, belge.id);
-                              },
-                              child: const Text('SİL'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-}
-
-class BekleyenIlanlarSayfasi extends StatelessWidget {
-  const BekleyenIlanlarSayfasi({super.key});
-
-  Future<void> durumDegistir(
-    BuildContext context,
-    String id,
-    String durum,
-  ) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('jobs')
-          .doc(id)
-          .update({
-        'status': durum,
-      });
-
-      if (context.mounted) {
-        mesaj(
-          context,
-          durum == 'approved'
-              ? 'İlan onaylandı.'
-              : 'İlan reddedildi.',
-        );
-      }
-    } catch (_) {}
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final stream = FirebaseFirestore.instance
-        .collection('jobs')
-        .where('status', isEqualTo: 'pending')
-        .snapshots();
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Bekleyen İlanlar')),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: stream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final ilanlar = snapshot.data!.docs;
-
-          if (ilanlar.isEmpty) {
+          if (docs.isEmpty) {
             return const Center(
               child: Text('Onay bekleyen ilan yok.'),
             );
@@ -2958,30 +1023,34 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
 
           return ListView.builder(
             padding: const EdgeInsets.all(12),
-            itemCount: ilanlar.length,
+            itemCount: docs.length,
             itemBuilder: (context, index) {
-              final belge = ilanlar[index];
-              final data = belge.data();
+              final doc = docs[index];
+              final d =
+                  doc.data() as Map<String, dynamic>;
 
               return Card(
+                margin: const EdgeInsets.only(bottom: 12),
                 child: Padding(
                   padding: const EdgeInsets.all(15),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
                     children: [
                       Text(
-                        bilgi(data['title']),
+                        '${d['title'] ?? ''}',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Text('Kategori: ${bilgi(data['category'])}'),
-                      Text('Firma: ${bilgi(data['company'])}'),
-                      Text('Konum: ${bilgi(data['city'])}'),
-                      Text('Maaş: ${bilgi(data['salary'])}'),
-                      const SizedBox(height: 8),
-                      Text(bilgi(data['description'])),
+                      Text('Firma: ${d['company'] ?? ''}'),
+                      Text('Konum: ${d['city'] ?? ''}'),
+                      Text(
+                        'Kategori: ${d['category'] ?? ''}',
+                      ),
+                      const SizedBox(height: 7),
+                      Text('${d['description'] ?? ''}'),
                       const SizedBox(height: 12),
                       Row(
                         children: [
@@ -2989,8 +1058,7 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
                             child: ElevatedButton(
                               onPressed: () {
                                 durumDegistir(
-                                  context,
-                                  belge.id,
+                                  doc.id,
                                   'approved',
                                 );
                               },
@@ -3002,8 +1070,7 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
                             child: OutlinedButton(
                               onPressed: () {
                                 durumDegistir(
-                                  context,
-                                  belge.id,
+                                  doc.id,
                                   'rejected',
                                 );
                               },
@@ -3017,76 +1084,76 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
                 ),
               );
             },
-);
-},
-    ),
-  );
+          );
+        },
+      ),
+    );
+  }
 }
-}
+
+// =====================================================
+// BİLDİRİMLER
+// =====================================================
+
 class BildirimlerSayfasi extends StatelessWidget {
   const BildirimlerSayfasi({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final uid =
+        FirebaseAuth.instance.currentUser?.uid ?? '';
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('BİLDİRİMLER'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('Bildirimler')),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('bildirimler')
-            .orderBy('tarih', descending: true)
             .snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (!snapshot.hasData) {
             return const Center(
               child: CircularProgressIndicator(),
             );
           }
 
-          if (snapshot.hasError) {
-            return const Center(
-              child: Text('Bildirimler yüklenemedi.'),
-            );
-          }
+          final docs = snapshot.data!.docs.where((doc) {
+            final d =
+                doc.data() as Map<String, dynamic>;
 
-          final bildirimler = snapshot.data?.docs ?? [];
+            final hedef =
+                '${d['hedefUid'] ?? 'all'}';
 
-          if (bildirimler.isEmpty) {
+            return hedef == 'all' || hedef == uid;
+          }).toList();
+
+          docs.sort((a, b) {
+            final da =
+                a.data() as Map<String, dynamic>;
+            final db =
+                b.data() as Map<String, dynamic>;
+
+            final ta = da['tarih'];
+            final tb = db['tarih'];
+
+            if (ta is Timestamp && tb is Timestamp) {
+              return tb.compareTo(ta);
+            }
+
+            return 0;
+          });
+
+          if (docs.isEmpty) {
             return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.notifications_none,
-                    size: 70,
-                  ),
-                  SizedBox(height: 15),
-                  Text(
-                    'Henüz bildiriminiz yok.',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
+              child: Text('Henüz bildiriminiz yok.'),
             );
           }
 
           return ListView.builder(
             padding: const EdgeInsets.all(12),
-            itemCount: bildirimler.length,
+            itemCount: docs.length,
             itemBuilder: (context, index) {
-              final veri =
-                  bildirimler[index].data() as Map<String, dynamic>;
-
-              final baslik =
-                  veri['baslik']?.toString() ?? 'Bildirim';
-
-              final mesaj =
-                  veri['mesaj']?.toString() ?? '';
+              final d =
+                  docs[index].data() as Map<String, dynamic>;
 
               return Card(
                 child: ListTile(
@@ -3094,226 +1161,20 @@ class BildirimlerSayfasi extends StatelessWidget {
                     child: Icon(Icons.notifications),
                   ),
                   title: Text(
-                    baslik,
+                    '${d['baslik'] ?? 'Bildirim'}',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  subtitle: Text(mesaj),
+                  subtitle: Text(
+                    '${d['mesaj'] ?? ''}',
+                  ),
                 ),
               );
             },
           );
         },
-           ), 
-    );
-  }
-}
-
-class BildirimGonderSayfasi extends StatefulWidget {
-  const BildirimGonderSayfasi({super.key});
-
-  @override
-  State<BildirimGonderSayfasi> createState() =>
-      _BildirimGonderSayfasiState();
-}
-
-class _BildirimGonderSayfasiState
-    extends State<BildirimGonderSayfasi> {
-  final TextEditingController baslikController =
-      TextEditingController();
-  final TextEditingController mesajController =
-      TextEditingController();
-
-  bool tumKullanicilar = true;
-  bool yukleniyor = false;
-
-  String? secilenUid;
-  String? secilenEmail;
-
-  List<Map<String, String>> kullanicilar = [];
-
-  @override
-  void initState() {
-    super.initState();
-    kullanicilariYukle();
-  }
-
-  Future<void> kullanicilariYukle() async {
-    final snapshot =
-        await FirebaseFirestore.instance.collection('users').get();
-
-    final liste = snapshot.docs.map((doc) {
-      final data = doc.data();
-
-      return {
-        'uid': doc.id,
-        'email': (data['email'] ?? 'E-posta yok').toString(),
-      };
-    }).toList();
-
-    if (!mounted) return;
-
-    setState(() {
-      kullanicilar = liste;
-    });
-  }
-
-  Future<void> bildirimGonder() async {
-    final baslik = baslikController.text.trim();
-    final mesaj = mesajController.text.trim();
-
-    if (baslik.isEmpty || mesaj.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Başlık ve mesaj boş bırakılamaz.'),
-        ),
-      );
-      return;
-    }
-
-    if (!tumKullanicilar && secilenUid == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bir kullanıcı seçin.'),
-        ),
-      );
-      return;
-    }
-
-    setState(() {
-      yukleniyor = true;
-    });
-
-    try {
-      await FirebaseFirestore.instance
-          .collection('bildirimler')
-          .add({
-        'baslik': baslik,
-        'mesaj': mesaj,
-        'tarih': FieldValue.serverTimestamp(),
-        'hedefUid':
-            tumKullanicilar ? 'all' : secilenUid,
-        'hedefEmail':
-            tumKullanicilar ? 'Tüm Kullanıcılar' : secilenEmail,
-      });
-
-      baslikController.clear();
-      mesajController.clear();
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Bildirim başarıyla gönderildi.'),
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Hata: $e'),
-        ),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          yukleniyor = false;
-        });
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    baslikController.dispose();
-    mesajController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bildirim Gönder'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          SwitchListTile(
-            title: const Text('Tüm Kullanıcılara Gönder'),
-            value: tumKullanicilar,
-            onChanged: (value) {
-              setState(() {
-                tumKullanicilar = value;
-                secilenUid = null;
-                secilenEmail = null;
-              });
-            },
-          ),
-
-          if (!tumKullanicilar)
-            DropdownButtonFormField<String>(
-              value: secilenUid,
-              decoration: const InputDecoration(
-                labelText: 'Kullanıcı Seç',
-                border: OutlineInputBorder(),
-              ),
-              items: kullanicilar.map((kullanici) {
-                return DropdownMenuItem<String>(
-                  value: kullanici['uid'],
-                  child: Text(
-                    kullanici['email'] ?? '',
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                );
-              }).toList(),
-              onChanged: (value) {
-                final kullanici = kullanicilar.firstWhere(
-                  (k) => k['uid'] == value,
-                );
-
-                setState(() {
-                  secilenUid = value;
-                  secilenEmail = kullanici['email'];
-                });
-              },
-            ),
-
-          const SizedBox(height: 16),
-
-          TextField(
-            controller: baslikController,
-            decoration: const InputDecoration(
-              labelText: 'Bildirim Başlığı',
-              border: OutlineInputBorder(),
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          TextField(
-            controller: mesajController,
-            maxLines: 5,
-            decoration: const InputDecoration(
-              labelText: 'Bildirim Mesajı',
-              border: OutlineInputBorder(),
-            ),
-          ),
-
-          const SizedBox(height: 20),
-
-          ElevatedButton.icon(
-            onPressed: yukleniyor ? null : bildirimGonder,
-            icon: const Icon(Icons.send),
-            label: Text(
-              yukleniyor ? 'Gönderiliyor...' : 'BİLDİRİM GÖNDER',
-            ),
-          ),
-        ],
       ),
     );
   }
-
-
+}
