@@ -983,12 +983,10 @@ class IlanlarimSayfasi extends StatelessWidget {
 // =====================================================
 
 class YonetimPaneli extends StatelessWidget {
+  class YonetimPaneli extends StatelessWidget {
   const YonetimPaneli({super.key});
 
-  Future<void> durumDegistir(
-    String id,
-    String durum,
-  ) async {
+  Future<void> durumDegistir(String id, String durum) async {
     await FirebaseFirestore.instance
         .collection('jobs')
         .doc(id)
@@ -999,98 +997,194 @@ class YonetimPaneli extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Yönetim Paneli'),
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('jobs')
-            .where('status', isEqualTo: 'pending')
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          final docs = snapshot.data!.docs;
-
-          if (docs.isEmpty) {
-            return const Center(
-              child: Text('Onay bekleyen ilan yok.'),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: docs.length,
-            itemBuilder: (context, index) {
-              final doc = docs[index];
-              final d =
-                  doc.data() as Map<String, dynamic>;
-
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${d['title'] ?? ''}',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text('Firma: ${d['company'] ?? ''}'),
-                      Text('Konum: ${d['city'] ?? ''}'),
-                      Text(
-                        'Kategori: ${d['category'] ?? ''}',
-                      ),
-                      const SizedBox(height: 7),
-                      Text('${d['description'] ?? ''}'),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: () {
-                                durumDegistir(
-                                  doc.id,
-                                  'approved',
-                                );
-                              },
-                              child: const Text('ONAYLA'),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () {
-                                durumDegistir(
-                                  doc.id,
-                                  'rejected',
-                                );
-                              },
-                              child: const Text('REDDET'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+        title: const Text(
+          'Yönetim Paneli',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Bildirim Gönder',
+            icon: const Icon(Icons.send),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const BildirimGonderSayfasi(),
                 ),
               );
             },
-          );
-        },
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+            child: Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.people),
+                    label: const Text('KULLANICILAR'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const KullaniciYonetimiSayfasi(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.notifications),
+                    label: const Text('BİLDİRİM GÖNDER'),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const BildirimGonderSayfasi(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 14, 16, 8),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Onay Bekleyen İlanlar',
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('jobs')
+                  .where('status', isEqualTo: 'pending')
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'İlanlar yüklenemedi:\n${snapshot.error}',
+                      textAlign: TextAlign.center,
+                    ),
+                  );
+                }
+
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                final docs = snapshot.data!.docs;
+
+                if (docs.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'Onay bekleyen ilan yok.',
+                      style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.all(12),
+                  itemCount: docs.length,
+                  itemBuilder: (context, index) {
+                    final doc = docs[index];
+                    final d =
+                        doc.data() as Map<String, dynamic>;
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(15),
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '${d['title'] ?? ''}',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text('Firma: ${d['company'] ?? ''}'),
+                            Text('Konum: ${d['city'] ?? ''}'),
+                            Text(
+                              'Kategori: ${d['category'] ?? ''}',
+                            ),
+                            Text('Maaş: ${d['salary'] ?? ''}'),
+                            Text('Telefon: ${d['phone'] ?? ''}'),
+                            const SizedBox(height: 8),
+                            Text('${d['description'] ?? ''}'),
+                            const SizedBox(height: 14),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton.icon(
+                                    icon:
+                                        const Icon(Icons.check),
+                                    label:
+                                        const Text('ONAYLA'),
+                                    onPressed: () async {
+                                      await durumDegistir(
+                                        doc.id,
+                                        'approved',
+                                      );
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    icon:
+                                        const Icon(Icons.close),
+                                    label:
+                                        const Text('REDDET'),
+                                    onPressed: () async {
+                                      await durumDegistir(
+                                        doc.id,
+                                        'rejected',
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 }
-
+    
 // =====================================================
 // BİLDİRİMLER
 // =====================================================
