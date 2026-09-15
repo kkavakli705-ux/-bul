@@ -1255,10 +1255,13 @@ if (animasyonOynuyor)
               ),
             ),
           ],
+                  ],
         ),
       ),
     );
-  }
+      
+  
+  
   
 }
 class IlanVerSayfasi extends StatefulWidget {
