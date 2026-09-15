@@ -1119,7 +1119,12 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
     );
   }
 }
+class IlanVerSayfasi extends StatefulWidget {
+  const IlanVerSayfasi({super.key});
 
+  @override
+  State<IlanVerSayfasi> createState() => _IlanVerSayfasiState();
+}
 class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
   final baslik = TextEditingController();
   final firma = TextEditingController();
