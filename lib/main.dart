@@ -1480,3 +1480,173 @@ class BildirimlerSayfasi extends StatelessWidget {
     );
   }
 }
+class KullaniciYonetimiSayfasi extends StatelessWidget {
+  KullaniciYonetimiSayfasi({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Kullanıcı Yönetimi'),
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('users')
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('Kullanıcılar yüklenemedi.'),
+            );
+          }
+
+          final kullanicilar = snapshot.data?.docs ?? [];
+
+          if (kullanicilar.isEmpty) {
+            return const Center(
+              child: Text('Kayıtlı kullanıcı bulunamadı.'),
+            );
+          }
+
+          return ListView.builder(
+            itemCount: kullanicilar.length,
+            itemBuilder: (context, index) {
+              final veri =
+                  kullanicilar[index].data() as Map<String, dynamic>;
+
+              return ListTile(
+                leading: const Icon(Icons.person),
+                title: Text(
+                  '${veri['email'] ?? 'E-posta yok'}',
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+
+class BildirimGonderSayfasi extends StatefulWidget {
+  BildirimGonderSayfasi({super.key});
+
+  @override
+  State<BildirimGonderSayfasi> createState() =>
+      _BildirimGonderSayfasiState();
+}
+
+class _BildirimGonderSayfasiState
+    extends State<BildirimGonderSayfasi> {
+  final baslikController = TextEditingController();
+  final mesajController = TextEditingController();
+  bool gonderiliyor = false;
+
+  Future<void> bildirimGonder() async {
+    final baslik = baslikController.text.trim();
+    final mesaj = mesajController.text.trim();
+
+    if (baslik.isEmpty || mesaj.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Başlık ve mesajı doldurun.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      gonderiliyor = true;
+    });
+
+    try {
+      await FirebaseFirestore.instance.collection('bildirimler').add({
+        'baslik': baslik,
+        'mesaj': mesaj,
+        'hedefUid': 'all',
+        'tarih': FieldValue.serverTimestamp(),
+      });
+
+      if (!mounted) return;
+
+      baslikController.clear();
+      mesajController.clear();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Bildirim gönderildi.'),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Hata: $e'),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          gonderiliyor = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    baslikController.dispose();
+    mesajController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Bildirim Gönder'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextField(
+              controller: baslikController,
+              decoration: const InputDecoration(
+                labelText: 'Başlık',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: mesajController,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                labelText: 'Mesaj',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: gonderiliyor ? null : bildirimGonder,
+                icon: const Icon(Icons.send),
+                label: Text(
+                  gonderiliyor ? 'GÖNDERİLİYOR...' : 'BİLDİRİM GÖNDER',
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
