@@ -871,7 +871,6 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
             ),
             const SizedBox(height: 14),
             
-
         if (animasyonOynuyor) ...[
           AnimatedContainer(
             duration: const Duration(milliseconds: 250),
@@ -1002,6 +1001,8 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
             ),
           ),
         ],
+
+        const SizedBox(height: 16),
 
         const SizedBox(height: 16),
             const SizedBox(height: 16),
