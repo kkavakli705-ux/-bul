@@ -759,6 +759,14 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
+                  Center(
+          child: Image.asset(
+            'file_0000000043a88210aa303ce3db3df68d.png',
+            height: 120,
+            fit: BoxFit.contain,
+          ),
+        ),
+        const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
