@@ -745,207 +745,360 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
   }
 
   @override
+    @override
   Widget build(BuildContext context) {
+    const mavi = Color(0xFF087CF0);
+    const lacivert = Color(0xFF092A5E);
+
+    InputDecoration alanTasarimi({
+      required String label,
+      required IconData icon,
+      String? hint,
+    }) {
+      return InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: Icon(icon, color: mavi),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Color(0xFFD9E5F2)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: Color(0xFFD9E5F2)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(18),
+          borderSide: const BorderSide(color: mavi, width: 2),
+        ),
+      );
+    }
+
+    ButtonStyle anaButon = ElevatedButton.styleFrom(
+      backgroundColor: mavi,
+      foregroundColor: Colors.white,
+      elevation: 3,
+      minimumSize: const Size(double.infinity, 58),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+      ),
+    );
+
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F9FF),
       appBar: AppBar(
+        backgroundColor: const Color(0xFFF5F9FF),
+        elevation: 0,
+        foregroundColor: lacivert,
+        centerTitle: true,
         title: Text(
           telefonModu
               ? 'Telefon ile Giriş'
               : kayit
                   ? 'Kayıt Ol'
                   : 'Giriş Yap',
+          style: const TextStyle(
+            fontWeight: FontWeight.w800,
+            color: lacivert,
+          ),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-                  Center(
-          child: Image.asset(
-            'file_0000000043a88210aa303ce3db3df68d.png',
-            height: 120,
-            fit: BoxFit.contain,
-          ),
-        ),
-        const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: bekle
-                      ? null
-                      : () {
-                          moduDegistir(false);
-                        },
-                  icon: const Icon(Icons.email),
-                  label: const Text('E-POSTA'),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: bekle
-                      ? null
-                      : () {
-                          moduDegistir(true);
-                        },
-                  icon: const Icon(Icons.phone_android),
-                  label: const Text('TELEFON'),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 25),
-
-          if (!telefonModu) ...[
-            TextField(
-              controller: email,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'E-posta',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.email),
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            TextField(
-              controller: sifre,
-              obscureText: true,
-              decoration: const InputDecoration(
-                labelText: 'Şifre',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.lock),
-              ),
-            ),
-
-            if (kayit) ...[
-              const SizedBox(height: 15),
-
-              TextField(
-                controller: sifreTekrar,
-                obscureText: true,
-                decoration: const InputDecoration(
-                  labelText: 'Şifre Tekrar',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.lock_outline),
-                ),
-              ),
-            ],
-
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-              onPressed: bekle ? null : emailIslemi,
-              child: Text(
-                bekle
-                    ? 'BEKLEYİN...'
-                    : kayit
-                        ? 'KAYIT OL'
-                        : 'GİRİŞ YAP',
-              ),
-            ),
-
-            const SizedBox(height: 5),
-
-            TextButton(
-              onPressed: bekle
-                  ? null
-                  : () {
-                      setState(() {
-                        kayit = !kayit;
-                        sifre.clear();
-                        sifreTekrar.clear();
-                      });
-                    },
-              child: Text(
-                kayit
-                    ? 'Zaten hesabım var - Giriş yap'
-                    : 'Hesabım yok - Kayıt ol',
-              ),
-            ),
-
-            if (kayit)
-              const Padding(
-                padding: EdgeInsets.only(top: 10),
-                child: Text(
-                  'Kayıt olduktan sonra e-posta adresine doğrulama bağlantısı gönderilecektir.',
-                  textAlign: TextAlign.center,
-                ),
-              ),
-          ],
-
-          if (telefonModu) ...[
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 30),
+          children: [
             const Text(
-              'Telefon numaran ile giriş yap veya hesap oluştur.',
+              'İŞ BUL',
               textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.w900,
+                color: mavi,
+                letterSpacing: 1,
+              ),
             ),
+            const SizedBox(height: 3),
+            const Text(
+              'Doğru İş, Daha İyi Yarın',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: lacivert,
+              ),
+            ),
+            const SizedBox(height: 14),
 
-            const SizedBox(height: 15),
-
-            TextField(
-              controller: telefon,
-              enabled: !smsGonderildi,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Telefon Numarası',
-                hintText: '05XXXXXXXXX',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.phone),
+            Center(
+              child: Image.asset(
+                'file_0000000043a88210aa303ce3db3df68d.png',
+                height: 125,
+                fit: BoxFit.contain,
               ),
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: 16),
 
-            if (!smsGonderildi)
-              ElevatedButton(
-                onPressed: bekle ? null : smsGonder,
-                child: Text(
-                  bekle ? 'GÖNDERİLİYOR...' : 'SMS KODU GÖNDER',
-                ),
+            Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8F1FB),
+                borderRadius: BorderRadius.circular(20),
               ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: bekle
+                          ? null
+                          : () {
+                              moduDegistir(false);
+                            },
+                      icon: const Icon(Icons.email_outlined),
+                      label: const Text('E-POSTA'),
+                      style: ElevatedButton.styleFrom(
+                        elevation: telefonModu ? 0 : 2,
+                        backgroundColor:
+                            telefonModu ? Colors.transparent : Colors.white,
+                        foregroundColor:
+                            telefonModu ? Colors.blueGrey : mavi,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        minimumSize: const Size(0, 50),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: bekle
+                          ? null
+                          : () {
+                              moduDegistir(true);
+                            },
+                      icon: const Icon(Icons.phone_android),
+                      label: const Text('TELEFON'),
+                      style: ElevatedButton.styleFrom(
+                        elevation: telefonModu ? 2 : 0,
+                        backgroundColor:
+                            telefonModu ? Colors.white : Colors.transparent,
+                        foregroundColor:
+                            telefonModu ? mavi : Colors.blueGrey,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        minimumSize: const Size(0, 50),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
-            if (smsGonderildi) ...[
+            const SizedBox(height: 22),
+
+            if (!telefonModu) ...[
               TextField(
-                controller: smsKodu,
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                decoration: const InputDecoration(
-                  labelText: 'SMS Doğrulama Kodu',
-                  hintText: '6 haneli kod',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.sms),
+                controller: email,
+                keyboardType: TextInputType.emailAddress,
+                decoration: alanTasarimi(
+                  label: 'E-posta',
+                  icon: Icons.email_outlined,
+                  hint: 'E-posta adresini yaz',
                 ),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 14),
 
-              ElevatedButton(
-                onPressed: bekle ? null : smsDogrula,
-                child: Text(
-                  bekle ? 'DOĞRULANIYOR...' : 'KODU DOĞRULA',
+              TextField(
+                controller: sifre,
+                obscureText: true,
+                decoration: alanTasarimi(
+                  label: 'Şifre',
+                  icon: Icons.lock_outline,
+                  hint: 'Şifreni yaz',
                 ),
               ),
+
+              if (kayit) ...[
+                const SizedBox(height: 14),
+                TextField(
+                  controller: sifreTekrar,
+                  obscureText: true,
+                  decoration: alanTasarimi(
+                    label: 'Şifre Tekrar',
+                    icon: Icons.lock_reset,
+                    hint: 'Şifreni tekrar yaz',
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 20),
+
+              ElevatedButton.icon(
+                onPressed: bekle ? null : emailIslemi,
+                style: anaButon,
+                icon: Icon(
+                  kayit ? Icons.person_add_alt_1 : Icons.login,
+                ),
+                label: Text(
+                  bekle
+                      ? 'BEKLEYİN...'
+                      : kayit
+                          ? 'KAYIT OL'
+                          : 'GİRİŞ YAP',
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 8),
 
               TextButton(
                 onPressed: bekle
                     ? null
                     : () {
                         setState(() {
-                          smsGonderildi = false;
-                          verificationId = '';
-                          smsKodu.clear();
+                          kayit = !kayit;
+                          sifre.clear();
+                          sifreTekrar.clear();
                         });
                       },
-                child: const Text('Telefon numarasını değiştir'),
+                child: Text(
+                  kayit
+                      ? 'Zaten hesabım var - Giriş yap'
+                      : 'Hesabım yok - Kayıt ol',
+                  style: const TextStyle(
+                    color: mavi,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
+
+              if (kayit)
+                const Padding(
+                  padding: EdgeInsets.only(top: 6),
+                  child: Text(
+                    'Kayıt olduktan sonra e-posta adresine doğrulama bağlantısı gönderilir.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.blueGrey,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
             ],
+
+            if (telefonModu) ...[
+              const Text(
+                'Telefon numaran ile giriş yap veya hesap oluştur.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: lacivert,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              TextField(
+                controller: telefon,
+                enabled: !smsGonderildi,
+                keyboardType: TextInputType.phone,
+                decoration: alanTasarimi(
+                  label: 'Telefon Numarası',
+                  icon: Icons.phone_outlined,
+                  hint: '05XXXXXXXXX',
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              if (!smsGonderildi)
+                ElevatedButton.icon(
+                  onPressed: bekle ? null : smsGonder,
+                  style: anaButon,
+                  icon: const Icon(Icons.sms_outlined),
+                  label: Text(
+                    bekle ? 'GÖNDERİLİYOR...' : 'SMS KODU GÖNDER',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+
+              if (smsGonderildi) ...[
+                TextField(
+                  controller: smsKodu,
+                  keyboardType: TextInputType.number,
+                  maxLength: 6,
+                  decoration: alanTasarimi(
+                    label: 'SMS Doğrulama Kodu',
+                    icon: Icons.sms_outlined,
+                    hint: '6 haneli kod',
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                ElevatedButton.icon(
+                  onPressed: bekle ? null : smsDogrula,
+                  style: anaButon,
+                  icon: const Icon(Icons.verified_outlined),
+                  label: Text(
+                    bekle ? 'DOĞRULANIYOR...' : 'KODU DOĞRULA',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 5),
+
+                TextButton(
+                  onPressed: bekle
+                      ? null
+                      : () {
+                          setState(() {
+                            smsGonderildi = false;
+                            verificationId = '';
+                            smsKodu.clear();
+                          });
+                        },
+                  child: const Text(
+                    'Telefon numarasını değiştir',
+                    style: TextStyle(
+                      color: mavi,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ],
+
+            const SizedBox(height: 25),
+
+            const Text(
+              'İşini bul, geleceğini kur.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFF708399),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
-        ],
+        ),
       ),
     );
   }
+  
 }
 class IlanVerSayfasi extends StatefulWidget {
   const IlanVerSayfasi({super.key});
