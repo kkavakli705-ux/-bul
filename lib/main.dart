@@ -1258,12 +1258,9 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
               ),
             ),
           ],
-                  ],
-        ),
-      ),
-    );
-      
-  
+               ),
+    ),
+  );  
   
   
 }
