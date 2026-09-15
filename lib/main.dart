@@ -871,137 +871,139 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
             ),
             const SizedBox(height: 14),
             
-if (animasyonOynuyor)
-  AnimatedContainer(
-    duration: const Duration(milliseconds: 250),
-    margin: const EdgeInsets.only(bottom: 14),
-    padding: const EdgeInsets.symmetric(
-      horizontal: 16,
-      vertical: 12,
-    ),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
-      boxShadow: const [
-        BoxShadow(
-          color: Colors.black12,
-          blurRadius: 10,
-          offset: Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Column(
-      children: [
-        Icon(
-          animasyonAsama >= 3
-              ? Icons.construction
-              : Icons.work_outline,
-          color: animasyonAsama >= 3
-              ? Colors.orange
-              : mavi,
-          size: 32,
-        ),
-        const SizedBox(height: 6),
-        Text(
-          animasyonAsama == 1
-              ? 'Yeni iş ilanı geldi!'
-              : animasyonAsama == 2
-                  ? 'İlan gösteriliyor...'
-                  : animasyonAsama == 3
-                      ? 'GÜM! 🔨'
-                      : 'İş bulundu! 🎉',
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-      ],
-    ),
-  ),
-            AnimatedSwitcher(
-  duration: const Duration(milliseconds: 250),
-  child: Container(
-    key: ValueKey(animasyonAsama),
-    height: animasyonOynuyor ? 155 : 125,
-    alignment: Alignment.center,
-    child: Stack(
-      alignment: Alignment.center,
-      children: [
-        Image.asset(
-          'file_0000000043a88210aa303ce3db3df68d.png',
-          height: animasyonOynuyor ? 150 : 125,
-          fit: BoxFit.contain,
-        ),
 
-        if (animasyonOynuyor && animasyonAsama == 1)
-          Positioned(
-            top: 0,
-            right: 35,
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 6,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 5,
+        if (animasyonOynuyor) ...[
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            margin: const EdgeInsets.only(bottom: 14),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 10,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  animasyonAsama >= 3
+                      ? Icons.construction
+                      : Icons.work_outline,
+                  color: animasyonAsama >= 3
+                      ? Colors.orange
+                      : mavi,
+                  size: 32,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  animasyonAsama == 1
+                      ? 'Yeni iş ilanı geldi!'
+                      : animasyonAsama == 2
+                          ? 'İlan gösteriliyor...'
+                          : animasyonAsama == 3
+                              ? 'GÜM! 🔨'
+                              : 'İş bulundu! 🎉',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
                   ),
+                ),
+              ],
+            ),
+          ),
+
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: Container(
+              key: ValueKey(animasyonAsama),
+              height: 155,
+              alignment: Alignment.center,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Image.asset(
+                    'file_0000000043a88210aa303ce3db3df68d.png',
+                    height: 125,
+                    fit: BoxFit.contain,
+                  ),
+
+                  if (animasyonAsama == 1)
+                    Positioned(
+                      top: 0,
+                      right: 35,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 5,
+                            ),
+                          ],
+                        ),
+                        child: const Text(
+                          '📋 Yeni İş İlanı!',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  if (animasyonAsama == 2)
+                    const Positioned(
+                      top: 3,
+                      right: 28,
+                      child: Text(
+                        '📋 İŞ BUL',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+
+                  if (animasyonAsama == 3)
+                    const Positioned(
+                      top: 12,
+                      right: 65,
+                      child: Text(
+                        '🔨💥',
+                        style: TextStyle(fontSize: 35),
+                      ),
+                    ),
+
+                  if (animasyonAsama == 4)
+                    const Positioned(
+                      top: 5,
+                      right: 55,
+                      child: Text(
+                        '⭐😵⭐',
+                        style: TextStyle(fontSize: 24),
+                      ),
+                    ),
                 ],
               ),
-              child: const Text(
-                '📋 Yeni İş İlanı!',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 13,
-                ),
-              ),
             ),
           ),
+        ],
 
-        if (animasyonOynuyor && animasyonAsama == 2)
-          const Positioned(
-            top: 3,
-            right: 28,
-            child: Text(
-              '📋 İŞ BUL',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-
-        if (animasyonOynuyor && animasyonAsama == 3)
-          const Positioned(
-            top: 12,
-            right: 65,
-            child: Text(
-              '🔨💥',
-              style: TextStyle(fontSize: 35),
-            ),
-          ),
-
-        if (animasyonOynuyor && animasyonAsama == 4)
-          const Positioned(
-            top: 5,
-            right: 55,
-            child: Text(
-              '⭐😵‍💫⭐',
-              style: TextStyle(fontSize: 24),
-            ),
-          ),
-      ],
-    ),
-  ),
-),
-              ),
-            ),
-
+        const SizedBox(height: 16),
             const SizedBox(height: 16),
 
             Container(
