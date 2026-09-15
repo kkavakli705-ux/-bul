@@ -982,7 +982,7 @@ class IlanlarimSayfasi extends StatelessWidget {
 // YÖNETİM PANELİ
 // =====================================================
 
-class YonetimPaneli extends StatelessWidget {
+
   class YonetimPaneli extends StatelessWidget {
   const YonetimPaneli({super.key});
 
