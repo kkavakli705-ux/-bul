@@ -352,180 +352,388 @@ class _AnaSayfaState extends State<AnaSayfa> {
 
     if (kontrol) {
       return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    Widget menuKarti({
+      required Color renk,
+      required IconData ikon,
+      required String baslik,
+      required String alt,
+      required VoidCallback onTap,
+    }) {
+      return Material(
+        color: renk,
+        borderRadius: BorderRadius.circular(22),
+        elevation: 3,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(22),
+          onTap: onTap,
+          child: Container(
+            height: 125,
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 62,
+                  height: 62,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.22),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    ikon,
+                    color: Colors.white,
+                    size: 34,
+                  ),
+                ),
+                const SizedBox(width: 13),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        baslik,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 7),
+                      Text(
+                        alt,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(
+                  Icons.chevron_right,
+                  color: Colors.white,
+                  size: 32,
+                ),
+              ],
+            ),
+          ),
+        ),
       );
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF5F9FF),
+
       appBar: AppBar(
-        title: const Row(
-          children: [
-            CircleAvatar(
-              child: Icon(Icons.work),
-            ),
-            SizedBox(width: 10),
-            Text(
-              'İŞ BUL',
-              style: TextStyle(fontWeight: FontWeight.w900),
-            ),
-          ],
+        backgroundColor: const Color(0xFFF5F9FF),
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          'İŞ BUL',
+          style: TextStyle(
+            color: Color(0xFF073B8C),
+            fontWeight: FontWeight.w900,
+          ),
         ),
         actions: [
           IconButton(
             tooltip: 'Bildirimler',
             onPressed: () => ac(const BildirimlerSayfasi()),
-            icon: const Icon(Icons.notifications_outlined),
+            icon: const Icon(
+              Icons.notifications,
+              color: Color(0xFF1E293B),
+            ),
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            'Merhaba 👋',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          Text(
-            user?.email ?? '',
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF082D67),
-            ),
-          ),
-          const SizedBox(height: 18),
 
-          Container(
-            padding: const EdgeInsets.all(22),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFF073A80),
-                  Color(0xFF168FF2),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 25),
+          children: [
+
+            // LOGO ALANI
+            Container(
+              padding: const EdgeInsets.symmetric(
+                vertical: 18,
+                horizontal: 10,
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.search,
+                        size: 58,
+                        color: Color(0xFF1597F5),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 58,
+                        height: 58,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1597F5),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(
+                          Icons.work,
+                          color: Colors.white,
+                          size: 34,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'İŞ BUL',
+                    style: TextStyle(
+                      color: Color(0xFF0753B8),
+                      fontSize: 42,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const Text(
+                    'Doğru İş, Daha İyi Yarın',
+                    style: TextStyle(
+                      color: Color(0xFF173B70),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ],
               ),
-              borderRadius: BorderRadius.circular(24),
             ),
-            child: const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+
+            const SizedBox(height: 10),
+
+            // GİRİŞ BİLGİSİ
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(22),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x18000000),
+                    blurRadius: 10,
+                    offset: Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 55,
+                    height: 55,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE3F1FF),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.person,
+                      color: Color(0xFF0753B8),
+                      size: 34,
+                    ),
+                  ),
+                  const SizedBox(width: 13),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Giriş yapıldı',
+                          style: TextStyle(
+                            color: Color(0xFF073B8C),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          user?.email ?? '',
+                          style: const TextStyle(
+                            color: Color(0xFF173B70),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Hayırlı İşler 👋',
+                        style: TextStyle(
+                          color: Color(0xFF073B8C),
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'İyi bir gelecek\nseni bekliyor!',
+                        style: TextStyle(
+                          color: Color(0xFF334155),
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            // 1. SATIR
+            Row(
               children: [
-                Icon(
-                  Icons.engineering,
-                  size: 48,
-                  color: Colors.white,
-                ),
-                SizedBox(height: 15),
-                Text(
-                  'Hayalindeki işe\nbir adım daha yakın!',
-                  style: TextStyle(
-                    fontSize: 27,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
+                Expanded(
+                  child: menuKarti(
+                    renk: const Color(0xFF078CF0),
+                    ikon: Icons.search,
+                    baslik: 'İŞ ARA',
+                    alt: 'Binlerce iş ilanını keşfet',
+                    onTap: () => ac(const IsAraSayfasi()),
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
-                  'Yeni iş fırsatlarını keşfet.',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: menuKarti(
+                    renk: const Color(0xFF13B875),
+                    ikon: Icons.note_add,
+                    baslik: 'ÜCRETSİZ\nİŞ İLANI VER',
+                    alt: 'İş ilanını hemen paylaş',
+                    onTap: () => ac(const IlanVerSayfasi()),
                   ),
                 ),
               ],
             ),
-          ),
 
-          const SizedBox(height: 20),
-
-          Row(
-            children: [
-              Expanded(
-                child: AnaKart(
-                  renk: const Color(0xFF087CF0),
-                  ikon: Icons.search,
-                  baslik: 'İŞ ARA',
-                  alt: 'Fırsatları keşfet',
-                  onTap: () => ac(const IsAraSayfasi()),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: AnaKart(
-                  renk: const Color(0xFFFF8A00),
-                  ikon: Icons.add_circle_outline,
-                  baslik: 'İŞ İLANI VER',
-                  alt: 'Ücretsiz ilan oluştur',
-                  onTap: () => ac(const IlanVerSayfasi()),
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          Row(
-            children: [
-              Expanded(
-                child: AnaKart(
-                  renk: const Color(0xFF09A85A),
-                  ikon: Icons.description_outlined,
-                  baslik: 'İLANLARIM',
-                  alt: 'İlanlarını yönet',
-                  onTap: () => ac(const IlanlarimSayfasi()),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: AnaKart(
-                  renk: const Color(0xFF7557E8),
-                  ikon: Icons.notifications,
-                  baslik: 'BİLDİRİMLER',
-                  alt: 'Mesajları görüntüle',
-                  onTap: () => ac(const BildirimlerSayfasi()),
-                ),
-              ),
-            ],
-          ),
-
-          if (admin) ...[
             const SizedBox(height: 12),
-            SizedBox(
-              height: 60,
-              child: ElevatedButton.icon(
-                onPressed: () => ac(const YonetimPaneli()),
-                icon: const Icon(Icons.admin_panel_settings),
-                label: const Text(
-                  'YÖNETİM PANELİ',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+
+            // 2. SATIR
+            Row(
+              children: [
+                Expanded(
+                  child: menuKarti(
+                    renk: const Color(0xFFFFA726),
+                    ikon: Icons.list_alt,
+                    baslik: 'KENDİ\nİLANLARIM',
+                    alt: 'Verdiğin ilanları yönet',
+                    onTap: () => ac(const IlanlarimSayfasi()),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: menuKarti(
+                    renk: const Color(0xFF6537E8),
+                    ikon: Icons.settings,
+                    baslik: 'AYARLAR',
+                    alt: 'Hesap ve uygulama ayarları',
+                    onTap: () => ac(const BildirimlerSayfasi()),
+                  ),
+                ),
+              ],
+            ),
+
+            if (admin) ...[
+              const SizedBox(height: 14),
+              Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(22),
+                elevation: 3,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(22),
+                  onTap: () => ac(const YonetimPaneli()),
+                  child: const Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.admin_panel_settings,
+                          color: Color(0xFF078CF0),
+                          size: 45,
+                        ),
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'YÖNETİM PANELİ',
+                                style: TextStyle(
+                                  color: Color(0xFF073B8C),
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                'İlan onayları ve yönetim işlemleri',
+                                style: TextStyle(
+                                  color: Color(0xFF475569),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          Icons.chevron_right,
+                          color: Color(0xFF078CF0),
+                          size: 34,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+
+            const SizedBox(height: 14),
+
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 62),
+                foregroundColor: Colors.red,
+                side: const BorderSide(
+                  color: Colors.red,
+                  width: 1.5,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(22),
+                ),
+              ),
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+              },
+              icon: const Icon(Icons.logout, size: 28),
+              label: const Text(
+                'ÇIKIŞ YAP',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
                 ),
               ),
             ),
+
+            const SizedBox(height: 25),
           ],
-
-          const SizedBox(height: 12),
-
-          OutlinedButton.icon(
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-            },
-            icon: const Icon(Icons.logout),
-            label: const Text('ÇIKIŞ YAP'),
-          ),
-
-          const SizedBox(height: 30),
-          const Center(
-            child: Text(
-              'İŞ BUL • Doğru İnsan, Doğru İş',
-              style: TextStyle(
-                color: Color(0xFF708399),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
+                  
 
 class AnaKart extends StatelessWidget {
   final Color renk;
