@@ -393,6 +393,16 @@ class _AnaSayfaState extends State<AnaSayfa> {
             ),
           ),
           const SizedBox(height: 18),
+          ClipRRect(
+  borderRadius: BorderRadius.circular(20),
+  child: Image.asset(
+    'file_0000000043a88210aa303ce3db3df68d.png',
+    width: double.infinity,
+    height: 220,
+    fit: BoxFit.contain,
+  ),
+),
+const SizedBox(height: 18),
 
           Container(
             padding: const EdgeInsets.all(22),
