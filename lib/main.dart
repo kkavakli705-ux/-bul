@@ -843,6 +843,31 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
               ),
             ),
             const SizedBox(height: 14),
+            const Center(
+  child: Column(
+    children: [
+      Text(
+        '👋',
+        style: TextStyle(fontSize: 42),
+      ),
+      SizedBox(height: 5),
+      Text(
+        'Hoş Geldiniz!',
+        style: TextStyle(
+          fontSize: 26,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      SizedBox(height: 5),
+      Text(
+        'İş fırsatları burada seni bekliyor.',
+        textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 15),
+      ),
+      SizedBox(height: 14),
+    ],
+  ),
+),
 
             Center(
               child: Image.asset(
