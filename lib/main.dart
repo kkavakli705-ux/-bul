@@ -292,7 +292,18 @@ class _AnaSayfaState extends State<AnaSayfa> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 15),
+                Center(
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(15),
+    child: Image.asset(
+      'file_0000000043a88210aa303ce3db3df68d.png',
+      width: 150,
+      height: 110,
+      fit: BoxFit.contain,
+    ),
+  ),
+),
+const SizedBox(height: 15),
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(15),
