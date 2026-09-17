@@ -2729,188 +2729,91 @@ class OneCikarmaTalepleriSayfasi extends StatelessWidget {
   }
 }
 
-class OneCikanIlanlarSayfasi extends StatefulWidget {
+class OneCikanIlanlarSayfasi extends StatelessWidget {
   const OneCikanIlanlarSayfasi({super.key});
 
-  @override
-  State<OneCikanIlanlarSayfasi> createState() =>
-      _OneCikanIlanlarSayfasiState();
-}
-
-class _OneCikanIlanlarSayfasiState
-    extends State<OneCikanIlanlarSayfasi> {
-
-  Future<void> kaydiSil(
+  Future<void> degistir(
     BuildContext context,
     String id,
+    bool featured,
   ) async {
-    final onay = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Listeden Sil'),
-          content: const Text(
-            'Bu kayıt ücretsiz öne çıkarma listesinden silinsin mi?\n\n'
-            'Gerçek ilan silinmeyecek.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, false),
-              child: const Text('VAZGEÇ'),
-            ),
-            ElevatedButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, true),
-              child: const Text('SİL'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (onay != true) return;
+    final ref = FirebaseFirestore.instance.collection('jobs').doc(id);
 
     try {
-      await FirebaseFirestore.instance
-          .collection('freeFeatured')
-          .doc(id)
-          .delete();
-
-      if (context.mounted) {
-        mesaj(
-          context,
-          'Kayıt ücretsiz öne çıkarma listesinden silindi.',
-        );
+      if (featured) {
+        await ref.update({
+          'featured': false,
+          'featuredUntil': FieldValue.delete(),
+          'featuredDays': FieldValue.delete(),
+        });
+      } else {
+        await ref.update({
+          'featured': true,
+          'featuredUntil': FieldValue.delete(),
+          'featuredDays': FieldValue.delete(),
+        });
       }
-    } catch (e) {
-      if (context.mounted) {
-        mesaj(context, 'Kayıt silinemedi.');
-      }
-    }
-  }
+    } catch (_) {}
 
-  Future<void> topluSil(BuildContext context) async {
-    final onay = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Toplu Sil'),
-          content: const Text(
-            'Ücretsiz öne çıkarma sayfasındaki bütün kayıtlar '
-            'silinsin mi?\n\n'
-            'Gerçek ilanlar silinmeyecek.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, false),
-              child: const Text('VAZGEÇ'),
-            ),
-            ElevatedButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, true),
-              child: const Text('HEPSİNİ SİL'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (onay != true) return;
-
-    try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('freeFeatured')
-          .get();
-
-      if (snapshot.docs.isEmpty) {
-        if (context.mounted) {
-          mesaj(context, 'Silinecek kayıt yok.');
-        }
-        return;
-      }
-
-      final batch = FirebaseFirestore.instance.batch();
-
-      for (final doc in snapshot.docs) {
-        batch.delete(doc.reference);
-      }
-
-      await batch.commit();
-
-      if (context.mounted) {
-        mesaj(
-          context,
-          'Ücretsiz öne çıkarma kayıtlarının tamamı silindi.',
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        mesaj(context, 'Toplu silme işlemi başarısız.');
-      }
+    if (context.mounted) {
+      mesaj(
+        context,
+        featured ? 'Öne çıkarma kaldırıldı.' : 'İlan öne çıkarıldı.',
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final stream = FirebaseFirestore.instance
-        .collection('freeFeatured')
+        .collection('jobs')
+        .where('status', isEqualTo: 'approved')
         .snapshots();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ücretsiz Öne Çıkarma'),
-        actions: [
-          IconButton(
-            tooltip: 'Toplu Sil',
-            icon: const Icon(Icons.delete_sweep),
-            onPressed: () => topluSil(context),
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Öne Çıkan İlanlar')),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: stream,
         builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(
-              child: Text('Kayıtlar yüklenemedi.'),
-            );
-          }
-
           if (!snapshot.hasData) {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
-          final kayitlar = snapshot.data!.docs;
-
-          if (kayitlar.isEmpty) {
-            return const Center(
-              child: Text(
-                'Ücretsiz öne çıkarma kaydı bulunmuyor.',
-              ),
-            );
-          }
+          final ilanlar = snapshot.data!.docs;
 
           return ListView.builder(
             padding: const EdgeInsets.all(12),
-            itemCount: kayitlar.length,
+            itemCount: ilanlar.length,
             itemBuilder: (context, index) {
-              final belge = kayitlar[index];
+              final belge = ilanlar[index];
               final data = belge.data();
+              final featured = aktifOneCikan(data);
 
-              final baslik =
-                  (data['title'] ??
-                          data['jobTitle'] ??
-                          'İlan')
-                      .toString();
-
-              final firma =
-                  (data['company
-        
-                
+              return Card(
+                child: ListTile(
+                  title: Text(bilgi(data['title'])),
+                  subtitle: Text(
+                    featured
+                        ? 'Öne çıkan - ${kalanSure(data)}'
+                        : 'Normal ilan',
+                  ),
+                  trailing: ElevatedButton(
+                    onPressed: () {
+                      degistir(context, belge.id, featured);
+                    },
+                    child: Text(
+                      featured ? 'KALDIR' : 'ÖNE ÇIKAR',
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
 
 class KullanicilariYonetSayfasi extends StatelessWidget {
   const KullanicilariYonetSayfasi({super.key});
@@ -3230,34 +3133,6 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
 class BildirimlerSayfasi extends StatelessWidget {
   const BildirimlerSayfasi({super.key});
 
-  Future<void> bildirimSil(
-    BuildContext context,
-    String id,
-  ) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection('bildirimler')
-          .doc(id)
-          .delete();
-
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Bildirim silindi.'),
-          ),
-        );
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Bildirim silinemedi.'),
-          ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -3266,13 +3141,12 @@ class BildirimlerSayfasi extends StatelessWidget {
         centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('bildirimler')
-            .where('hedefUid', isEqualTo: 'all')
-            .snapshots(),
+       stream: FirebaseFirestore.instance
+    .collection('bildirimler')
+    .where('hedefUid', isEqualTo: 'all')
+    .snapshots(), 
         builder: (context, snapshot) {
-          if (snapshot.connectionState ==
-              ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -3284,32 +3158,12 @@ class BildirimlerSayfasi extends StatelessWidget {
             );
           }
 
-          final tumBildirimler =
-              snapshot.data?.docs ?? [];
-
-          final bildirimler =
-              tumBildirimler.where((belge) {
-            final veri =
-                belge.data() as Map<String, dynamic>;
-
-            final tarih = veri['tarih'];
-
-            if (tarih is! Timestamp) {
-              return true;
-            }
-
-            final bitis = tarih
-                .toDate()
-                .add(const Duration(hours: 24));
-
-            return DateTime.now().isBefore(bitis);
-          }).toList();
+          final bildirimler = snapshot.data?.docs ?? [];
 
           if (bildirimler.isEmpty) {
             return const Center(
               child: Column(
-                mainAxisAlignment:
-                    MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.notifications_none,
@@ -3332,14 +3186,11 @@ class BildirimlerSayfasi extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             itemCount: bildirimler.length,
             itemBuilder: (context, index) {
-              final belge = bildirimler[index];
-
               final veri =
-                  belge.data() as Map<String, dynamic>;
+                  bildirimler[index].data() as Map<String, dynamic>;
 
               final baslik =
-                  veri['baslik']?.toString() ??
-                      'Bildirim';
+                  veri['baslik']?.toString() ?? 'Bildirim';
 
               final mesaj =
                   veri['mesaj']?.toString() ?? '';
@@ -3356,27 +3207,15 @@ class BildirimlerSayfasi extends StatelessWidget {
                     ),
                   ),
                   subtitle: Text(mesaj),
-                  trailing: IconButton(
-                    tooltip: 'Sil',
-                    icon: const Icon(
-                      Icons.delete_outline,
-                    ),
-                    onPressed: () {
-                      bildirimSil(
-                        context,
-                        belge.id,
-                      );
-                    },
-                  ),
                 ),
               );
             },
           );
         },
-      ),
+           ), 
     );
   }
-
+}
 
 class BildirimGonderSayfasi extends StatefulWidget {
   const BildirimGonderSayfasi({super.key});
@@ -3580,122 +3419,10 @@ class _BildirimGonderSayfasiState
             ),
           ),
         ],
-      const SizedBox(height: 25),
-
-const Divider(),
-
-const SizedBox(height: 10),
-
-const Align(
-  alignment: Alignment.centerLeft,
-  child: Text(
-    'Gönderilen Bildirimler',
-    style: TextStyle(
-      fontSize: 18,
-      fontWeight: FontWeight.bold,
-    ),
-  ),
-),
-
-const SizedBox(height: 10),
-
-StreamBuilder<QuerySnapshot>(
-  stream: FirebaseFirestore.instance
-      .collection('bildirimler')
-      .snapshots(),
-  builder: (context, snapshot) {
-    if (snapshot.connectionState ==
-        ConnectionState.waiting) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
-    if (snapshot.hasError) {
-      return const Text(
-        'Gönderilen bildirimler yüklenemedi.',
-      );
-    }
-
-    final tumBelgeler = snapshot.data?.docs ?? [];
-
-    final belgeler = tumBelgeler.where((belge) {
-      final veri =
-          belge.data() as Map<String, dynamic>;
-
-      final tarih = veri['tarih'];
-
-      if (tarih is! Timestamp) {
-        return true;
-      }
-
-      final bitis = tarih
-          .toDate()
-          .add(const Duration(hours: 24));
-
-      return DateTime.now().isBefore(bitis);
-    }).toList();
-
-    if (belgeler.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.all(16),
-        child: Text(
-          'Gönderilmiş bildirim yok.',
-        ),
-      );
-    }
-
-    return Column(
-      children: belgeler.map((belge) {
-        final veri =
-            belge.data() as Map<String, dynamic>;
-
-        final baslik =
-            veri['baslik']?.toString() ??
-                'Bildirim';
-
-        final mesaj =
-            veri['mesaj']?.toString() ?? '';
-
-        final hedef =
-            veri['hedefEmail']?.toString() ?? '';
-
-        return Card(
-          child: ListTile(
-            leading: const Icon(Icons.send),
-            title: Text(
-              baslik,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            subtitle: Text(
-              '$hedef\n$mesaj',
-            ),
-            isThreeLine: true,
-            trailing: IconButton(
-              tooltip: 'Sil',
-              icon: const Icon(
-                Icons.delete_outline,
-              ),
-              onPressed: () async {
-                await FirebaseFirestore.instance
-                    .collection('bildirimler')
-                    .doc(belge.id)
-                    .delete();
-              },
-            ),
-          ),
-        );
-      }).toList(),
-    );
-  },
-),  
       ),
     );
   }
- } 
-
+}
 class MesajlasmaSayfasi extends StatefulWidget {
   final String jobId;
   final String jobTitle;
@@ -3915,6 +3642,5 @@ class _MesajlasmaSayfasiState extends State<MesajlasmaSayfasi> {
         ],
       ),
     );
-    
   }
 }
