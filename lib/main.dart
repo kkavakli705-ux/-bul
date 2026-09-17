@@ -3471,7 +3471,9 @@ class _MesajlasmaSayfasiState extends State<MesajlasmaSayfasi> {
       mesajController.clear();
     } catch (_) {
       if (mounted) {
-        mesaj(context, 'Mesaj gönderilemedi.');
+        ScaffoldMessenger.of(context).showSnackBar(
+  const SnackBar(content: Text('Mesaj gönderilemedi.')),
+);
       }
     } finally {
       if (mounted) {
