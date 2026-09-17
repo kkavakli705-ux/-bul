@@ -199,19 +199,16 @@ void dispose() {
   }
 
   Future<void> girisAc() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const GirisSayfasi()),
-    );
+  await _videoController.pause();
+  await _videoController.setVolume(0.0);
 
-    if (mounted) {
-      setState(() {
-        kontrol = true;
-      });
-    }
+  await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (_) => const GirisSayfasi()),
+  );
 
-    await hesapKontrol();
-  }
+  await hesapKontrol();
+}
 
   Future<void> cikis() async {
     await FirebaseAuth.instance.signOut();
@@ -305,8 +302,8 @@ void dispose() {
             padding: const EdgeInsets.only(bottom: 30),
             child: ElevatedButton.icon(
               onPressed: () async {
-  await _videoController.pause();
   await girisAc();
+  
   
 },
               icon: const Icon(Icons.login),
