@@ -272,13 +272,30 @@ class _AnaSayfaState extends State<AnaSayfa> {
     ],
   ),
       body: user == null
-          ? Center(
-              child: ElevatedButton.icon(
-                onPressed: girisAc,
-                icon: const Icon(Icons.login),
-                label: const Text('GİRİŞ YAP / KAYIT OL'),
-              ),
-            )
+          ? Padding(
+    padding: const EdgeInsets.all(12),
+    child: Column(
+      children: [
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(15),
+            child: Image.asset(
+              'file_00000000d4c481f4bef53c70f3477d8a.png',
+              width: double.infinity,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        ElevatedButton.icon(
+          onPressed: girisAc,
+          icon: const Icon(Icons.login),
+          label: const Text('GİRİŞ YAP / KAYIT OL'),
+        ),
+        const SizedBox(height: 12),
+      ],
+    ),
+  )
           : ListView(
               padding: const EdgeInsets.all(20),
               children: [
