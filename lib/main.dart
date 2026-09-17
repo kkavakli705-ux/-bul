@@ -578,7 +578,7 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
 
 
 if (mounted) {
-  await Future.delayed(const Duration(milliseconds: 100));
+  
   Navigator.pop(context, true);
 }
     
