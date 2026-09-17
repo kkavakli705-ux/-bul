@@ -5,7 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-
+import 'package:video_player/video_player.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -102,6 +102,7 @@ int paketFiyati(int gun) {
   return 0;
 }
 
+
 class AnaSayfa extends StatefulWidget {
   const AnaSayfa({super.key});
 
@@ -113,13 +114,28 @@ class _AnaSayfaState extends State<AnaSayfa> {
   bool admin = false;
   bool engelli = false;
   bool kontrol = true;
-
+late VideoPlayerController _videoController;
+bool _videoHazir = false;
   @override
   void initState() {
     super.initState();
     hesapKontrol();
+    _videoController = VideoPlayerController.asset('1789613362944.mp4')
+  ..initialize().then((_) {
+    _videoController.setLooping(true);
+    _videoController.play();
+    if (mounted) {
+      setState(() {
+        _videoHazir = true;
+      });
+    }
+  });
   }
-
+@override
+void dispose() {
+  _videoController.dispose();
+  super.dispose();
+}
   Future<void> kullaniciKaydiOlustur(User user) async {
     try {
       final ref = FirebaseFirestore.instance.collection('users').doc(user.uid);
@@ -271,15 +287,31 @@ class _AnaSayfaState extends State<AnaSayfa> {
       ),
     ],
   ),
-      body: user == null
-    ? Center(
-        child: ElevatedButton.icon(
-          onPressed: girisAc,
-          icon: const Icon(Icons.login),
-          label: const Text('GİRİŞ YAP / KAYIT OL'),
-        ),
+      
+     body: user == null
+    ? Column(
+        children: [
+          Expanded(
+            child: Center(
+              child: _videoHazir
+                  ? AspectRatio(
+                      aspectRatio: _videoController.value.aspectRatio,
+                      child: VideoPlayer(_videoController),
+                    )
+                  : const CircularProgressIndicator(),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 30),
+            child: ElevatedButton.icon(
+              onPressed: girisAc,
+              icon: const Icon(Icons.login),
+              label: const Text('GİRİŞ YAP / KAYIT OL'),
+            ),
+          ),
+        ],
       )
-          : ListView(
+         : ListView(
               padding: const EdgeInsets.all(20),
               children: [
                 const SizedBox(height: 15),
