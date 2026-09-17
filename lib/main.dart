@@ -2729,91 +2729,188 @@ class OneCikarmaTalepleriSayfasi extends StatelessWidget {
   }
 }
 
-class OneCikanIlanlarSayfasi extends StatelessWidget {
+class OneCikanIlanlarSayfasi extends StatefulWidget {
   const OneCikanIlanlarSayfasi({super.key});
 
-  Future<void> degistir(
+  @override
+  State<OneCikanIlanlarSayfasi> createState() =>
+      _OneCikanIlanlarSayfasiState();
+}
+
+class _OneCikanIlanlarSayfasiState
+    extends State<OneCikanIlanlarSayfasi> {
+
+  Future<void> kaydiSil(
     BuildContext context,
     String id,
-    bool featured,
   ) async {
-    final ref = FirebaseFirestore.instance.collection('jobs').doc(id);
+    final onay = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Listeden Sil'),
+          content: const Text(
+            'Bu kayıt ücretsiz öne çıkarma listesinden silinsin mi?\n\n'
+            'Gerçek ilan silinmeyecek.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, false),
+              child: const Text('VAZGEÇ'),
+            ),
+            ElevatedButton(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, true),
+              child: const Text('SİL'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (onay != true) return;
 
     try {
-      if (featured) {
-        await ref.update({
-          'featured': false,
-          'featuredUntil': FieldValue.delete(),
-          'featuredDays': FieldValue.delete(),
-        });
-      } else {
-        await ref.update({
-          'featured': true,
-          'featuredUntil': FieldValue.delete(),
-          'featuredDays': FieldValue.delete(),
-        });
-      }
-    } catch (_) {}
+      await FirebaseFirestore.instance
+          .collection('freeFeatured')
+          .doc(id)
+          .delete();
 
-    if (context.mounted) {
-      mesaj(
-        context,
-        featured ? 'Öne çıkarma kaldırıldı.' : 'İlan öne çıkarıldı.',
-      );
+      if (context.mounted) {
+        mesaj(
+          context,
+          'Kayıt ücretsiz öne çıkarma listesinden silindi.',
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        mesaj(context, 'Kayıt silinemedi.');
+      }
+    }
+  }
+
+  Future<void> topluSil(BuildContext context) async {
+    final onay = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Toplu Sil'),
+          content: const Text(
+            'Ücretsiz öne çıkarma sayfasındaki bütün kayıtlar '
+            'silinsin mi?\n\n'
+            'Gerçek ilanlar silinmeyecek.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, false),
+              child: const Text('VAZGEÇ'),
+            ),
+            ElevatedButton(
+              onPressed: () =>
+                  Navigator.pop(dialogContext, true),
+              child: const Text('HEPSİNİ SİL'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (onay != true) return;
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('freeFeatured')
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        if (context.mounted) {
+          mesaj(context, 'Silinecek kayıt yok.');
+        }
+        return;
+      }
+
+      final batch = FirebaseFirestore.instance.batch();
+
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+
+      await batch.commit();
+
+      if (context.mounted) {
+        mesaj(
+          context,
+          'Ücretsiz öne çıkarma kayıtlarının tamamı silindi.',
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        mesaj(context, 'Toplu silme işlemi başarısız.');
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final stream = FirebaseFirestore.instance
-        .collection('jobs')
-        .where('status', isEqualTo: 'approved')
+        .collection('freeFeatured')
         .snapshots();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Öne Çıkan İlanlar')),
+      appBar: AppBar(
+        title: const Text('Ücretsiz Öne Çıkarma'),
+        actions: [
+          IconButton(
+            tooltip: 'Toplu Sil',
+            icon: const Icon(Icons.delete_sweep),
+            onPressed: () => topluSil(context),
+          ),
+        ],
+      ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: stream,
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('Kayıtlar yüklenemedi.'),
+            );
           }
 
-          final ilanlar = snapshot.data!.docs;
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          final kayitlar = snapshot.data!.docs;
+
+          if (kayitlar.isEmpty) {
+            return const Center(
+              child: Text(
+                'Ücretsiz öne çıkarma kaydı bulunmuyor.',
+              ),
+            );
+          }
 
           return ListView.builder(
             padding: const EdgeInsets.all(12),
-            itemCount: ilanlar.length,
+            itemCount: kayitlar.length,
             itemBuilder: (context, index) {
-              final belge = ilanlar[index];
+              final belge = kayitlar[index];
               final data = belge.data();
-              final featured = aktifOneCikan(data);
 
-              return Card(
-                child: ListTile(
-                  title: Text(bilgi(data['title'])),
-                  subtitle: Text(
-                    featured
-                        ? 'Öne çıkan - ${kalanSure(data)}'
-                        : 'Normal ilan',
-                  ),
-                  trailing: ElevatedButton(
-                    onPressed: () {
-                      degistir(context, belge.id, featured);
-                    },
-                    child: Text(
-                      featured ? 'KALDIR' : 'ÖNE ÇIKAR',
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
-        },
-      ),
-    );
-  }
-}
+              final baslik =
+                  (data['title'] ??
+                          data['jobTitle'] ??
+                          'İlan')
+                      .toString();
+
+              final firma =
+                  (data['company
+        
+                
 
 class KullanicilariYonetSayfasi extends StatelessWidget {
   const KullanicilariYonetSayfasi({super.key});
