@@ -3230,6 +3230,34 @@ class BekleyenIlanlarSayfasi extends StatelessWidget {
 class BildirimlerSayfasi extends StatelessWidget {
   const BildirimlerSayfasi({super.key});
 
+  Future<void> bildirimSil(
+    BuildContext context,
+    String id,
+  ) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('bildirimler')
+          .doc(id)
+          .delete();
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Bildirim silindi.'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Bildirim silinemedi.'),
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -3238,12 +3266,13 @@ class BildirimlerSayfasi extends StatelessWidget {
         centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(
-       stream: FirebaseFirestore.instance
-    .collection('bildirimler')
-    .where('hedefUid', isEqualTo: 'all')
-    .snapshots(), 
+        stream: FirebaseFirestore.instance
+            .collection('bildirimler')
+            .where('hedefUid', isEqualTo: 'all')
+            .snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState ==
+              ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(),
             );
@@ -3255,12 +3284,32 @@ class BildirimlerSayfasi extends StatelessWidget {
             );
           }
 
-          final bildirimler = snapshot.data?.docs ?? [];
+          final tumBildirimler =
+              snapshot.data?.docs ?? [];
+
+          final bildirimler =
+              tumBildirimler.where((belge) {
+            final veri =
+                belge.data() as Map<String, dynamic>;
+
+            final tarih = veri['tarih'];
+
+            if (tarih is! Timestamp) {
+              return true;
+            }
+
+            final bitis = tarih
+                .toDate()
+                .add(const Duration(hours: 24));
+
+            return DateTime.now().isBefore(bitis);
+          }).toList();
 
           if (bildirimler.isEmpty) {
             return const Center(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment:
+                    MainAxisAlignment.center,
                 children: [
                   Icon(
                     Icons.notifications_none,
@@ -3283,11 +3332,14 @@ class BildirimlerSayfasi extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             itemCount: bildirimler.length,
             itemBuilder: (context, index) {
+              final belge = bildirimler[index];
+
               final veri =
-                  bildirimler[index].data() as Map<String, dynamic>;
+                  belge.data() as Map<String, dynamic>;
 
               final baslik =
-                  veri['baslik']?.toString() ?? 'Bildirim';
+                  veri['baslik']?.toString() ??
+                      'Bildirim';
 
               final mesaj =
                   veri['mesaj']?.toString() ?? '';
@@ -3304,12 +3356,24 @@ class BildirimlerSayfasi extends StatelessWidget {
                     ),
                   ),
                   subtitle: Text(mesaj),
+                  trailing: IconButton(
+                    tooltip: 'Sil',
+                    icon: const Icon(
+                      Icons.delete_outline,
+                    ),
+                    onPressed: () {
+                      bildirimSil(
+                        context,
+                        belge.id,
+                      );
+                    },
+                  ),
                 ),
               );
             },
           );
         },
-           ), 
+      ),
     );
   }
 }
