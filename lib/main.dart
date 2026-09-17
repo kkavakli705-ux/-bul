@@ -3583,7 +3583,7 @@ class _BildirimGonderSayfasiState
       ),
     );
   }
-}
+
 class MesajlasmaSayfasi extends StatefulWidget {
   final String jobId;
   final String jobTitle;
