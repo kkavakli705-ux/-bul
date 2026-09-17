@@ -3580,9 +3580,121 @@ class _BildirimGonderSayfasiState
             ),
           ),
         ],
+      const SizedBox(height: 25),
+
+const Divider(),
+
+const SizedBox(height: 10),
+
+const Align(
+  alignment: Alignment.centerLeft,
+  child: Text(
+    'Gönderilen Bildirimler',
+    style: TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+),
+
+const SizedBox(height: 10),
+
+StreamBuilder<QuerySnapshot>(
+  stream: FirebaseFirestore.instance
+      .collection('bildirimler')
+      .snapshots(),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState ==
+        ConnectionState.waiting) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (snapshot.hasError) {
+      return const Text(
+        'Gönderilen bildirimler yüklenemedi.',
+      );
+    }
+
+    final tumBelgeler = snapshot.data?.docs ?? [];
+
+    final belgeler = tumBelgeler.where((belge) {
+      final veri =
+          belge.data() as Map<String, dynamic>;
+
+      final tarih = veri['tarih'];
+
+      if (tarih is! Timestamp) {
+        return true;
+      }
+
+      final bitis = tarih
+          .toDate()
+          .add(const Duration(hours: 24));
+
+      return DateTime.now().isBefore(bitis);
+    }).toList();
+
+    if (belgeler.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(16),
+        child: Text(
+          'Gönderilmiş bildirim yok.',
+        ),
+      );
+    }
+
+    return Column(
+      children: belgeler.map((belge) {
+        final veri =
+            belge.data() as Map<String, dynamic>;
+
+        final baslik =
+            veri['baslik']?.toString() ??
+                'Bildirim';
+
+        final mesaj =
+            veri['mesaj']?.toString() ?? '';
+
+        final hedef =
+            veri['hedefEmail']?.toString() ?? '';
+
+        return Card(
+          child: ListTile(
+            leading: const Icon(Icons.send),
+            title: Text(
+              baslik,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            subtitle: Text(
+              '$hedef\n$mesaj',
+            ),
+            isThreeLine: true,
+            trailing: IconButton(
+              tooltip: 'Sil',
+              icon: const Icon(
+                Icons.delete_outline,
+              ),
+              onPressed: () async {
+                await FirebaseFirestore.instance
+                    .collection('bildirimler')
+                    .doc(belge.id)
+                    .delete();
+              },
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  },
+),  
       ),
     );
   }
+ } 
 
 class MesajlasmaSayfasi extends StatefulWidget {
   final String jobId;
