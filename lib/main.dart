@@ -208,6 +208,11 @@ void dispose() {
   );
 
   await hesapKontrol();
+
+  if (mounted && FirebaseAuth.instance.currentUser == null) {
+    await _videoController.setVolume(1.0);
+    await _videoController.play();
+  }
 }
 
   Future<void> cikis() async {
