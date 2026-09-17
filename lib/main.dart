@@ -13,7 +13,7 @@ Future<void> main() async {
     options: const FirebaseOptions(
       apiKey: 'AIzaSyD0H50wL0r2MB41mfjiMqBsRiB8lMkxKXs',
       appId: '1:308098362070:android:964692ab6543a09d42b777',
-      messagingSenderId: '308098362070',
+      messagingSenderId: '308098362070',o
       projectId: 'is-bul-1652d',
       storageBucket: 'is-bul-1652d.firebasestorage.app',
     ),
@@ -1222,8 +1222,7 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
     if (baslik.text.trim().isEmpty ||
         firma.text.trim().isEmpty ||
         konum.text.trim().isEmpty ||
-        telefon.text.trim().isEmpty ||
-        whatsapp.text.trim().isEmpty ||
+        
         ucret.text.trim().isEmpty ||
         aciklama.text.trim().isEmpty ||
         kategori == null) {
