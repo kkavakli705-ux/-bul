@@ -569,9 +569,12 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
 
         await kullaniciKaydiOlustur(guncelUser);
 
-        if (mounted) {
-          Navigator.pop(context);
-        }
+
+if (mounted) {
+  await Future.delayed(const Duration(milliseconds: 100));
+  Navigator.pop(context, true);
+}
+    
       }
     } on FirebaseAuthException catch (e) {
       String hata = 'İşlem yapılamadı.';
