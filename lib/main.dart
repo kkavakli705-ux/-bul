@@ -273,16 +273,16 @@ class _AnaSayfaState extends State<AnaSayfa> {
   ),
       body: user == null
           ? Padding(
-    padding: const EdgeInsets.all(12),
+    padding: const EdgeInsets.fromLTRB(0, 0, 0, 12),
     child: Column(
       children: [
         Expanded(
           child: ClipRRect(
             borderRadius: BorderRadius.circular(15),
             child: Image.asset(
-              'file_00000000d4c481f4bef53c70f3477d8a.png',
+              'a_bright_colorful_clean_modern_3d_realistic_ill.png',
               width: double.infinity,
-              fit: BoxFit.contain,
+              fit: BoxFit.cover,
             ),
           ),
         ),
