@@ -1598,7 +1598,44 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
                                       ),
                                     ],
                                   ),
-                                  const SizedBox(height: 8),
+                                  SizedBox(
+  width: double.infinity,
+  child: ElevatedButton.icon(
+    onPressed: () {
+      final user = FirebaseAuth.instance.currentUser;
+      final ownerUid = bilgi(data['ownerUid']);
+
+      if (user == null) {
+        mesaj(context, 'Mesaj göndermek için giriş yapmalısınız.');
+        return;
+      }
+
+      if (ownerUid.isEmpty) {
+        mesaj(context, 'İlan sahibi bulunamadı.');
+        return;
+      }
+
+      if (user.uid == ownerUid) {
+        mesaj(context, 'Kendi ilanınıza mesaj gönderemezsiniz.');
+        return;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MesajlasmaSayfasi(
+            jobId: belge.id,
+            jobTitle: bilgi(data['title']),
+            ownerUid: ownerUid,
+          ),
+        ),
+      );
+    },
+    icon: const Icon(Icons.message),
+    label: const Text('MESAJ GÖNDER'),
+  ),
+),
+       const SizedBox(height: 8),
                                   SizedBox(
                                     width: double.infinity,
                                     child: OutlinedButton.icon(
@@ -3364,6 +3401,225 @@ class _BildirimGonderSayfasiState
             icon: const Icon(Icons.send),
             label: Text(
               yukleniyor ? 'Gönderiliyor...' : 'BİLDİRİM GÖNDER',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+class MesajlasmaSayfasi extends StatefulWidget {
+  final String jobId;
+  final String jobTitle;
+  final String ownerUid;
+
+  const MesajlasmaSayfasi({
+    super.key,
+    required this.jobId,
+    required this.jobTitle,
+    required this.ownerUid,
+  });
+
+  @override
+  State<MesajlasmaSayfasi> createState() => _MesajlasmaSayfasiState();
+}
+
+class _MesajlasmaSayfasiState extends State<MesajlasmaSayfasi> {
+  final TextEditingController mesajController = TextEditingController();
+  bool gonderiliyor = false;
+
+  String conversationIdOlustur(String uid1, String uid2) {
+    final kullanicilar = [uid1, uid2]..sort();
+    return '${widget.jobId}_${kullanicilar[0]}_${kullanicilar[1]}';
+  }
+
+  Future<void> mesajGonder() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final mesaj = mesajController.text.trim();
+
+    if (user == null || mesaj.isEmpty || gonderiliyor) {
+      return;
+    }
+
+    final conversationId =
+        conversationIdOlustur(user.uid, widget.ownerUid);
+
+    setState(() {
+      gonderiliyor = true;
+    });
+
+    try {
+      final sohbetRef = FirebaseFirestore.instance
+          .collection('conversations')
+          .doc(conversationId);
+
+      await sohbetRef.set({
+        'jobId': widget.jobId,
+        'jobTitle': widget.jobTitle,
+        'ownerUid': widget.ownerUid,
+        'participants': [user.uid, widget.ownerUid],
+        'lastMessage': mesaj,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      await sohbetRef.collection('messages').add({
+        'senderUid': user.uid,
+        'text': mesaj,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      mesajController.clear();
+    } catch (_) {
+      if (mounted) {
+        mesaj(context, 'Mesaj gönderilemedi.');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          gonderiliyor = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    mesajController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Mesajlaşma'),
+        ),
+        body: const Center(
+          child: Text('Mesajlaşmak için giriş yapmalısınız.'),
+        ),
+      );
+    }
+
+    final conversationId =
+        conversationIdOlustur(user.uid, widget.ownerUid);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.jobTitle),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('conversations')
+                  .doc(conversationId)
+                  .collection('messages')
+                  .orderBy('createdAt', descending: true)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return const Center(
+                    child: Text('Mesajlar yüklenemedi.'),
+                  );
+                }
+
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                final mesajlar = snapshot.data!.docs;
+
+                if (mesajlar.isEmpty) {
+                  return const Center(
+                    child: Text('Henüz mesaj yok. İlk mesajı gönder.'),
+                  );
+                }
+
+                return ListView.builder(
+                  reverse: true,
+                  padding: const EdgeInsets.all(12),
+                  itemCount: mesajlar.length,
+                  itemBuilder: (context, index) {
+                    final data =
+                        mesajlar[index].data() as Map<String, dynamic>;
+
+                    final benim =
+                        data['senderUid'] == user.uid;
+
+                    return Align(
+                      alignment: benim
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        constraints: const BoxConstraints(
+                          maxWidth: 280,
+                        ),
+                        margin: const EdgeInsets.symmetric(
+                          vertical: 4,
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: benim
+                              ? Theme.of(context)
+                                  .colorScheme
+                                  .primaryContainer
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          data['text']?.toString() ?? '',
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: mesajController,
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) => mesajGonder(),
+                      decoration: const InputDecoration(
+                        hintText: 'Mesaj yaz...',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed:
+                        gonderiliyor ? null : mesajGonder,
+                    icon: gonderiliyor
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Icon(Icons.send),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
