@@ -3131,10 +3131,10 @@ class BildirimlerSayfasi extends StatelessWidget {
         centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('bildirimler')
-            .orderBy('tarih', descending: true)
-            .snapshots(),
+       stream: FirebaseFirestore.instance
+    .collection('bildirimler')
+    .where('hedefUid', isEqualTo: 'all')
+    .snapshots(), 
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
