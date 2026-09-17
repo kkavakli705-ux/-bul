@@ -307,9 +307,7 @@ void dispose() {
               onPressed: () async {
   await _videoController.pause();
   await girisAc();
-  if (mounted) {
-    await _videoController.play();
-  }
+  
 },
               icon: const Icon(Icons.login),
               label: const Text('GİRİŞ YAP / KAYIT OL'),
