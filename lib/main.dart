@@ -1251,13 +1251,13 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
         'description': aciklama.text.trim(),
         'ownerUid': user.uid,
         'ownerEmail': user.email ?? '',
-        'status': 'pending',
+        'status': 'approved',
         'featured': false,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
       if (mounted) {
-        mesaj(context, 'Ücretsiz ilan yönetici onayına gönderildi.');
+        mesaj(context, 'İlanınız yayınlandı.');
         Navigator.pop(context);
       }
     } catch (_) {
@@ -1384,7 +1384,7 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
             onPressed: bekle ? null : gonder,
             icon: const Icon(Icons.send),
             label: Text(
-              bekle ? 'GÖNDERİLİYOR...' : 'ÜCRETSİZ İLANI ONAYA GÖNDER',
+              bekle ? 'GÖNDERİLİYOR...' : 'ÜCRETSİZ İLANI YAYINLA',
             ),
           ),
         ],
