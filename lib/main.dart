@@ -304,7 +304,13 @@ void dispose() {
           Padding(
             padding: const EdgeInsets.only(bottom: 30),
             child: ElevatedButton.icon(
-              onPressed: girisAc,
+              onPressed: () async {
+  await _videoController.pause();
+  await girisAc();
+  if (mounted) {
+    await _videoController.play();
+  }
+},
               icon: const Icon(Icons.login),
               label: const Text('GİRİŞ YAP / KAYIT OL'),
             ),
