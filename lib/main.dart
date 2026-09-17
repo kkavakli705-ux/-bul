@@ -202,19 +202,26 @@ void dispose() {
   await _videoController.pause();
   await _videoController.setVolume(0.0);
 
-  await Navigator.push(
+  if (!mounted) return;
+
+  final girisYapildi = await Navigator.push<bool>(
     context,
-    MaterialPageRoute(builder: (_) => const GirisSayfasi()),
+    MaterialPageRoute(
+      builder: (_) => const GirisSayfasi(),
+    ),
   );
 
-  await hesapKontrol();
+  if (!mounted) return;
 
-  if (mounted && FirebaseAuth.instance.currentUser == null) {
+  if (girisYapildi == true ||
+      FirebaseAuth.instance.currentUser != null) {
+    await hesapKontrol();
+  } else {
+    await _videoController.seekTo(Duration.zero);
     await _videoController.setVolume(1.0);
     await _videoController.play();
   }
 }
-
   Future<void> cikis() async {
     await FirebaseAuth.instance.signOut();
 
