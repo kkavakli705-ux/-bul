@@ -305,16 +305,7 @@ class _AnaSayfaState extends State<AnaSayfa> {
         fit: BoxFit.contain,
       ),
     ),
-    const SizedBox(width: 10),
-    ClipRRect(
-      borderRadius: BorderRadius.circular(15),
-      child: Image.asset(
-        'file_00000000d4c481f4bef53c70f3477d8a.png',
-        width: 150,
-        height: 110,
-        fit: BoxFit.contain,
-      ),
-    ),
+    
   ],
 ),
 const SizedBox(height: 15),
