@@ -3376,7 +3376,7 @@ class BildirimlerSayfasi extends StatelessWidget {
       ),
     );
   }
-}
+
 
 class BildirimGonderSayfasi extends StatefulWidget {
   const BildirimGonderSayfasi({super.key});
