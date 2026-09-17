@@ -1344,7 +1344,7 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
             controller: telefon,
             keyboardType: TextInputType.phone,
             decoration: const InputDecoration(
-              labelText: 'Telefon numarası',
+            labelText: 'Telefon isteğe bağlı',  
               border: OutlineInputBorder(),
             ),
           ),
@@ -1353,7 +1353,7 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
             controller: whatsapp,
             keyboardType: TextInputType.phone,
             decoration: const InputDecoration(
-              labelText: 'WhatsApp numarası',
+              labelText: 'WhatsApp isteğe bağlı',
               border: OutlineInputBorder(),
             ),
           ),
