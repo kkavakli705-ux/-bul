@@ -2067,7 +2067,26 @@ class KendiIlanlarimSayfasi extends StatelessWidget {
                           ),
                         ),
                       const SizedBox(height: 8),
-                      SizedBox(
+                      
+                        SizedBox(
+  width: double.infinity,
+  child: ElevatedButton.icon(
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => IlanDuzenleSayfasi(
+            ilanId: belge.id,
+            data: data,
+          ),
+        ),
+      );
+    },
+    icon: const Icon(Icons.edit),
+    label: const Text('İLANI DÜZENLE'),
+  ),
+),
+const SizedBox(height: 8),
                         width: double.infinity,
                         child: OutlinedButton.icon(
                           onPressed: () {
