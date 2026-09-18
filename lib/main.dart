@@ -461,7 +461,26 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
   bool smsGonderildi = false;
 
   String verificationId = '';
+Future<void> sifremiUnuttum() async {
+  final eposta = email.text.trim();
 
+  if (eposta.isEmpty) {
+    mesaj(context, 'Önce e-posta adresinizi girin.');
+    return;
+  }
+
+  try {
+    await FirebaseAuth.instance.sendPasswordResetEmail(
+      email: eposta,
+    );
+    mesaj(context, 'Şifre sıfırlama bağlantısı e-postanıza gönderildi.');
+  } on FirebaseAuthException catch (e) {
+    mesaj(
+      context,
+      e.message ?? 'Şifre sıfırlama bağlantısı gönderilemedi.',
+    );
+  }
+}
   Future<void> kullaniciKaydiOlustur(User user) async {
     try {
       final ref =
@@ -1026,6 +1045,13 @@ if (mounted) {
                   ),
                 ),
               ],
+              if (!kayit)
+  TextButton(
+    onPressed: bekle ? null : sifremiUnuttum,
+    child: const Text('Şifremi Unuttum?'),
+  ),
+
+const SizedBox(height: 8),
 
               const SizedBox(height: 20),
 
