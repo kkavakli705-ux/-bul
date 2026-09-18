@@ -2174,28 +2174,27 @@ class YonetimPaneli extends StatelessWidget {
                   ),
                 );
               },
-            ),
-          ),
-        ],
-      Kart(
-  çocuk: Liste Kutusu(
-    önde gelen: sabit Simge(Simgeler.delete_forever),
-    başlık: sabit Metin('Tüm Bildirimleri Sil'),
+        ),         ),
+
+        Card(
+  child: ListTile(
+    leading: const Icon(Icons.delete_forever),
+    title: const Text('Tüm Bildirimleri Sil'),
     onTap: () async {
       final onay = await showDialog<bool>(
-        context: bağlam,
-        builder: (context) => AlertDialog(
+        context: context,
+        builder: (dialogContext) => AlertDialog(
           title: const Text('Tüm Bildirimleri Sil'),
           content: const Text(
-            'Bütün bildirimleri silmek istediğine emin misin?',
+            'Bütün bildirimleri silmek istediğinize emin misiniz?',
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context, false),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('VAZGEÇ'),
             ),
             TextButton(
-              onPressed: () => Navigator.pop(context, true),
+              onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('SİL'),
             ),
           ],
@@ -2204,20 +2203,20 @@ class YonetimPaneli extends StatelessWidget {
 
       if (onay != true) return;
 
-      final bildirimler = await FirebaseFirestore.instance
+      final snapshot = await FirebaseFirestore.instance
           .collection('bildirimler')
           .get();
 
       final batch = FirebaseFirestore.instance.batch();
 
-      for (final belge in bildirimler.docs) {
-        batch.delete(belge.reference);
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
       }
 
       await batch.commit();
 
-      if (bağlam.mounted) {
-        ScaffoldMessenger.of(bağlam).showSnackBar(
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Tüm bildirimler silindi'),
           ),
@@ -2225,7 +2224,8 @@ class YonetimPaneli extends StatelessWidget {
       }
     },
   ),
-), 
+),
+        ],      
       ),
     );
   }
