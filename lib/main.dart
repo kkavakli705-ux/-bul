@@ -1568,6 +1568,14 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
                           final telefon = bilgi(data['phone']);
                           final whatsapp = bilgi(data['whatsapp']);
                           final featured = aktifOneCikan(data);
+                         final createdAt = data['createdAt'] as Timestamp?;
+final ilanTarihi = createdAt == null
+    ? ''
+    : '${createdAt.toDate().day.toString().padLeft(2, '0')}.'
+      '${createdAt.toDate().month.toString().padLeft(2, '0')}.'
+      '${createdAt.toDate().year} • '
+      '${createdAt.toDate().hour.toString().padLeft(2, '0')}:'
+      '${createdAt.toDate().minute.toString().padLeft(2, '0')}'; 
 
                           return Card(
                             margin: const EdgeInsets.only(bottom: 12),
@@ -1606,6 +1614,8 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
                                   Text(
                                     'Ücret / Maaş: ${bilgi(data['salary'])}',
                                   ),
+                                  if (ilanTarihi.isNotEmpty)
+  Text('İlan Tarihi: $ilanTarihi'),
                                   const Divider(height: 24),
                                   Text(bilgi(data['description'])),
                                   const Divider(height: 24),
