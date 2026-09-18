@@ -2088,7 +2088,195 @@ class KendiIlanlarimSayfasi extends StatelessWidget {
     );
   }
 }
+class IlanDuzenleSayfasi extends StatefulWidget {
+  final String ilanId;
+  final Map<String, dynamic> data;
 
+  const IlanDuzenleSayfasi({
+    super.key,
+    required this.ilanId,
+    required this.data,
+  });
+
+  @override
+  State<IlanDuzenleSayfasi> createState() => _IlanDuzenleSayfasiState();
+}
+
+class _IlanDuzenleSayfasiState extends State<IlanDuzenleSayfasi> {
+  late final TextEditingController baslik;
+  late final TextEditingController firma;
+  late final TextEditingController konum;
+  late final TextEditingController telefon;
+  late final TextEditingController whatsapp;
+  late final TextEditingController ucret;
+  late final TextEditingController aciklama;
+
+  bool bekle = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    baslik = TextEditingController(
+      text: widget.data['title']?.toString() ?? '',
+    );
+    firma = TextEditingController(
+      text: widget.data['company']?.toString() ?? '',
+    );
+    konum = TextEditingController(
+      text: widget.data['city']?.toString() ?? '',
+    );
+    telefon = TextEditingController(
+      text: widget.data['phone']?.toString() ?? '',
+    );
+    whatsapp = TextEditingController(
+      text: widget.data['whatsapp']?.toString() ?? '',
+    );
+    ucret = TextEditingController(
+      text: widget.data['salary']?.toString() ?? '',
+    );
+    aciklama = TextEditingController(
+      text: widget.data['description']?.toString() ?? '',
+    );
+  }
+
+  Future<void> kaydet() async {
+    if (baslik.text.trim().isEmpty ||
+        firma.text.trim().isEmpty ||
+        konum.text.trim().isEmpty ||
+        ucret.text.trim().isEmpty ||
+        aciklama.text.trim().isEmpty) {
+      mesaj(context, 'Zorunlu alanları doldurun.');
+      return;
+    }
+
+    setState(() {
+      bekle = true;
+    });
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('jobs')
+          .doc(widget.ilanId)
+          .update({
+        'title': baslik.text.trim(),
+        'company': firma.text.trim(),
+        'city': konum.text.trim(),
+        'phone': telefon.text.trim(),
+        'whatsapp': whatsapp.text.trim(),
+        'salary': ucret.text.trim(),
+        'description': aciklama.text.trim(),
+      });
+
+      if (!mounted) return;
+
+      mesaj(context, 'İlan güncellendi.');
+      Navigator.pop(context);
+    } catch (_) {
+      if (mounted) {
+        mesaj(context, 'İlan güncellenemedi.');
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        bekle = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    baslik.dispose();
+    firma.dispose();
+    konum.dispose();
+    telefon.dispose();
+    whatsapp.dispose();
+    ucret.dispose();
+    aciklama.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('İlanı Düzenle'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          TextField(
+            controller: baslik,
+            decoration: const InputDecoration(
+              labelText: 'İş başlığı',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: firma,
+            decoration: const InputDecoration(
+              labelText: 'Firma / İşveren',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: konum,
+            decoration: const InputDecoration(
+              labelText: 'Şehir / İlçe',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: telefon,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'Telefon',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: whatsapp,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'WhatsApp',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: ucret,
+            decoration: const InputDecoration(
+              labelText: 'Ücret / Maaş',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: aciklama,
+            maxLines: 5,
+            decoration: const InputDecoration(
+              labelText: 'İlan açıklaması',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            onPressed: bekle ? null : kaydet,
+            icon: const Icon(Icons.save),
+            label: Text(
+              bekle ? 'KAYDEDİLİYOR...' : 'DEĞİŞİKLİKLERİ KAYDET',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 class YonetimPaneli extends StatelessWidget {
   const YonetimPaneli({super.key});
 
