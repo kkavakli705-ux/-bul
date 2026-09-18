@@ -2177,6 +2177,55 @@ class YonetimPaneli extends StatelessWidget {
             ),
           ),
         ],
+      Kart(
+  çocuk: Liste Kutusu(
+    önde gelen: sabit Simge(Simgeler.delete_forever),
+    başlık: sabit Metin('Tüm Bildirimleri Sil'),
+    onTap: () async {
+      final onay = await showDialog<bool>(
+        context: bağlam,
+        builder: (context) => AlertDialog(
+          title: const Text('Tüm Bildirimleri Sil'),
+          content: const Text(
+            'Bütün bildirimleri silmek istediğine emin misin?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('VAZGEÇ'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('SİL'),
+            ),
+          ],
+        ),
+      );
+
+      if (onay != true) return;
+
+      final bildirimler = await FirebaseFirestore.instance
+          .collection('bildirimler')
+          .get();
+
+      final batch = FirebaseFirestore.instance.batch();
+
+      for (final belge in bildirimler.docs) {
+        batch.delete(belge.reference);
+      }
+
+      await batch.commit();
+
+      if (bağlam.mounted) {
+        ScaffoldMessenger.of(bağlam).showSnackBar(
+          const SnackBar(
+            content: Text('Tüm bildirimler silindi'),
+          ),
+        );
+      }
+    },
+  ),
+), 
       ),
     );
   }
