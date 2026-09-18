@@ -1276,29 +1276,54 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
     });
 
     try {
-      await FirebaseFirestore.instance.collection('jobs').add({
-        'title': baslik.text.trim(),
-        'company': firma.text.trim(),
-        'city': konum.text.trim(),
-        'category': kategori,
-        'phone': telefon.text.trim(),
-        'whatsapp': whatsapp.text.trim(),
-        'salary': ucret.text.trim(),
-        'description': aciklama.text.trim(),
-        'ownerUid': user.uid,
-        'ownerEmail': user.email ?? '',
-        'status': 'approved',
-        'featured': false,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+  final firestore = FirebaseFirestore.instance;
+  final sayacRef = firestore.collection('counters').doc('jobs');
+  final ilanRef = firestore.collection('jobs').doc();
 
-      if (mounted) {
-        mesaj(context, 'İlanınız yayınlandı.');
-        Navigator.pop(context);
-      }
-    } catch (_) {
-      mesaj(context, 'İlan gönderilemedi.');
+  int yeniIlanNo = 1001;
+
+  await firestore.runTransaction((transaction) async {
+    final sayacDoc = await transaction.get(sayacRef);
+
+    if (sayacDoc.exists) {
+      final mevcut = sayacDoc.data()?['lastNumber'];
+      yeniIlanNo =
+          (int.tryParse(mevcut?.toString() ?? '') ?? 1000) + 1;
     }
+
+    transaction.set(
+      sayacRef,
+      {'lastNumber': yeniIlanNo},
+      SetOptions(merge: true),
+    );
+
+    transaction.set(ilanRef, {
+      'ilanNo': yeniIlanNo,
+      'title': baslik.text.trim(),
+      'company': firma.text.trim(),
+      'city': konum.text.trim(),
+      'category': kategori,
+      'phone': telefon.text.trim(),
+      'whatsapp': whatsapp.text.trim(),
+      'salary': ucret.text.trim(),
+      'description': aciklama.text.trim(),
+      'ownerUid': user.uid,
+      'ownerEmail': user.email ?? '',
+      'status': 'approved',
+      'featured': false,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  });
+
+  if (mounted) {
+    mesaj(context, 'İlanınız yayınlandı. İlan No: $yeniIlanNo');
+    Navigator.pop(context);
+  }
+} catch (_) {
+  if (mounted) {
+    mesaj(context, 'İlan gönderilemedi.');
+  }
+}
 
     if (mounted) {
       setState(() {
@@ -1607,6 +1632,14 @@ final ilanTarihi = createdAt == null
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
+                                  const SizedBox(height: 4),
+Text(
+  'İlan No: ${data['ilanNo'] ?? 'Eski İlan'}',
+  style: const TextStyle(
+    fontWeight: FontWeight.w600,
+  ),
+),
+                                  
                                   const SizedBox(height: 8),
                                   Text('Kategori: ${bilgi(data['category'])}'),
                                   Text('Firma: ${bilgi(data['company'])}'),
@@ -1616,6 +1649,28 @@ final ilanTarihi = createdAt == null
                                   ),
                                   if (ilanTarihi.isNotEmpty)
   Text('İlan Tarihi: $ilanTarihi'),
+                                  const SizedBox(height: 10),
+
+SizedBox(
+  width: double.infinity,
+  child: ElevatedButton.icon(
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => IlanDetaySayfasi(
+            jobId: belge.id,
+            data: data,
+          ),
+        ),
+      );
+    },
+    icon: const Icon(Icons.visibility),
+    label: const Text('DETAYA GİT'),
+  ),
+),
+
+const SizedBox(height: 8),
                                   const Divider(height: 24),
                                   Text(bilgi(data['description'])),
                                   const Divider(height: 24),
@@ -3927,6 +3982,328 @@ class _MesajlasmaSayfasiState extends State<MesajlasmaSayfasi> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class IlanDetaySayfasi extends StatelessWidget {
+  final String jobId;
+  final Map<String, dynamic> data;
+
+  const IlanDetaySayfasi({
+    super.key,
+    required this.jobId,
+    required this.data,
+  });
+
+  String sadeceRakam(String numara) {
+    return numara.replaceAll(RegExp(r'[^0-9]'), '');
+  }
+
+  String whatsappNumarasi(String numara) {
+    String rakam = sadeceRakam(numara);
+
+    if (rakam.startsWith('0')) {
+      rakam = '90${rakam.substring(1)}';
+    } else if (!rakam.startsWith('90')) {
+      rakam = '90$rakam';
+    }
+
+    return rakam;
+  }
+
+  Future<void> telefonAra(String numara) async {
+    final uri = Uri(
+      scheme: 'tel',
+      path: sadeceRakam(numara),
+    );
+    await launchUrl(uri);
+  }
+
+  Future<void> whatsappAc(String numara) async {
+    final uri = Uri.parse(
+      'https://wa.me/${whatsappNumarasi(numara)}',
+    );
+
+    await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+  }
+
+  String tarihYazisi(dynamic deger) {
+    if (deger is! Timestamp) return '';
+
+    final tarih = deger.toDate();
+
+    return '${tarih.day.toString().padLeft(2, '0')}.'
+        '${tarih.month.toString().padLeft(2, '0')}.'
+        '${tarih.year} '
+        '${tarih.hour.toString().padLeft(2, '0')}:'
+        '${tarih.minute.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final telefon = bilgi(data['phone']);
+    final whatsapp = bilgi(data['whatsapp']);
+    final tarih = tarihYazisi(data['createdAt']);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('İlan Detayı'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    bilgi(data['title']),
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  Text(
+                    'İlan No: ${data['ilanNo'] ?? 'Eski İlan'}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const Divider(height: 26),
+
+                  Text('Kategori: ${bilgi(data['category'])}'),
+                  Text('Firma: ${bilgi(data['company'])}'),
+                  Text('Konum: ${bilgi(data['city'])}'),
+                  Text('Ücret / Maaş: ${bilgi(data['salary'])}'),
+
+                  if (tarih.isNotEmpty)
+                    Text('İlan Tarihi: $tarih'),
+
+                  const Divider(height: 26),
+
+                  const Text(
+                    'İlan Açıklaması',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    bilgi(data['description']),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      height: 1.4,
+                    ),
+                  ),
+
+                  const Divider(height: 26),
+
+                  Text('Telefon: $telefon'),
+                  Text('WhatsApp: $whatsapp'),
+
+                  const SizedBox(height: 12),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: telefon == 'Belirtilmemiş'
+                              ? null
+                              : () => telefonAra(telefon),
+                          icon: const Icon(Icons.phone),
+                          label: const Text('ARA'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: whatsapp == 'Belirtilmemiş'
+                              ? null
+                              : () => whatsappAc(whatsapp),
+                          icon: const Icon(Icons.chat),
+                          label: const Text('WHATSAPP'),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        final user =
+                            FirebaseAuth.instance.currentUser;
+                        final ownerUid =
+                            data['ownerUid']?.toString().trim() ?? '';
+
+                        if (user == null) {
+                          mesaj(
+                            context,
+                            'Mesaj göndermek için giriş yapmalısınız.',
+                          );
+                          return;
+                        }
+
+                        if (ownerUid.isEmpty) {
+                          mesaj(
+                            context,
+                            'İlan sahibi bulunamadı.',
+                          );
+                          return;
+                        }
+
+                        if (user.uid == ownerUid) {
+                          mesaj(
+                            context,
+                            'Kendi ilanınıza mesaj gönderemezsiniz.',
+                          );
+                          return;
+                        }
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => MesajlasmaSayfasi(
+                              jobId: jobId,
+                              jobTitle: bilgi(data['title']),
+                              ownerUid: ownerUid,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.message),
+                      label: const Text('MESAJ GÖNDER'),
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => SikayetEtSayfasi(
+                              jobId: jobId,
+                              jobTitle: bilgi(data['title']),
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.flag),
+                      label: const Text('ŞİKAYET ET'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          Row(
+            children: [
+              const Expanded(
+                child: Text(
+                  'Diğer İlanlar',
+                  style: TextStyle(
+                    fontSize: 21,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const IsAraSayfasi(),
+                    ),
+                  );
+                },
+                child: const Text('TÜMÜNÜ GÖR'),
+              ),
+            ],
+          ),
+
+          StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+            stream: FirebaseFirestore.instance
+                .collection('jobs')
+                .where('status', isEqualTo: 'approved')
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              final digerIlanlar = snapshot.data!.docs
+                  .where((doc) => doc.id != jobId)
+                  .take(4)
+                  .toList();
+
+              if (digerIlanlar.isEmpty) {
+                return const Text(
+                  'Başka ilan bulunamadı.',
+                );
+              }
+
+              return Column(
+                children: digerIlanlar.map((belge) {
+                  final digerData = belge.data();
+
+                  return Card(
+                    child: ListTile(
+                      title: Text(
+                        bilgi(digerData['title']),
+                      ),
+                      subtitle: Text(
+                        '${bilgi(digerData['company'])}\n'
+                        '${bilgi(digerData['city'])}',
+                      ),
+                      trailing: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  IlanDetaySayfasi(
+                                jobId: belge.id,
+                                data: digerData,
+                              ),
+                            ),
+                          );
+                        },
+                        child: const Text('DETAY'),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+
+          const SizedBox(height: 30),
         ],
       ),
     );
