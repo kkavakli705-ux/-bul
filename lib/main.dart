@@ -2641,19 +2641,14 @@ Future<void> hesabiSil() async {
 
     final uid = user.uid;
 
-    // Önce Firebase Authentication hesabını sil.
+        // Önce Firestore kullanıcı kaydını sil.
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(uid)
+        .delete();
+
+    // Sonra Firebase Authentication hesabını sil.
     await user.delete();
-
-    // Sonra Firestore kullanıcı kaydını silmeyi dene.
-    try {
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .delete();
-    } catch (_) {
-      // Auth hesabı silindiyse Firestore hatası işlemi durdurmasın.
-    }
-
     sifreKontrol.dispose();
 
     if (!mounted) return;
