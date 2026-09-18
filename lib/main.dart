@@ -132,7 +132,23 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
       if (mounted) setState(() => yukleniyor = false);
     }
   }
+Future<void> sifremiUnuttum() async {
+  final eposta = email.text.trim();
 
+  if (eposta.isEmpty) {
+    mesaj('Önce e-posta adresinizi girin.');
+    return;
+  }
+
+  try {
+    await FirebaseAuth.instance.sendPasswordResetEmail(
+      email: eposta,
+    );
+    mesaj('Şifre sıfırlama bağlantısı e-postanıza gönderildi.');
+  } catch (e) {
+    mesaj('Şifre sıfırlama bağlantısı gönderilemedi.');
+  }
+}
   void mesaj(String yazi) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -263,6 +279,11 @@ class _GirisSayfasiState extends State<GirisSayfasi> {
                         ),
                       ),
                     ),
+                    if (!kayit)
+  TextButton(
+    onPressed: sifremiUnuttum,
+    child: const Text('Şifremi Unuttum?'),
+  ),
                     TextButton(
                       onPressed: () {
                         setState(() => kayit = !kayit);
