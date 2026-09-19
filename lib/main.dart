@@ -1229,6 +1229,8 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
   final baslik = TextEditingController();
   final firma = TextEditingController();
   final konum = TextEditingController();
+  final adres = TextEditingController();
+final mapsLink = TextEditingController();
   final telefon = TextEditingController();
   final whatsapp = TextEditingController();
   final ucret = TextEditingController();
@@ -1298,7 +1300,7 @@ Future<void> kameradanFotografCek() async {
     if (baslik.text.trim().isEmpty ||
         firma.text.trim().isEmpty ||
         konum.text.trim().isEmpty ||
-        
+        adres.text.trim().isEmpty ||
         ucret.text.trim().isEmpty ||
         aciklama.text.trim().isEmpty ||
         kategori == null) {
@@ -1332,6 +1334,8 @@ await firestore.collection('jobs').add({
   'title': baslik.text.trim(),
   'company': firma.text.trim(),
   'city': konum.text.trim(),
+  'address': adres.text.trim(),
+'mapsUrl': mapsLink.text.trim(),
   'category': kategori,
   'phone': telefon.text.trim(),
   'whatsapp': whatsapp.text.trim(),
@@ -1367,6 +1371,8 @@ await firestore.collection('jobs').add({
     baslik.dispose();
     firma.dispose();
     konum.dispose();
+    adres.dispose();
+mapsLink.dispose();
     telefon.dispose();
     whatsapp.dispose();
     ucret.dispose();
@@ -1435,6 +1441,22 @@ await firestore.collection('jobs').add({
               border: OutlineInputBorder(),
             ),
           ),
+        const SizedBox(height: 12),
+TextField(
+  controller: adres,
+  decoration: const InputDecoration(
+    labelText: 'Açık Adres',
+    border: OutlineInputBorder(),
+  ),
+),
+const SizedBox(height: 12),
+TextField(
+  controller: mapsLink,
+  decoration: const InputDecoration(
+    labelText: 'Google Maps Konum Linki (isteğe bağlı)',
+    border: OutlineInputBorder(),
+  ),
+),  
           const SizedBox(height: 12),
           TextField(
             controller: telefon,
@@ -1600,13 +1622,29 @@ Future<void> _favoriDegistir(String id) async {
   final kategori =
       (data['category'] ?? '').toString().trim().toLowerCase();
 
-  final kategoriUyuyor =
-      seciliKategori == 'Tümü' ||
-      (seciliKategori == 'Diğer'
-          ? !['inşaat', 'temizlik', 'şoför', 'garson']
-              .contains(kategori)
-          : kategori == seciliKategori.toLowerCase());
-
+ final kategoriUyuyor =
+    seciliKategori == 'Tümü' ||
+    (seciliKategori == 'İnşaat'
+        ? ['inşaat', 'boya / alçı', 'elektrik', 'tesisat']
+            .contains(kategori)
+        : seciliKategori == 'Garson'
+            ? ['garson', 'garson / restoran'].contains(kategori)
+            : seciliKategori == 'Temizlik'
+                ? kategori == 'temizlik'
+                : seciliKategori == 'Şoför'
+                    ? kategori == 'şoför'
+                    : seciliKategori == 'Diğer'
+                        ? ![
+                            'inşaat',
+                            'boya / alçı',
+                            'elektrik',
+                            'tesisat',
+                            'temizlik',
+                            'şoför',
+                            'garson',
+                            'garson / restoran',
+                          ].contains(kategori)
+                        : kategori == seciliKategori.toLowerCase());
   if (!kategoriUyuyor) return false;
 
   if (kelime.isEmpty) return true;
@@ -1944,34 +1982,31 @@ body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                           final description =
                               bilgi(data['description']);
 
-                          return Container(
-                            margin:
-                                const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius:
-                                  BorderRadius.circular(18),
-                              boxShadow: const [
-                                BoxShadow(
-                                  color: Color(0x12000000),
-                                  blurRadius: 10,
-                                  offset: Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(10),
-                              child: Row(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                    width: 125,
-                                    height: 150,
-                                    child: ClipRRect(
-                                      borderRadius:
-                                          BorderRadius.circular(14),
-                                      child: Stack(
+                          
+                            
+                            return Container(
+  margin: const EdgeInsets.only(bottom: 8),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(18),
+    boxShadow: const [
+      BoxShadow(
+        color: Color(0x12000000),
+        blurRadius: 10,
+        offset: Offset(0, 3),
+      ),
+    ],
+  ),
+  child: Padding(
+    padding: const EdgeInsets.all(8),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 105,
+          height: 125,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),          child: Stack(
                                         fit: StackFit.expand,
                                         children: [
                                           if (fotograflar.isNotEmpty)
@@ -2081,7 +2116,7 @@ body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(width: 11),
+                                  const SizedBox(width: 8),
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
@@ -2098,7 +2133,7 @@ body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                                                         .ellipsis,
                                                 style:
                                                     const TextStyle(
-                                                  fontSize: 18,
+                                                  fontSize: 16,
                                                   fontWeight:
                                                       FontWeight.w900,
                                                   color: Color(
@@ -2151,9 +2186,9 @@ body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
     alignment: Alignment.centerRight,
     child: Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: 14,
-        vertical: 9,
-      ),
+  horizontal: 10,
+  vertical: 6,
+),
       decoration: BoxDecoration(
         color: const Color(0xFFE5F3FF),
         borderRadius: BorderRadius.circular(14),
@@ -2164,7 +2199,7 @@ body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
           const Icon(
             Icons.monetization_on,
             color: Color(0xFF087CF0),
-            size: 20,
+            size: 17,
           ),
           const SizedBox(width: 5),
           Text(
@@ -2172,31 +2207,30 @@ body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             style: const TextStyle(
               color: Color(0xFF087CF0),
               fontWeight: FontWeight.w900,
-              fontSize: 16,
+              fontSize: 14,
             ),
           ),
         ],
       ),
     ),
   ),   
-                                        const SizedBox(height: 5),
+                                        const SizedBox(height: 3),
                                         Text(
                                           description,
                                           maxLines: 2,
                                           overflow:
                                               TextOverflow.ellipsis,
                                           style: const TextStyle(
-                                            fontSize: 11,
+                                            fontSize: 10,
                                             color:
                                                 Color(0xFF52617D),
                                           ),
                                         ),
-                                     const SizedBox(height: 7),
-
+                                        const SizedBox(height: 5),
 Align(
   alignment: Alignment.centerRight,
   child: SizedBox(
-    width: 190,
+    width: 155,
     child: ElevatedButton(
       onPressed: () {
         Navigator.push(
@@ -2210,11 +2244,16 @@ Align(
         );
       },
       style: ElevatedButton.styleFrom(
+        minimumSize: const Size(155, 36),
+padding: const EdgeInsets.symmetric(
+  horizontal: 10,
+  vertical: 6,
+),
         backgroundColor: const Color(0xFF087CF0),
         foregroundColor: Colors.white,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
         ),
       ),
       child: const Text(
@@ -5305,22 +5344,68 @@ const SizedBox(height: 16),
           ),
         ],
       ),
+     if ((data['address'] ?? '').toString().trim().isNotEmpty) ...[
+  const SizedBox(height: 8),
+  Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Icon(
+        Icons.home_outlined,
+        color: Color(0xFF087CF0),
+      ),
+      const SizedBox(width: 8),
+      Expanded(
+        child: Text(
+          data['address'].toString(),
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    ],
+  ),
+], 
       const SizedBox(height: 12),
       SizedBox(
         width: double.infinity,
         child: OutlinedButton.icon(
-          onPressed: bilgi(data['city']) == 'Belirtilmemiş'
-              ? null
-              : () async {
-                  final uri = Uri.parse(
-                    'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(bilgi(data['city']))}',
-                  );
+          onPressed: () async {
+  final mapsUrl =
+      (data['mapsUrl'] ?? '').toString().trim();
+  final adres =
+      (data['address'] ?? '').toString().trim();
+  final sehir =
+      (data['city'] ?? '').toString().trim();
 
-                  await launchUrl(
-                    uri,
-                    mode: LaunchMode.externalApplication,
-                  );
-                },
+  final hedef = [adres, sehir]
+      .where((e) => e.isNotEmpty)
+      .join(', ');
+
+  Uri? uri;
+
+  if (mapsUrl.isNotEmpty) {
+    final link = Uri.tryParse(mapsUrl);
+
+    if (link != null &&
+        (link.scheme == 'http' ||
+            link.scheme == 'https')) {
+      uri = link;
+    }
+  }
+
+  if (uri == null && hedef.isNotEmpty) {
+    uri = Uri.parse(
+      'https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeComponent(hedef)}',
+    );
+  }
+
+  if (uri == null) return;
+
+  await launchUrl(
+    uri,
+    mode: LaunchMode.externalApplication,
+  );
+},
           icon: const Icon(Icons.map_outlined),
           label: const Text('Haritada Gör'),
           style: OutlinedButton.styleFrom(
