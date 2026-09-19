@@ -6,6 +6,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:video_player/video_player.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -1230,7 +1232,39 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
   final whatsapp = TextEditingController();
   final ucret = TextEditingController();
   final aciklama = TextEditingController();
+final ImagePicker _imagePicker = ImagePicker();
+final List<XFile> _secilenFotograflar = [];
 
+Future<void> galeridenFotografSec() async {
+  final List<XFile> fotograflar = await _imagePicker.pickMultiImage(
+    imageQuality: 75,
+  );
+
+  if (fotograflar.isNotEmpty) {
+    setState(() {
+      final kalan = 4 - _secilenFotograflar.length;
+      _secilenFotograflar.addAll(fotograflar.take(kalan));
+    });
+  }
+}
+
+Future<void> kameradanFotografCek() async {
+  if (_secilenFotograflar.length >= 4) {
+    mesaj(context, 'En fazla 4 fotoğraf ekleyebilirsiniz.');
+    return;
+  }
+
+  final XFile? fotograf = await _imagePicker.pickImage(
+    source: ImageSource.camera,
+    imageQuality: 75,
+  );
+
+  if (fotograf != null) {
+    setState(() {
+      _secilenFotograflar.add(fotograf);
+    });
+  }
+}
   final kategoriler = [
     'İnşaat',
     'Boya / Alçı',
@@ -1276,6 +1310,21 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
     });
 
     try {
+      final List<String> fotografUrlListesi = [];
+
+for (int i = 0; i < _secilenFotograflar.length; i++) {
+  final fotograf = _secilenFotograflar[i];
+
+  final ref = FirebaseStorage.instance
+      .ref()
+      .child('ilan_fotograflari')
+      .child('${user.uid}_${DateTime.now().millisecondsSinceEpoch}_$i.jpg');
+
+  await ref.putData(await fotograf.readAsBytes());
+
+  final url = await ref.getDownloadURL();
+  fotografUrlListesi.add(url);
+}
   final firestore = FirebaseFirestore.instance;
   final sayacRef = firestore.collection('counters').doc('jobs');
   final ilanRef = firestore.collection('jobs').doc();
@@ -1311,6 +1360,7 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
       'ownerEmail': user.email ?? '',
       'status': 'approved',
       'featured': false,
+     'imageUrls': fotografUrlListesi, 
       'createdAt': FieldValue.serverTimestamp(),
     });
   });
@@ -1319,9 +1369,9 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
     mesaj(context, 'İlanınız yayınlandı. İlan No: $yeniIlanNo');
     Navigator.pop(context);
   }
-} catch (_) {
+} catch (e) {
   if (mounted) {
-    mesaj(context, 'İlan gönderilemedi.');
+    mesaj(context, 'İlan gönderilemedi: $e');
   }
 }
 
@@ -1441,6 +1491,36 @@ class _IlanVerSayfasiState extends State<IlanVerSayfasi> {
             ),
           ),
           const SizedBox(height: 15),
+          Row(
+  children: [
+    Expanded(
+      child: ElevatedButton.icon(
+        onPressed: galeridenFotografSec,
+        icon: const Icon(Icons.photo_library),
+        label: const Text('GALERİDEN'),
+      ),
+    ),
+    const SizedBox(width: 10),
+    Expanded(
+      child: ElevatedButton.icon(
+        onPressed: kameradanFotografCek,
+        icon: const Icon(Icons.camera_alt),
+        label: const Text('KAMERA'),
+      ),
+    ),
+  ],
+),
+
+const SizedBox(height: 8),
+
+Text(
+  'Seçilen fotoğraf: ${_secilenFotograflar.length}/4',
+  style: const TextStyle(
+    fontWeight: FontWeight.bold,
+  ),
+),
+
+const SizedBox(height: 15),
           ElevatedButton.icon(
             onPressed: bekle ? null : gonder,
             icon: const Icon(Icons.send),
@@ -1590,7 +1670,11 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
                           final belge = ilanlar[index];
                           final data = belge.data();
 
-                          final telefon = bilgi(data['phone']);
+   final List<String> fotograflar =
+    (data['imageUrls'] as List<dynamic>?)
+        ?.map((e) => e.toString())
+        .toList() ??
+    [];                       final telefon = bilgi(data['phone']);
                           final whatsapp = bilgi(data['whatsapp']);
                           final featured = aktifOneCikan(data);
                          final createdAt = data['createdAt'] as Timestamp?;
@@ -1609,6 +1693,26 @@ final ilanTarihi = createdAt == null
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  if (fotograflar.isNotEmpty) ...[
+  ClipRRect(
+    borderRadius: BorderRadius.circular(12),
+    child: Image.network(
+      fotograflar.first,
+      width: double.infinity,
+      height: 180,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return const SizedBox.shrink();
+      },
+    ),
+  ),
+  const SizedBox(height: 8),
+  Text(
+    '${fotograflar.length} Fotoğraf',
+    style: const TextStyle(fontWeight: FontWeight.bold),
+  ),
+  const SizedBox(height: 10),
+],
                                   if (featured)
                                     Row(
                                       children: [
@@ -4050,7 +4154,11 @@ class IlanDetaySayfasi extends StatelessWidget {
     final telefon = bilgi(data['phone']);
     final whatsapp = bilgi(data['whatsapp']);
     final tarih = tarihYazisi(data['createdAt']);
-
+final List<String> fotograflar =
+    (data['imageUrls'] as List<dynamic>?)
+        ?.map((e) => e.toString())
+        .toList() ??
+    [];
     return Scaffold(
       appBar: AppBar(
         title: const Text('İlan Detayı'),
@@ -4064,6 +4172,38 @@ class IlanDetaySayfasi extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (fotograflar.isNotEmpty) ...[
+  SizedBox(
+    height: 220,
+    child: PageView.builder(
+      itemCount: fotograflar.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              fotograflar[index],
+              width: double.infinity,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const Center(
+                  child: Icon(Icons.broken_image, size: 50),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    ),
+  ),
+  const SizedBox(height: 8),
+  Text(
+    '${fotograflar.length} Fotoğraf',
+    style: const TextStyle(fontWeight: FontWeight.bold),
+  ),
+  const SizedBox(height: 14),
+
                   Text(
                     bilgi(data['title']),
                     style: const TextStyle(
