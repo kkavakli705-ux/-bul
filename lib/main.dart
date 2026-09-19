@@ -4448,10 +4448,7 @@ final List<String> fotograflar =
         ],
       ),
      );
-),
-],
-),
-);    
+   
         
   }
 }
