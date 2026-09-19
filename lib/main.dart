@@ -1,4 +1,10 @@
-import 'package:flutter/material.dart';
+  ],
+      ),
+     );
+   
+        
+  }
+}import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -1574,27 +1580,7 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
 
     return metin.contains(kelime);
   }
-Widget _kategoriButonu(String ad, IconData ikon) {
-  return Padding(
-    padding: const EdgeInsets.only(right: 8),
-    child: OutlinedButton.icon(
-      onPressed: () {
-        arama.text = ad == 'Tümü' ? '' : ad;
-        setState(() {});
-      },
-      icon: Icon(ikon, size: 18),
-      label: Text(ad),
-      style: OutlinedButton.styleFrom(
-        foregroundColor: const Color(0xFF14213D),
-        backgroundColor: Colors.white,
-        side: const BorderSide(color: Color(0xFFE3E8F0)),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
-      ),
-    ),
-  );
-}
+
   @override
   void dispose() {
     arama.dispose();
@@ -1609,34 +1595,7 @@ Widget _kategoriButonu(String ad, IconData ikon) {
         .snapshots();
 
     return Scaffold(
-      appBar: AppBar(
-  backgroundColor: Colors.white,
-  elevation: 0,
-  foregroundColor: const Color(0xFF10204A),
-  toolbarHeight: 82,
-  title: const Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Text(
-        'İş Bul',
-        style: TextStyle(
-          fontSize: 30,
-          fontWeight: FontWeight.w900,
-          color: Color(0xFF0878F9),
-        ),
-      ),
-      Text(
-        'Doğru işi, doğru insanla buluşturur',
-        style: TextStyle(
-          fontSize: 13,
-          fontWeight: FontWeight.w500,
-          color: Color(0xFF56627A),
-        ),
-      ),
-    ],
-  ),
-),
+      appBar: AppBar(title: const Text('İş Ara')),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: stream,
         builder: (context, snapshot) {
@@ -1662,77 +1621,30 @@ Widget _kategoriButonu(String ad, IconData ikon) {
 
           return Column(
             children: [
-            Padding(
-  padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-  child: Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.08),
-          blurRadius: 12,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    ),
-    child: TextField(
-      controller: arama,
-      onChanged: (_) {
-        setState(() {});
-      },
-      style: const TextStyle(
-        fontSize: 17,
-        color: Color(0xFF14213D),
-      ),
-      decoration: InputDecoration(
-        hintText: 'Ne iş arıyorsunuz?',
-        hintStyle: const TextStyle(
-          color: Color(0xFF7A8499),
-          fontSize: 17,
-        ),
-        prefixIcon: const Icon(
-          Icons.search,
-          size: 29,
-          color: Color(0xFF14213D),
-        ),
-        suffixIcon: arama.text.isEmpty
-            ? const Icon(
-                Icons.tune,
-                color: Color(0xFF14213D),
-              )
-            : IconButton(
-                onPressed: () {
-                  arama.clear();
-                  setState(() {});
-                },
-                icon: const Icon(Icons.close),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: TextField(
+                  controller: arama,
+                  onChanged: (_) {
+                    setState(() {});
+                  },
+                  decoration: InputDecoration(
+                    labelText: 'İş ara',
+                    hintText: 'Örnek: boya, şoför, Edremit',
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: arama.text.isEmpty
+                        ? null
+                        : IconButton(
+                            onPressed: () {
+                              arama.clear();
+                              setState(() {});
+                            },
+                            icon: const Icon(Icons.clear),
+                          ),
+                    border: const OutlineInputBorder(),
+                  ),
+                ),
               ),
-        border: InputBorder.none,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 18,
-        ),
-      ),
-    ),
-  ),
-),
-            SizedBox(
-  height: 52,
-  child: ListView(
-    scrollDirection: Axis.horizontal,
-    padding: const EdgeInsets.symmetric(horizontal: 12),
-    children: [
-      _kategoriButonu('Tümü', Icons.grid_view_rounded),
-      _kategoriButonu('İnşaat', Icons.construction),
-      _kategoriButonu('Temizlik', Icons.cleaning_services),
-      _kategoriButonu('Şoför', Icons.directions_car),
-      _kategoriButonu('Garson', Icons.restaurant),
-      _kategoriButonu('Diğer', Icons.more_horiz),
-    ],
-  ),
-),
-const SizedBox(height: 8),
               Expanded(
                 child: ilanlar.isEmpty
                     ? const Center(child: Text('Uygun ilan bulunamadı.'))
@@ -1759,259 +1671,200 @@ final ilanTarihi = createdAt == null
       '${createdAt.toDate().hour.toString().padLeft(2, '0')}:'
       '${createdAt.toDate().minute.toString().padLeft(2, '0')}'; 
 
-       return Card(
-  margin: const EdgeInsets.only(bottom: 14),
-  elevation: 2,
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(18),
-  ),
-  child: Padding(
-    padding: const EdgeInsets.all(12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (fotograflar.isNotEmpty) ...[
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: Image.network(
-                  fotograflar.first,
-                  width: double.infinity,
-                  height: 190,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      width: double.infinity,
-                      height: 190,
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.image_not_supported_outlined,
-                        size: 45,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              Positioned(
-                left: 10,
-                bottom: 10,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.70),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.camera_alt,
-                        color: Colors.white,
-                        size: 17,
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        '${fotograflar.length} Fotoğraf',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-        ],
-
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Text(
-                bilgi(data['title']),
-                style: const TextStyle(
-                  fontSize: 21,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF10204A),
-                ),
-              ),
-            ),
-            const Icon(
-              Icons.favorite_border,
-              color: Color(0xFF56627A),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 10),
-
-        Row(
-          children: [
-            const Icon(
-              Icons.business_center,
-              size: 19,
-              color: Color(0xFF56627A),
-            ),
-            const SizedBox(width: 7),
-            Expanded(
-              child: Text(
-                bilgi(data['company']),
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: Color(0xFF56627A),
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 7),
-
-        Row(
-          children: [
-            const Icon(
-              Icons.location_on,
-              size: 20,
-              color: Color(0xFF56627A),
-            ),
-            const SizedBox(width: 6),
-            Expanded(
-              child: Text(
-                bilgi(data['city']),
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: Color(0xFF56627A),
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 10),
-
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 11,
-                vertical: 7,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF4FF),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                bilgi(data['category']),
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF14213D),
-                ),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 11,
-                vertical: 7,
-              ),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE9F8EF),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Text(
-                bilgi(data['salary']),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF16794A),
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        if (ilanTarihi.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              const Icon(
-                Icons.access_time,
-                size: 17,
-                color: Color(0xFF7A8499),
-              ),
-              const SizedBox(width: 6),
-              Text(
-                ilanTarihi,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF7A8499),
-                ),
-              ),
-            ],
-          ),
-        ],
-
-        const SizedBox(height: 14),
-
-        SizedBox(
-          width: double.infinity,
-          height: 50,
-          child: ElevatedButton.icon(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => IlanDetaySayfasi(
-                    jobId: belge.id,
-                    data: data,
-                  ),
-                ),
-              );
-            },
-            icon: const Icon(Icons.visibility_outlined),
-            label: const Text(
-              'DETAYLARI GÖR',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 15,
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0878F9),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-          ),
-                ),
-      ],
+                          return Card(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            child: Padding(
+                              padding: const EdgeInsets.all(15),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (fotograflar.isNotEmpty) ...[
+  ClipRRect(
+    borderRadius: BorderRadius.circular(12),
+    child: Image.network(
+      fotograflar.first,
+      width: double.infinity,
+      height: 180,
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return const SizedBox.shrink();
+      },
     ),
-  );
-},
-),
-),
+  ),
+  const SizedBox(height: 8),
+  Text(
+    '${fotograflar.length} Fotoğraf',
+    style: const TextStyle(fontWeight: FontWeight.bold),
+  ),
+  const SizedBox(height: 10),
 ],
-);
-},
+                                  if (featured)
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.star),
+                                        const SizedBox(width: 6),
+                                        const Text(
+                                          'ÖNE ÇIKAN İLAN',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        Text(kalanSure(data)),
+                                      ],
+                                    ),
+                                  if (featured) const SizedBox(height: 8),
+                                  Text(
+                                    bilgi(data['title']),
+                                    style: const TextStyle(
+                                      fontSize: 19,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+Text(
+  'İlan No: ${data['ilanNo'] ?? 'Eski İlan'}',
+  style: const TextStyle(
+    fontWeight: FontWeight.w600,
+  ),
 ),
-);
-}
-}
                                   
-                                  
+                                  const SizedBox(height: 8),
+                                  Text('Kategori: ${bilgi(data['category'])}'),
+                                  Text('Firma: ${bilgi(data['company'])}'),
+                                  Text('Konum: ${bilgi(data['city'])}'),
+                                  Text(
+                                    'Ücret / Maaş: ${bilgi(data['salary'])}',
+                                  ),
+                                  if (ilanTarihi.isNotEmpty)
+  Text('İlan Tarihi: $ilanTarihi'),
+                                  const SizedBox(height: 10),
 
+SizedBox(
+  width: double.infinity,
+  child: ElevatedButton.icon(
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => IlanDetaySayfasi(
+            jobId: belge.id,
+            data: data,
+          ),
+        ),
+      );
+    },
+    icon: const Icon(Icons.visibility),
+    label: const Text('DETAYA GİT'),
+  ),
+),
 
+const SizedBox(height: 8),
+                                  const Divider(height: 24),
+                                  Text(bilgi(data['description'])),
+                                  const Divider(height: 24),
+                                  Text('Telefon: $telefon'),
+                                  Text('WhatsApp: $whatsapp'),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          onPressed: telefon == 'Belirtilmemiş'
+                                              ? null
+                                              : () {
+                                                  telefonAra(telefon);
+                                                },
+                                          icon: const Icon(Icons.phone),
+                                          label: const Text('ARA'),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          onPressed: whatsapp == 'Belirtilmemiş'
+                                              ? null
+                                              : () {
+                                                  whatsappAc(whatsapp);
+                                                },
+                                          icon: const Icon(Icons.chat),
+                                          label: const Text('WHATSAPP'),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(
+  width: double.infinity,
+  child: ElevatedButton.icon(
+    onPressed: () {
+      final user = FirebaseAuth.instance.currentUser;
+      final ownerUid = bilgi(data['ownerUid']);
 
+      if (user == null) {
+        mesaj(context, 'Mesaj göndermek için giriş yapmalısınız.');
+        return;
+      }
 
-  class SikayetEtSayfasi extends StatefulWidget {
+      if (ownerUid.isEmpty) {
+        mesaj(context, 'İlan sahibi bulunamadı.');
+        return;
+      }
+
+      if (user.uid == ownerUid) {
+        mesaj(context, 'Kendi ilanınıza mesaj gönderemezsiniz.');
+        return;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MesajlasmaSayfasi(
+            jobId: belge.id,
+            jobTitle: bilgi(data['title']),
+            ownerUid: ownerUid,
+          ),
+        ),
+      );
+    },
+    icon: const Icon(Icons.message),
+    label: const Text('MESAJ GÖNDER'),
+  ),
+),
+       const SizedBox(height: 8),
+                                  SizedBox(
+                                    width: double.infinity,
+                                    child: OutlinedButton.icon(
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => SikayetEtSayfasi(
+                                              jobId: belge.id,
+                                              jobTitle: bilgi(data['title']),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      icon: const Icon(Icons.flag),
+                                      label: const Text('ŞİKAYET ET'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class SikayetEtSayfasi extends StatefulWidget {
   final String jobId;
   final String jobTitle;
 
@@ -2023,7 +1876,8 @@ final ilanTarihi = createdAt == null
 
   @override
   State<SikayetEtSayfasi> createState() => _SikayetEtSayfasiState();
-}          
+}
+
 class _SikayetEtSayfasiState extends State<SikayetEtSayfasi> {
   final aciklama = TextEditingController();
 
