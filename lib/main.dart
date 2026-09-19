@@ -4447,7 +4447,7 @@ final List<String> fotograflar =
           const SizedBox(height: 30),
         ],
       ),
-     ),
+     );
 ),
 ],
 ),
