@@ -4197,6 +4197,7 @@ final List<String> fotograflar =
       },
     ),
   ),
+  ],
   const SizedBox(height: 8),
   Text(
     '${fotograflar.length} Fotoğraf',
@@ -4447,11 +4448,6 @@ final List<String> fotograflar =
         ],
       ),
               ),
-        ),
-      ],
-    ),
-  );
-}
-}
+        
   }
 }
