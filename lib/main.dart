@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -1522,7 +1523,41 @@ class IsAraSayfasi extends StatefulWidget {
 
 class _IsAraSayfasiState extends State<IsAraSayfasi> {
   final arama = TextEditingController();
+Set<String> favoriler = <String>{};
+  String seciliKategori = 'Tümü';
 
+@override
+void initState() {
+  super.initState();
+  _favorileriYukle();
+}
+
+Future<void> _favorileriYukle() async {
+  final prefs = await SharedPreferences.getInstance();
+  final liste = prefs.getStringList('favori_ilanlar') ?? [];
+
+  if (mounted) {
+    setState(() {
+      favoriler = liste.toSet();
+    });
+  }
+}
+
+Future<void> _favoriDegistir(String id) async {
+  setState(() {
+    if (favoriler.contains(id)) {
+      favoriler.remove(id);
+    } else {
+      favoriler.add(id);
+    }
+  });
+
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setStringList(
+    'favori_ilanlar',
+    favoriler.toList(),
+  );
+}
   String sadeceRakam(String numara) {
     return numara.replaceAll(RegExp(r'[^0-9]'), '');
   }
@@ -1559,21 +1594,33 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
     );
   }
 
-  bool eslesiyor(Map<String, dynamic> data) {
-    final kelime = arama.text.trim().toLowerCase();
+   bool eslesiyor(Map<String, dynamic> data) {
+  final kelime = arama.text.trim().toLowerCase();
 
-    if (kelime.isEmpty) return true;
+  final kategori =
+      (data['category'] ?? '').toString().trim().toLowerCase();
 
-    final metin = [
-      data['title'],
-      data['category'],
-      data['company'],
-      data['city'],
-            data['description'],
-    ].map((e) => (e ?? '').toString().toLowerCase()).join(' ');
+  final kategoriUyuyor =
+      seciliKategori == 'Tümü' ||
+      (seciliKategori == 'Diğer'
+          ? !['inşaat', 'temizlik', 'şoför', 'garson']
+              .contains(kategori)
+          : kategori == seciliKategori.toLowerCase());
 
-    return metin.contains(kelime);
-  }
+  if (!kategoriUyuyor) return false;
+
+  if (kelime.isEmpty) return true;
+
+  final metin = [
+    data['title'],
+    data['category'],
+    data['company'],
+    data['city'],
+    data['description'],
+  ].map((e) => (e ?? '').toString().toLowerCase()).join(' ');
+
+  return metin.contains(kelime);
+}
 
   @override
   void dispose() {
@@ -1645,16 +1692,69 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
               ],
             ),
           ),
-          IconButton(
-            onPressed: null,
-            icon: Icon(
-              Icons.notifications,
-              color: Color(0xFF08163B),
+         
+         IconButton(
+          onPressed: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const BildirimlerSayfasi(),
+    ),
+  );
+},
+           
+  icon: StreamBuilder<QuerySnapshot>(
+  stream: FirebaseFirestore.instance
+      .collection('bildirimler')
+      .where('hedefUid', isEqualTo: 'all')
+      .snapshots(),
+  builder: (context, snapshot) {
+    final sayi = snapshot.data?.docs.length ?? 0;
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        const Icon(
+          Icons.notifications,
+          color: Color(0xFF08163B),
+          size: 28,
+        ),
+        if (sayi > 0)
+          Positioned(
+            right: -8,
+            top: -8,
+            child: Container(
+              constraints: const BoxConstraints(
+                minWidth: 18,
+                minHeight: 18,
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 4,
+                vertical: 1,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                sayi > 9 ? '9+' : '$sayi',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
-        ],
-      ),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+      ],
+    );
+  },
+),
+),
+],
+),  
+body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: stream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
@@ -1774,32 +1874,32 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
                           _kategoriButonu(
                             Icons.grid_view_rounded,
                             'Tümü',
-                            true,
+                            seciliKategori == 'Tümü',
                           ),
                           _kategoriButonu(
                             Icons.construction,
                             'İnşaat',
-                            false,
+                            seciliKategori == 'İnşaat',
                           ),
                           _kategoriButonu(
                             Icons.cleaning_services,
                             'Temizlik',
-                            false,
+                            seciliKategori == 'Temizlik',
                           ),
                           _kategoriButonu(
                             Icons.directions_car,
                             'Şoför',
-                            false,
+                            seciliKategori == 'Şoför',
                           ),
                           _kategoriButonu(
                             Icons.restaurant,
                             'Garson',
-                            false,
+                            seciliKategori == 'Garson',
                           ),
                           _kategoriButonu(
                             Icons.more_horiz,
                             'Diğer',
-                            false,
+                            seciliKategori == 'Diğer',
                           ),
                         ],
                       ),
@@ -1866,7 +1966,7 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
                                     CrossAxisAlignment.start,
                                 children: [
                                   SizedBox(
-                                    width: 115,
+                                    width: 125,
                                     height: 150,
                                     child: ClipRRect(
                                       borderRadius:
@@ -2016,6 +2116,19 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
                                                       0xFF52617D),
                                                 ),
                                               ),
+                                            IconButton(
+  padding: EdgeInsets.zero,
+  constraints: const BoxConstraints(),
+  onPressed: () => _favoriDegistir(belge.id),
+  icon: Icon(
+    favoriler.contains(belge.id)
+        ? Icons.favorite
+        : Icons.favorite_border,
+    color: favoriler.contains(belge.id)
+        ? Colors.red
+        : const Color(0xFF52617D),
+  ),
+),
                                           ],
                                         ),
                                         const SizedBox(height: 5),
@@ -2031,38 +2144,41 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
                                           Icons.sell,
                                           category,
                                         ),
-                                        if (salary.isNotEmpty &&
-                                            salary !=
-                                                'Belirtilmemiş')
-                                          Container(
-                                            margin:
-                                                const EdgeInsets.only(
-                                                    top: 5),
-                                            padding:
-                                                const EdgeInsets
-                                                    .symmetric(
-                                              horizontal: 9,
-                                              vertical: 6,
-                                            ),
-                                            decoration:
-                                                BoxDecoration(
-                                              color: const Color(
-                                                  0xFFE5F3FF),
-                                              borderRadius:
-                                                  BorderRadius
-                                                      .circular(12),
-                                            ),
-                                            child: Text(
-                                              salary,
-                                              style:
-                                                  const TextStyle(
-                                                color: Color(
-                                                    0xFF087CF0),
-                                                fontWeight:
-                                                    FontWeight.w900,
-                                              ),
-                                            ),
-                                          ),
+                                        
+                                                    
+                                         if (salary.isNotEmpty && salary != 'Belirtilmemiş')
+  Align(
+    alignment: Alignment.centerRight,
+    child: Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 9,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE5F3FF),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.monetization_on,
+            color: Color(0xFF087CF0),
+            size: 20,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            salary,
+            style: const TextStyle(
+              color: Color(0xFF087CF0),
+              fontWeight: FontWeight.w900,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),   
                                         const SizedBox(height: 5),
                                         Text(
                                           description,
@@ -2075,49 +2191,42 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
                                                 Color(0xFF52617D),
                                           ),
                                         ),
-                                        const SizedBox(height: 7),
-                                        SizedBox(
-                                          width: double.infinity,
-                                          child: ElevatedButton(
-                                            onPressed: () {
-                                              Navigator.push(
-                                                context,
-                                                MaterialPageRoute(
-                                                  builder: (_) =>
-                                                      IlanDetaySayfasi(
-                                                    jobId:
-                                                        belge.id,
-                                                    data: data,
-                                                  ),
-                                                ),
-                                              );
-                                            },
-                                            style: ElevatedButton
-                                                .styleFrom(
-                                              backgroundColor:
-                                                  const Color(
-                                                      0xFF087CF0),
-                                              foregroundColor:
-                                                  Colors.white,
-                                              elevation: 0,
-                                              shape:
-                                                  RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius
-                                                        .circular(12),
-                                              ),
-                                            ),
-                                            child: const Text(
-                                              'Detayları Gör  →',
-                                              style: TextStyle(
-                                                fontWeight:
-                                                    FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                     const SizedBox(height: 7),
+
+Align(
+  alignment: Alignment.centerRight,
+  child: SizedBox(
+    width: 190,
+    child: ElevatedButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => IlanDetaySayfasi(
+              jobId: belge.id,
+              data: data,
+            ),
+          ),
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF087CF0),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+      ),
+      child: const Text(
+        'Detayları Gör  →',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+  ),
+),   
+                                             
                                   ),
                                 ],
                               ),
@@ -2129,7 +2238,69 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
             ],
           );
         },
-      ),
+      bottomNavigationBar: BottomNavigationBar(
+  type: BottomNavigationBarType.fixed,
+  currentIndex: 1,
+  onTap: (index) {
+    if (index == 0) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const AnaSayfa(),
+        ),
+      );
+    }
+
+    if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const IlanVerSayfasi(),
+        ),
+      );
+    }
+    if (index == 3) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const MesajlarSayfasi(),
+    ),
+  );
+}
+    if (index == 4) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const AyarlarSayfasi(),
+    ),
+  );
+}
+  },
+  selectedItemColor: const Color(0xFF087CF0),
+  unselectedItemColor: const Color(0xFF7A869F),
+  items: const [
+    BottomNavigationBarItem(
+      icon: Icon(Icons.home),
+      label: 'Ana Sayfa',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.search),
+      label: 'İş Ara',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.add_circle, size: 38),
+      label: 'İlan Ver',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.message),
+      label: 'Mesajlar',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.person),
+      label: 'Profilim',
+    ),
+  ],
+),                     
     );
   }
 
@@ -2141,7 +2312,11 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
     return Container(
       margin: const EdgeInsets.only(right: 7),
       child: ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: () {
+  setState(() {
+    seciliKategori = yazi;
+  });
+},
         icon: Icon(icon, size: 18),
         label: Text(yazi),
         style: ElevatedButton.styleFrom(
@@ -4411,7 +4586,77 @@ class _MesajlasmaSayfasiState extends State<MesajlasmaSayfasi> {
     );
   }
 }
+class MesajlarSayfasi extends StatelessWidget {
+  const MesajlarSayfasi({super.key});
 
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: Text('Giriş yapmalısınız.')),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Mesajlar')),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('conversations')
+            .where('participants', arrayContains: user.uid)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final sohbetler = snapshot.data!.docs;
+
+          if (sohbetler.isEmpty) {
+            return const Center(child: Text('Henüz mesaj yok.'));
+          }
+
+          return ListView.builder(
+            itemCount: sohbetler.length,
+            itemBuilder: (context, index) {
+              final doc = sohbetler[index];
+              final data = doc.data() as Map<String, dynamic>;
+
+              final participants =
+                  List<String>.from(data['participants'] ?? []);
+              final digerUid = participants.firstWhere(
+                (uid) => uid != user.uid,
+                orElse: () => '',
+              );
+
+              return ListTile(
+                leading: const Icon(Icons.message),
+                title: Text(data['jobTitle']?.toString() ?? 'İlan'),
+                subtitle: Text(data['lastMessage']?.toString() ?? ''),
+                onTap: digerUid.isEmpty
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => MesajlasmaSayfasi(
+                              jobId: data['jobId']?.toString() ?? '',
+                              jobTitle:
+                                  data['jobTitle']?.toString() ?? 'Mesajlaşma',
+                              ownerUid: digerUid,
+                            ),
+                          ),
+                        );
+                      },
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
 class IlanDetaySayfasi extends StatelessWidget {
   final String jobId;
   final Map<String, dynamic> data;
@@ -4494,37 +4739,196 @@ final List<String> fotograflar =
                 children: [
                   if (fotograflar.isNotEmpty) ...[
   SizedBox(
-    height: 220,
-    child: PageView.builder(
-      itemCount: fotograflar.length,
-      itemBuilder: (context, index) {
-        return Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              fotograflar[index],
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return const Center(
-                  child: Icon(Icons.broken_image, size: 50),
-                );
-              },
+    height: 230,
+    child: Row(
+      children: [
+        Expanded(
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.network(
+                  fotograflar[0],
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Center(
+                      child: Icon(Icons.broken_image, size: 50),
+                    );
+                  },
+                ),
+              ),
+              Positioned(
+                left: 10,
+                bottom: 10,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 9,
+                    vertical: 5,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0x99000000),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '1/${fotograflar.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        if (fotograflar.length > 1) ...[
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 100,
+            child: Column(
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Image.network(
+                      fotograflar[1],
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+
+                if (fotograflar.length > 2) ...[
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: Image.network(
+                            fotograflar[2],
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        if (fotograflar.length > 3)
+                          Container(
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0x88000000),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Text(
+                              '+${fotograflar.length - 3} Fotoğraf',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
-        );
-      },
+        ],
+      ],
     ),
   ),
-  ],
-  const SizedBox(height: 8),
-  Text(
-    '${fotograflar.length} Fotoğraf',
-    style: const TextStyle(fontWeight: FontWeight.bold),
-  ),
   const SizedBox(height: 14),
+],
+                 Row(
+  children: [
+    Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE5F3FF),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: const Text(
+        'Yeni İlan',
+        style: TextStyle(
+          color: Color(0xFF087CF0),
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+    const Spacer(),
+    IconButton(
+      onPressed: () async {
+  final prefs = await SharedPreferences.getInstance();
+  final liste =
+      prefs.getStringList('favori_ilanlar') ?? [];
 
+  final eklendi;
+
+  if (liste.contains(jobId)) {
+    liste.remove(jobId);
+    eklendi = false;
+  } else {
+    liste.add(jobId);
+    eklendi = true;
+  }
+
+  await prefs.setStringList(
+    'favori_ilanlar',
+    liste,
+  );
+
+  if (!context.mounted) return;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        eklendi
+            ? 'İlan favorilere eklendi.'
+            : 'İlan favorilerden çıkarıldı.',
+      ),
+    ),
+  );
+},
+      icon: const Icon(
+        Icons.favorite_border,
+        color: Color(0xFF087CF0),
+      ),
+    ),
+    IconButton(
+      onPressed: () async {
+  final paylasimMetni =
+      '${bilgi(data['title'])}\n'
+      'Firma: ${bilgi(data['company'])}\n'
+      'Konum: ${bilgi(data['city'])}\n'
+      'Ücret / Maaş: ${bilgi(data['salary'])}\n\n'
+      '${bilgi(data['description'])}';
+
+  await Clipboard.setData(
+    ClipboardData(text: paylasimMetni),
+  );
+
+  if (!context.mounted) return;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('İlan bilgileri kopyalandı.'),
+    ),
+  );
+},
+      icon: const Icon(
+        Icons.share_outlined,
+        color: Color(0xFF087CF0),
+      ),
+    ),
+  ],
+),
+const SizedBox(height: 10), 
                   Text(
                     bilgi(data['title']),
                     style: const TextStyle(
@@ -4544,13 +4948,102 @@ final List<String> fotograflar =
 
                   const Divider(height: 26),
 
-                  Text('Kategori: ${bilgi(data['category'])}'),
-                  Text('Firma: ${bilgi(data['company'])}'),
-                  Text('Konum: ${bilgi(data['city'])}'),
-                  Text('Ücret / Maaş: ${bilgi(data['salary'])}'),
-
-                  if (tarih.isNotEmpty)
-                    Text('İlan Tarihi: $tarih'),
+                  Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(14),
+  decoration: BoxDecoration(
+    color: const Color(0xFFF7FAFF),
+    borderRadius: BorderRadius.circular(14),
+    border: Border.all(
+      color: const Color(0xFFE3ECF7),
+    ),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          const Icon(
+            Icons.business,
+            size: 20,
+            color: Color(0xFF087CF0),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              bilgi(data['company']),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 10),
+      Row(
+        children: [
+          const Icon(
+            Icons.location_on,
+            size: 20,
+            color: Color(0xFF087CF0),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(bilgi(data['city'])),
+          ),
+        ],
+      ),
+      const SizedBox(height: 10),
+      Row(
+        children: [
+          const Icon(
+            Icons.sell,
+            size: 20,
+            color: Color(0xFF087CF0),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(bilgi(data['category'])),
+          ),
+        ],
+      ),
+      const SizedBox(height: 10),
+      Row(
+        children: [
+          const Icon(
+            Icons.monetization_on,
+            size: 20,
+            color: Color(0xFF087CF0),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              bilgi(data['salary']),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF087CF0),
+              ),
+            ),
+          ),
+        ],
+      ),
+      if (tarih.isNotEmpty) ...[
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            const Icon(
+              Icons.access_time,
+              size: 20,
+              color: Color(0xFF7A869F),
+            ),
+            const SizedBox(width: 8),
+            Text(tarih),
+          ],
+        ),
+      ],
+    ],
+  ),
+),
 
                   const Divider(height: 26),
 
@@ -4580,28 +5073,44 @@ final List<String> fotograflar =
                   const SizedBox(height: 12),
 
                   Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: telefon == 'Belirtilmemiş'
-                              ? null
-                              : () => telefonAra(telefon),
-                          icon: const Icon(Icons.phone),
-                          label: const Text('ARA'),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: whatsapp == 'Belirtilmemiş'
-                              ? null
-                              : () => whatsappAc(whatsapp),
-                          icon: const Icon(Icons.chat),
-                          label: const Text('WHATSAPP'),
-                        ),
-                      ),
-                    ],
-                  ),
+  children: [
+    Expanded(
+      child: ElevatedButton.icon(
+        onPressed: telefon == 'Belirtilmemiş'
+            ? null
+            : () => telefonAra(telefon),
+        icon: const Icon(Icons.phone),
+        label: const Text('ARA'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF087CF0),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    ),
+    const SizedBox(width: 8),
+    Expanded(
+      child: ElevatedButton.icon(
+        onPressed: whatsapp == 'Belirtilmemiş'
+            ? null
+            : () => whatsappAc(whatsapp),
+        icon: const Icon(Icons.chat),
+        label: const Text('WHATSAPP'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF25D366),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    ),
+  ],
+),
 
                   const SizedBox(height: 8),
 
@@ -4651,6 +5160,15 @@ final List<String> fotograflar =
                       },
                       icon: const Icon(Icons.message),
                       label: const Text('MESAJ GÖNDER'),
+                      style: ElevatedButton.styleFrom(
+  backgroundColor: const Color(0xFF087CF0),
+  foregroundColor: Colors.white,
+  padding: const EdgeInsets.symmetric(vertical: 14),
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(12),
+  ),
+),
+                      
                     ),
                   ),
 
@@ -4672,6 +5190,17 @@ final List<String> fotograflar =
                       },
                       icon: const Icon(Icons.flag),
                       label: const Text('ŞİKAYET ET'),
+                      style: OutlinedButton.styleFrom(
+  foregroundColor: Colors.red,
+  side: const BorderSide(
+    color: Colors.red,
+    width: 1.5,
+  ),
+  padding: const EdgeInsets.symmetric(vertical: 14),
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(12),
+  ),
+),
                     ),
                   ),
                 ],
@@ -4679,32 +5208,165 @@ final List<String> fotograflar =
             ),
           ),
 
-          const SizedBox(height: 20),
-
-          Row(
-            children: [
-              const Expanded(
-                child: Text(
-                  'Diğer İlanlar',
-                  style: TextStyle(
-                    fontSize: 21,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const IsAraSayfasi(),
-                    ),
-                  );
-                },
-                child: const Text('TÜMÜNÜ GÖR'),
-              ),
+          
             ],
           ),
+      const SizedBox(height: 16),
+
+Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(16),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(16),
+    border: Border.all(
+      color: const Color(0xFFE3ECF7),
+    ),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Firma Bilgileri',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      const SizedBox(height: 12),
+      Row(
+        children: [
+          const Icon(
+            Icons.business,
+            color: Color(0xFF087CF0),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              bilgi(data['company']),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+      if (telefon != 'Belirtilmemiş') ...[
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            const Icon(
+              Icons.phone,
+              color: Color(0xFF7A869F),
+            ),
+            const SizedBox(width: 8),
+            Text(telefon),
+          ],
+        ),
+      ],
+    ],
+  ),
+),
+
+const SizedBox(height: 16),
+      Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(16),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(16),
+    border: Border.all(
+      color: const Color(0xFFE3ECF7),
+    ),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'Konum',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      const SizedBox(height: 12),
+      Row(
+        children: [
+          const Icon(
+            Icons.location_on,
+            color: Color(0xFF087CF0),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              bilgi(data['city']),
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 12),
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: bilgi(data['city']) == 'Belirtilmemiş'
+              ? null
+              : () async {
+                  final uri = Uri.parse(
+                    'https://www.google.com/maps/search/?api=1&query=${Uri.encodeComponent(bilgi(data['city']))}',
+                  );
+
+                  await launchUrl(
+                    uri,
+                    mode: LaunchMode.externalApplication,
+                  );
+                },
+          icon: const Icon(Icons.map_outlined),
+          label: const Text('Haritada Gör'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: const Color(0xFF087CF0),
+            side: const BorderSide(
+              color: Color(0xFF087CF0),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ),
+    ],
+  ),
+),
+
+const SizedBox(height: 16),
+      Row(
+  children: [
+    const Expanded(
+      child: Text(
+        'Diğer İlanlar',
+        style: TextStyle(
+          fontSize: 21,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+    TextButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const IsAraSayfasi(),
+          ),
+        );
+      },
+      child: const Text('TÜMÜNÜ GÖR'),
+    ),
+  ],
+),
+const SizedBox(height: 8),
 
           StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
             stream: FirebaseFirestore.instance
@@ -4734,32 +5396,93 @@ final List<String> fotograflar =
                   final digerData = belge.data();
 
                   return Card(
-                    child: ListTile(
-                      title: Text(
-                        bilgi(digerData['title']),
-                      ),
-                      subtitle: Text(
-                        '${bilgi(digerData['company'])}\n'
-                        '${bilgi(digerData['city'])}',
-                      ),
-                      trailing: ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  IlanDetaySayfasi(
-                                jobId: belge.id,
-                                data: digerData,
-                              ),
-                            ),
-                          );
-                        },
-                        child: const Text('DETAY'),
-                      ),
-                    ),
-                  );
-                }).toList(),
+  elevation: 0,
+  margin: const EdgeInsets.only(bottom: 10),
+  shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(14),
+    side: const BorderSide(
+      color: Color(0xFFE3ECF7),
+    ),
+  ),
+  child: Padding(
+    padding: const EdgeInsets.all(12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                bilgi(digerData['title']),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            Text(
+              bilgi(digerData['salary']),
+              style: const TextStyle(
+                color: Color(0xFF087CF0),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        Text(
+          bilgi(digerData['company']),
+          style: const TextStyle(
+            color: Color(0xFF52617D),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            const Icon(
+              Icons.location_on_outlined,
+              size: 17,
+              color: Color(0xFF7A869F),
+            ),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                bilgi(digerData['city']),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => IlanDetaySayfasi(
+                    jobId: belge.id,
+                    data: digerData,
+                  ),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF087CF0),
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('DETAYLARI GÖR'),
+          ),
+        ),
+      ],
+    ),
+  ),
+);
+                }).toList(),  
               );
             },
           ),
@@ -4770,5 +5493,20 @@ final List<String> fotograflar =
      );
    
         
+  }
+}
+class BildirimlerSayfasi extends StatelessWidget {
+  const BildirimlerSayfasi({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Bildirimler'),
+      ),
+      body: const Center(
+        child: Text('Henüz yeni bildirim yok.'),
+      ),
+    );
   }
 }
