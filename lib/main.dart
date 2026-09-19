@@ -1661,6 +1661,7 @@ Widget _kategoriButonu(String ad, IconData ikon) {
           });
 
           return Column(
+            children: [
             Padding(
   padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
   child: Container(
@@ -2205,8 +2206,16 @@ Row(
     ),
   ],
 );
-}
-                      }
+                         },
+                      ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}                  
 class SikayetEtSayfasi extends StatefulWidget {
   final String jobId;
   final String jobTitle;
