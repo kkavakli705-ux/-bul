@@ -2226,18 +2226,20 @@ Align(
     ),
   ),
 ),   
-                                             
-                                  ),
-                                ],
+                                              ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
                       ),
-              ),
-            ],
-          );
-        },
+                    ],
+                  );
+                },
+              ),                                       
       bottomNavigationBar: BottomNavigationBar(
   type: BottomNavigationBarType.fixed,
   currentIndex: 1,
@@ -5206,11 +5208,7 @@ const SizedBox(height: 10),
                 ],
               ),
             ),
-          ),
-
-          
-            ],
-          ),
+          ),    
       const SizedBox(height: 16),
 
 Container(
@@ -5493,20 +5491,5 @@ const SizedBox(height: 8),
      );
    
         
-  }
-}
-class BildirimlerSayfasi extends StatelessWidget {
-  const BildirimlerSayfasi({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Bildirimler'),
-      ),
-      body: const Center(
-        child: Text('Henüz yeni bildirim yok.'),
-      ),
-    );
   }
 }
