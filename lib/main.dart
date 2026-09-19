@@ -1991,232 +1991,21 @@ final ilanTarihi = createdAt == null
               ),
             ),
           ),
-        ),
-      ],
-    ),
-  ),
-);                   
-  
+        ),;
+        
+                ],
+            ),
+          ),
+        );
+      },
 
                                   
                                   
 
 
-const SizedBox(height: 14),
 
-// AÇIKLAMA
-Container(
-  width: double.infinity,
-  padding: const EdgeInsets.all(16),
-  decoration: BoxDecoration(
-    color: const Color(0xFFF7F9FC),
-    borderRadius: BorderRadius.circular(16),
-  ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Row(
-        children: [
-          Icon(Icons.notes_rounded, color: Color(0xFF10204A)),
-          SizedBox(width: 8),
-          Text(
-            'Açıklama',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF10204A),
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 10),
-      Text(
-        bilgi(data['description']),
-        style: const TextStyle(
-          fontSize: 15,
-          height: 1.4,
-          color: Color(0xFF56627A),
-        ),
-      ),
-    ],
-  ),
-),
 
-const SizedBox(height: 14),
-
-// ARA + WHATSAPP
-Row(
-  children: [
-    Expanded(
-      child: SizedBox(
-        height: 52,
-        child: ElevatedButton.icon(
-          onPressed: telefon == 'Belirtilmemiş'
-              ? null
-              : () {
-                  telefonAra(telefon);
-                },
-          icon: const Icon(Icons.phone, color: Colors.white),
-          label: const Text(
-            'ARA',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF16B85C),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-        ),
-      ),
-    ),
-    const SizedBox(width: 10),
-    Expanded(
-      child: SizedBox(
-        height: 52,
-        child: ElevatedButton.icon(
-          onPressed: whatsapp == 'Belirtilmemiş'
-              ? null
-              : () {
-                  whatsappAc(whatsapp);
-                },
-          icon: const Icon(Icons.chat, color: Colors.white),
-          label: const Text(
-            'WHATSAPP',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF16B85C),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-        ),
-      ),
-    ),
-  ],
-),
-
-const SizedBox(height: 10),
-
-// MESAJ GÖNDER + ŞİKAYET ET
-Row(
-  children: [
-    Expanded(
-      child: SizedBox(
-        height: 52,
-        child: ElevatedButton.icon(
-          onPressed: () {
-            final user = FirebaseAuth.instance.currentUser;
-            final ownerUid = bilgi(data['ownerUid']);
-
-            if (user == null) {
-              mesaj(
-                context,
-                'Mesaj göndermek için giriş yapmalısınız.',
-              );
-              return;
-            }
-
-            if (ownerUid.isEmpty) {
-              mesaj(context, 'İlan sahibi bulunamadı.');
-              return;
-            }
-
-            if (user.uid == ownerUid) {
-              mesaj(
-                context,
-                'Kendi ilanınıza mesaj gönderemezsiniz.',
-              );
-              return;
-            }
-
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => MesajlasmaSayfasi(
-                  jobId: belge.id,
-                  jobTitle: bilgi(data['title']),
-                  ownerUid: ownerUid,
-                ),
-              ),
-            );
-          },
-          icon: const Icon(
-            Icons.message_rounded,
-            color: Colors.white,
-          ),
-          label: const Text(
-            'MESAJ GÖNDER',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF0878F9),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-        ),
-      ),
-    ),
-    const SizedBox(width: 10),
-    Expanded(
-      child: SizedBox(
-        height: 52,
-        child: ElevatedButton.icon(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => SikayetEtSayfasi(
-                  jobId: belge.id,
-                  jobTitle: bilgi(data['title']),
-                ),
-              ),
-            );
-          },
-          icon: const Icon(
-            Icons.flag,
-            color: Colors.white,
-          ),
-          label: const Text(
-            'ŞİKAYET ET',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFFFF5265),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-          ),
-        ),
-      ),
-    ),
-  ],
-);
-                         },
-                      ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}                  
-class SikayetEtSayfasi extends StatefulWidget {
+  class SikayetEtSayfasi extends StatefulWidget {
   final String jobId;
   final String jobTitle;
 
@@ -2228,8 +2017,7 @@ class SikayetEtSayfasi extends StatefulWidget {
 
   @override
   State<SikayetEtSayfasi> createState() => _SikayetEtSayfasiState();
-}
-
+}          
 class _SikayetEtSayfasiState extends State<SikayetEtSayfasi> {
   final aciklama = TextEditingController();
 
