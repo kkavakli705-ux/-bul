@@ -1326,47 +1326,26 @@ for (int i = 0; i < _secilenFotograflar.length; i++) {
   fotografUrlListesi.add(url);
 }
   final firestore = FirebaseFirestore.instance;
-  final sayacRef = firestore.collection('counters').doc('jobs');
-  final ilanRef = firestore.collection('jobs').doc();
 
-  int yeniIlanNo = 1001;
-
-  await firestore.runTransaction((transaction) async {
-    final sayacDoc = await transaction.get(sayacRef);
-
-    if (sayacDoc.exists) {
-      final mevcut = sayacDoc.data()?['lastNumber'];
-      yeniIlanNo =
-          (int.tryParse(mevcut?.toString() ?? '') ?? 1000) + 1;
-    }
-
-    transaction.set(
-      sayacRef,
-      {'lastNumber': yeniIlanNo},
-      SetOptions(merge: true),
-    );
-
-    transaction.set(ilanRef, {
-      'ilanNo': yeniIlanNo,
-      'title': baslik.text.trim(),
-      'company': firma.text.trim(),
-      'city': konum.text.trim(),
-      'category': kategori,
-      'phone': telefon.text.trim(),
-      'whatsapp': whatsapp.text.trim(),
-      'salary': ucret.text.trim(),
-      'description': aciklama.text.trim(),
-      'ownerUid': user.uid,
-      'ownerEmail': user.email ?? '',
-      'status': 'approved',
-      'featured': false,
-     'imageUrls': fotografUrlListesi, 
-      'createdAt': FieldValue.serverTimestamp(),
-    });
-  });
+await firestore.collection('jobs').add({
+  'title': baslik.text.trim(),
+  'company': firma.text.trim(),
+  'city': konum.text.trim(),
+  'category': kategori,
+  'phone': telefon.text.trim(),
+  'whatsapp': whatsapp.text.trim(),
+  'salary': ucret.text.trim(),
+  'description': aciklama.text.trim(),
+  'ownerUid': user.uid,
+  'ownerEmail': user.email ?? '',
+  'status': 'approved',
+  'featured': false,
+  'imageUrls': fotografUrlListesi,
+  'createdAt': FieldValue.serverTimestamp(),
+});
 
   if (mounted) {
-    mesaj(context, 'İlanınız yayınlandı. İlan No: $yeniIlanNo');
+    mesaj(context, 'İlanınız yayınlandı.');
     Navigator.pop(context);
   }
 } catch (e) {
