@@ -2204,19 +2204,9 @@ Row(
       ),
     ),
   ],
-),
-const SizedBox(height: 8),
-                        },
-                      ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
+);
 }
-
+                      }
 class SikayetEtSayfasi extends StatefulWidget {
   final String jobId;
   final String jobTitle;
