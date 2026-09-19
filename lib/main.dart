@@ -1569,7 +1569,7 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
       data['category'],
       data['company'],
       data['city'],
-      data['description'],
+            data['description'],
     ].map((e) => (e ?? '').toString().toLowerCase()).join(' ');
 
     return metin.contains(kelime);
@@ -1580,8 +1580,7 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
     arama.dispose();
     super.dispose();
   }
-
-  @override
+      @override
   Widget build(BuildContext context) {
     final stream = FirebaseFirestore.instance
         .collection('jobs')
@@ -1589,16 +1588,85 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
         .snapshots();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('İş Ara')),
+      backgroundColor: const Color(0xFFF6F9FE),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        elevation: 0,
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        toolbarHeight: 88,
+        titleSpacing: 18,
+        title: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'İş Bul',
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFF087CF0),
+              ),
+            ),
+            Text(
+              'Doğru işi, doğru insanla buluşturur',
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF52617D),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F7FC),
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: const Row(
+              children: [
+                Icon(
+                  Icons.location_on,
+                  color: Color(0xFF087CF0),
+                ),
+                SizedBox(width: 4),
+                Text(
+                  'Balıkesir',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF08163B),
+                  ),
+                ),
+                Icon(
+                  Icons.keyboard_arrow_down,
+                  color: Color(0xFF087CF0),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: null,
+            icon: Icon(
+              Icons.notifications,
+              color: Color(0xFF08163B),
+            ),
+          ),
+        ],
+      ),
       body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
         stream: stream,
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text('İlanlar yüklenemedi.'));
+            return const Center(
+              child: Text('İlanlar yüklenemedi.'),
+            );
           }
 
           if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
 
           final ilanlar = snapshot.data!.docs
@@ -1615,33 +1683,135 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
 
           return Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: TextField(
-                  controller: arama,
-                  onChanged: (_) {
-                    setState(() {});
-                  },
-                  decoration: InputDecoration(
-                    labelText: 'İş ara',
-                    hintText: 'Örnek: boya, şoför, Edremit',
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: arama.text.isEmpty
-                        ? null
-                        : IconButton(
-                            onPressed: () {
-                              arama.clear();
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: arama,
+                            onChanged: (_) {
                               setState(() {});
                             },
-                            icon: const Icon(Icons.clear),
+                            decoration: InputDecoration(
+                              hintText: 'Ne iş arıyorsunuz?',
+                              prefixIcon: const Icon(
+                                Icons.search,
+                                color: Color(0xFF17294E),
+                              ),
+                              suffixIcon: arama.text.isEmpty
+                                  ? const Icon(
+                                      Icons.tune,
+                                      color: Color(0xFF17294E),
+                                    )
+                                  : IconButton(
+                                      onPressed: () {
+                                        arama.clear();
+                                        setState(() {});
+                                      },
+                                      icon: const Icon(Icons.clear),
+                                    ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(18),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFDDE5F0),
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(18),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFDDE5F0),
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(18),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFF087CF0),
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
                           ),
-                    border: const OutlineInputBorder(),
-                  ),
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          height: 55,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              setState(() {});
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  const Color(0xFF087CF0),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.circular(18),
+                              ),
+                            ),
+                            child: const Text(
+                              'Ara',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 42,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          _kategoriButonu(
+                            Icons.grid_view_rounded,
+                            'Tümü',
+                            true,
+                          ),
+                          _kategoriButonu(
+                            Icons.construction,
+                            'İnşaat',
+                            false,
+                          ),
+                          _kategoriButonu(
+                            Icons.cleaning_services,
+                            'Temizlik',
+                            false,
+                          ),
+                          _kategoriButonu(
+                            Icons.directions_car,
+                            'Şoför',
+                            false,
+                          ),
+                          _kategoriButonu(
+                            Icons.restaurant,
+                            'Garson',
+                            false,
+                          ),
+                          _kategoriButonu(
+                            Icons.more_horiz,
+                            'Diğer',
+                            false,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Expanded(
                 child: ilanlar.isEmpty
-                    ? const Center(child: Text('Uygun ilan bulunamadı.'))
+                    ? const Center(
+                        child: Text('Uygun ilan bulunamadı.'),
+                      )
                     : ListView.builder(
                         padding: const EdgeInsets.all(12),
                         itemCount: ilanlar.length,
@@ -1649,198 +1819,304 @@ class _IsAraSayfasiState extends State<IsAraSayfasi> {
                           final belge = ilanlar[index];
                           final data = belge.data();
 
-   final List<String> fotograflar =
-    (data['imageUrls'] as List<dynamic>?)
-        ?.map((e) => e.toString())
-        .toList() ??
-    [];                       final telefon = bilgi(data['phone']);
-                          final whatsapp = bilgi(data['whatsapp']);
-                          final featured = aktifOneCikan(data);
-                         final createdAt = data['createdAt'] as Timestamp?;
-final ilanTarihi = createdAt == null
-    ? ''
-    : '${createdAt.toDate().day.toString().padLeft(2, '0')}.'
-      '${createdAt.toDate().month.toString().padLeft(2, '0')}.'
-      '${createdAt.toDate().year} • '
-      '${createdAt.toDate().hour.toString().padLeft(2, '0')}:'
-      '${createdAt.toDate().minute.toString().padLeft(2, '0')}'; 
+                          final List<String> fotograflar =
+                              (data['imageUrls']
+                                          as List<dynamic>?)
+                                      ?.map((e) => e.toString())
+                                      .toList() ??
+                                  [];
 
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
+                          final createdAt =
+                              data['createdAt'] as Timestamp?;
+
+                          final tarih = createdAt == null
+                              ? ''
+                              : '${createdAt.toDate().day.toString().padLeft(2, '0')}.'
+                                  '${createdAt.toDate().month.toString().padLeft(2, '0')}.'
+                                  '${createdAt.toDate().year}';
+
+                          final title = bilgi(data['title']);
+                          final company = bilgi(data['company']);
+                          final city = bilgi(data['city']);
+                          final category =
+                              bilgi(data['category']);
+                          final salary = bilgi(data['salary']);
+                          final description =
+                              bilgi(data['description']);
+
+                          return Container(
+                            margin:
+                                const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius:
+                                  BorderRadius.circular(18),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Color(0x12000000),
+                                  blurRadius: 10,
+                                  offset: Offset(0, 3),
+                                ),
+                              ],
+                            ),
                             child: Padding(
-                              padding: const EdgeInsets.all(15),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              padding: const EdgeInsets.all(10),
+                              child: Row(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
                                 children: [
-                                  if (fotograflar.isNotEmpty) ...[
-  ClipRRect(
-    borderRadius: BorderRadius.circular(12),
-    child: Image.network(
-      fotograflar.first,
-      width: double.infinity,
-      height: 180,
-      fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) {
-        return const SizedBox.shrink();
-      },
-    ),
-  ),
-  const SizedBox(height: 8),
-  Text(
-    '${fotograflar.length} Fotoğraf',
-    style: const TextStyle(fontWeight: FontWeight.bold),
-  ),
-  const SizedBox(height: 10),
-],
-                                  if (featured)
-                                    Row(
-                                      children: [
-                                        const Icon(Icons.star),
-                                        const SizedBox(width: 6),
-                                        const Text(
-                                          'ÖNE ÇIKAN İLAN',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        ),
-                                        const Spacer(),
-                                        Text(kalanSure(data)),
-                                      ],
-                                    ),
-                                  if (featured) const SizedBox(height: 8),
-                                  Text(
-                                    bilgi(data['title']),
-                                    style: const TextStyle(
-                                      fontSize: 19,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-Text(
-  'İlan No: ${data['ilanNo'] ?? 'Eski İlan'}',
-  style: const TextStyle(
-    fontWeight: FontWeight.w600,
-  ),
-),
-                                  
-                                  const SizedBox(height: 8),
-                                  Text('Kategori: ${bilgi(data['category'])}'),
-                                  Text('Firma: ${bilgi(data['company'])}'),
-                                  Text('Konum: ${bilgi(data['city'])}'),
-                                  Text(
-                                    'Ücret / Maaş: ${bilgi(data['salary'])}',
-                                  ),
-                                  if (ilanTarihi.isNotEmpty)
-  Text('İlan Tarihi: $ilanTarihi'),
-                                  const SizedBox(height: 10),
-
-SizedBox(
-  width: double.infinity,
-  child: ElevatedButton.icon(
-    onPressed: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => IlanDetaySayfasi(
-            jobId: belge.id,
-            data: data,
-          ),
-        ),
-      );
-    },
-    icon: const Icon(Icons.visibility),
-    label: const Text('DETAYA GİT'),
-  ),
-),
-
-const SizedBox(height: 8),
-                                  const Divider(height: 24),
-                                  Text(bilgi(data['description'])),
-                                  const Divider(height: 24),
-                                  Text('Telefon: $telefon'),
-                                  Text('WhatsApp: $whatsapp'),
-                                  const SizedBox(height: 12),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: ElevatedButton.icon(
-                                          onPressed: telefon == 'Belirtilmemiş'
-                                              ? null
-                                              : () {
-                                                  telefonAra(telefon);
-                                                },
-                                          icon: const Icon(Icons.phone),
-                                          label: const Text('ARA'),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: ElevatedButton.icon(
-                                          onPressed: whatsapp == 'Belirtilmemiş'
-                                              ? null
-                                              : () {
-                                                  whatsappAc(whatsapp);
-                                                },
-                                          icon: const Icon(Icons.chat),
-                                          label: const Text('WHATSAPP'),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
                                   SizedBox(
-  width: double.infinity,
-  child: ElevatedButton.icon(
-    onPressed: () {
-      final user = FirebaseAuth.instance.currentUser;
-      final ownerUid = bilgi(data['ownerUid']);
-
-      if (user == null) {
-        mesaj(context, 'Mesaj göndermek için giriş yapmalısınız.');
-        return;
-      }
-
-      if (ownerUid.isEmpty) {
-        mesaj(context, 'İlan sahibi bulunamadı.');
-        return;
-      }
-
-      if (user.uid == ownerUid) {
-        mesaj(context, 'Kendi ilanınıza mesaj gönderemezsiniz.');
-        return;
-      }
-
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => MesajlasmaSayfasi(
-            jobId: belge.id,
-            jobTitle: bilgi(data['title']),
-            ownerUid: ownerUid,
-          ),
-        ),
-      );
-    },
-    icon: const Icon(Icons.message),
-    label: const Text('MESAJ GÖNDER'),
-  ),
-),
-       const SizedBox(height: 8),
-                                  SizedBox(
-                                    width: double.infinity,
-                                    child: OutlinedButton.icon(
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => SikayetEtSayfasi(
-                                              jobId: belge.id,
-                                              jobTitle: bilgi(data['title']),
+                                    width: 115,
+                                    height: 150,
+                                    child: ClipRRect(
+                                      borderRadius:
+                                          BorderRadius.circular(14),
+                                      child: Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          if (fotograflar.isNotEmpty)
+                                            Image.network(
+                                              fotograflar.first,
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (context, error,
+                                                      stackTrace) {
+                                                return Container(
+                                                  color: const Color(
+                                                      0xFFE8EEF5),
+                                                  child: const Icon(
+                                                    Icons.image,
+                                                    size: 42,
+                                                  ),
+                                                );
+                                              },
+                                            )
+                                          else
+                                            Container(
+                                              color: const Color(
+                                                  0xFFE8EEF5),
+                                              child: const Icon(
+                                                Icons.work_outline,
+                                                size: 42,
+                                                color: Color(
+                                                    0xFF7E8CA3),
+                                              ),
+                                            ),
+                                          Positioned(
+                                            left: 7,
+                                            top: 7,
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets
+                                                      .symmetric(
+                                                horizontal: 9,
+                                                vertical: 5,
+                                              ),
+                                              decoration:
+                                                  BoxDecoration(
+                                                color: const Color(
+                                                    0xFF087CF0),
+                                                borderRadius:
+                                                    BorderRadius
+                                                        .circular(8),
+                                              ),
+                                              child: const Text(
+                                                'Yeni',
+                                                style: TextStyle(
+                                                  color:
+                                                      Colors.white,
+                                                  fontWeight:
+                                                      FontWeight.bold,
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        );
-                                      },
-                                      icon: const Icon(Icons.flag),
-                                      label: const Text('ŞİKAYET ET'),
+                                          if (fotograflar.isNotEmpty)
+                                            Positioned(
+                                              left: 7,
+                                              bottom: 7,
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets
+                                                        .symmetric(
+                                                  horizontal: 7,
+                                                  vertical: 4,
+                                                ),
+                                                decoration:
+                                                    BoxDecoration(
+                                                  color: const Color(
+                                                      0xB8000000),
+                                                  borderRadius:
+                                                      BorderRadius
+                                                          .circular(7),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    const Icon(
+                                                      Icons
+                                                          .photo_camera,
+                                                      color:
+                                                          Colors.white,
+                                                      size: 14,
+                                                    ),
+                                                    const SizedBox(
+                                                        width: 4),
+                                                    Text(
+                                                      '${fotograflar.length} Fotoğraf',
+                                                      style:
+                                                          const TextStyle(
+                                                        color: Colors
+                                                            .white,
+                                                        fontSize: 11,
+                                                        fontWeight:
+                                                            FontWeight
+                                                                .bold,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 11),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                title,
+                                                maxLines: 2,
+                                                overflow:
+                                                    TextOverflow
+                                                        .ellipsis,
+                                                style:
+                                                    const TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight:
+                                                      FontWeight.w900,
+                                                  color: Color(
+                                                      0xFF08163B),
+                                                ),
+                                              ),
+                                            ),
+                                            if (tarih.isNotEmpty)
+                                              Text(
+                                                tarih,
+                                                style:
+                                                    const TextStyle(
+                                                  fontSize: 10,
+                                                  color: Color(
+                                                      0xFF52617D),
+                                                ),
+                                              ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 5),
+                                        _ilanBilgiSatiri(
+                                          Icons.business_center,
+                                          company,
+                                        ),
+                                        _ilanBilgiSatiri(
+                                          Icons.location_on,
+                                          city,
+                                        ),
+                                        _ilanBilgiSatiri(
+                                          Icons.sell,
+                                          category,
+                                        ),
+                                        if (salary.isNotEmpty &&
+                                            salary !=
+                                                'Belirtilmemiş')
+                                          Container(
+                                            margin:
+                                                const EdgeInsets.only(
+                                                    top: 5),
+                                            padding:
+                                                const EdgeInsets
+                                                    .symmetric(
+                                              horizontal: 9,
+                                              vertical: 6,
+                                            ),
+                                            decoration:
+                                                BoxDecoration(
+                                              color: const Color(
+                                                  0xFFE5F3FF),
+                                              borderRadius:
+                                                  BorderRadius
+                                                      .circular(12),
+                                            ),
+                                            child: Text(
+                                              salary,
+                                              style:
+                                                  const TextStyle(
+                                                color: Color(
+                                                    0xFF087CF0),
+                                                fontWeight:
+                                                    FontWeight.w900,
+                                              ),
+                                            ),
+                                          ),
+                                        const SizedBox(height: 5),
+                                        Text(
+                                          description,
+                                          maxLines: 2,
+                                          overflow:
+                                              TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            color:
+                                                Color(0xFF52617D),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 7),
+                                        SizedBox(
+                                          width: double.infinity,
+                                          child: ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      IlanDetaySayfasi(
+                                                    jobId:
+                                                        belge.id,
+                                                    data: data,
+                                                  ),
+                                                ),
+                                              );
+                                            },
+                                            style: ElevatedButton
+                                                .styleFrom(
+                                              backgroundColor:
+                                                  const Color(
+                                                      0xFF087CF0),
+                                              foregroundColor:
+                                                  Colors.white,
+                                              elevation: 0,
+                                              shape:
+                                                  RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius
+                                                        .circular(12),
+                                              ),
+                                            ),
+                                            child: const Text(
+                                              'Detayları Gör  →',
+                                              style: TextStyle(
+                                                fontWeight:
+                                                    FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -1856,8 +2132,74 @@ const SizedBox(height: 8),
       ),
     );
   }
-}
 
+  Widget _kategoriButonu(
+    IconData icon,
+    String yazi,
+    bool secili,
+  ) {
+    return Container(
+      margin: const EdgeInsets.only(right: 7),
+      child: ElevatedButton.icon(
+        onPressed: () {},
+        icon: Icon(icon, size: 18),
+        label: Text(yazi),
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor:
+              secili ? const Color(0xFF087CF0) : Colors.white,
+          foregroundColor:
+              secili ? Colors.white : const Color(0xFF08163B),
+          side: BorderSide(
+            color: secili
+                ? const Color(0xFF087CF0)
+                : const Color(0xFFE1E8F0),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _ilanBilgiSatiri(
+    IconData icon,
+    String yazi,
+  ) {
+    if (yazi.isEmpty || yazi == 'Belirtilmemiş') {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 2),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            size: 15,
+            color: const Color(0xFF52617D),
+          ),
+          const SizedBox(width: 5),
+          Expanded(
+            child: Text(
+              yazi,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 11,
+                color: Color(0xFF52617D),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+    
+        
+      
 class SikayetEtSayfasi extends StatefulWidget {
   final String jobId;
   final String jobTitle;
@@ -1871,7 +2213,6 @@ class SikayetEtSayfasi extends StatefulWidget {
   @override
   State<SikayetEtSayfasi> createState() => _SikayetEtSayfasiState();
 }
-
 class _SikayetEtSayfasiState extends State<SikayetEtSayfasi> {
   final aciklama = TextEditingController();
 
