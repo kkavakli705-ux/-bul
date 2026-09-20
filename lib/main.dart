@@ -207,11 +207,13 @@ void dispose() {
   if (!mounted) return;
 
   final girisYapildi = await Navigator.push<bool>(
-    context,
-    MaterialPageRoute(
-      builder: (_) => const GirisSayfasi(),
-    ),
-  );
+  context,
+  PageRouteBuilder(
+    pageBuilder: (_, __, ___) => const GirisSayfasi(),
+    transitionDuration: Duration.zero,
+    reverseTransitionDuration: Duration.zero,
+  ),
+);
 
   if (!mounted) return;
 
@@ -1350,7 +1352,8 @@ try {
     HttpHeaders.contentTypeHeader,
     fotograf.mimeType ?? 'image/jpeg',
   );
-
+request.contentLength = bytes.length;
+request.persistentConnection = false;
   request.add(bytes);
 
   final response = await request.close();
