@@ -5377,233 +5377,245 @@ const SizedBox(height: 12),
               
           
           
-      const SizedBox(height: 16),
+        
+      
+const SizedBox(height: 12),
 
+// FİRMA BİLGİLERİ
 Container(
   width: double.infinity,
-  padding: const EdgeInsets.all(16),
+  padding: const EdgeInsets.symmetric(
+    horizontal: 12,
+    vertical: 10,
+  ),
   decoration: BoxDecoration(
     color: Colors.white,
-    borderRadius: BorderRadius.circular(16),
+    borderRadius: BorderRadius.circular(12),
     border: Border.all(
-      color: const Color(0xFFE3ECF7),
+      color: const Color(0xFFE5E7EB),
+      width: 1,
     ),
   ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
+  child: Row(
     children: [
-      const Text(
-        'Firma Bilgileri',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Color(0xFF111827),
+      Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF3F7FC),
+          borderRadius: BorderRadius.circular(9),
+        ),
+        child: const Icon(
+          Icons.business_outlined,
+          size: 19,
+          color: Color(0xFF087CF0),
         ),
       ),
-      const SizedBox(height: 14),
-      Row(
-        children: [
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEFF6FF),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.business,
-              color: Color(0xFF087CF0),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Firma',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF6B7280),
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  bilgi(data['company']),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF111827),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      if (telefon != 'Belirtilmemiş') ...[
-        const SizedBox(height: 14),
-        Row(
+
+      const SizedBox(width: 10),
+
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Container(
-              width: 42,
-              height: 42,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0FDF4),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.phone,
-                color: Color(0xFF16A34A),
+            const Text(
+              'Firma Bilgileri',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF111827),
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Telefon',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF6B7280),
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    telefon,
-                    style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF111827),
-                    ),
-                  ),
-                ],
+
+            const SizedBox(height: 3),
+
+            Text(
+              bilgi(data['company']),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF374151),
               ),
             ),
+
+            if (telefon != 'Belirtilmemiş') ...[
+              const SizedBox(height: 2),
+              Text(
+                telefon,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF6B7280),
+                ),
+              ),
+            ],
           ],
         ),
-      ],
+      ),
+
+      const Icon(
+        Icons.chevron_right,
+        size: 20,
+        color: Color(0xFF9CA3AF),
+      ),
     ],
   ),
 ),
-          
 
-const SizedBox(height: 16),
-      Container(
+const SizedBox(height: 10),
+
+// KONUM
+Container(
   width: double.infinity,
-  padding: const EdgeInsets.all(16),
+  padding: const EdgeInsets.symmetric(
+    horizontal: 12,
+    vertical: 10,
+  ),
   decoration: BoxDecoration(
     color: Colors.white,
-    borderRadius: BorderRadius.circular(16),
+    borderRadius: BorderRadius.circular(12),
     border: Border.all(
-      color: const Color(0xFFE3ECF7),
+      color: const Color(0xFFE5E7EB),
+      width: 1,
     ),
   ),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
+  child: Row(
     children: [
-      const Row(
-        children: [
-          Icon(
-            Icons.location_on,
-            color: Color(0xFF087CF0),
-            size: 24,
-          ),
-          SizedBox(width: 8),
-          Text(
-            'Konum',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF111827),
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 14),
-
-      Text(
-        bilgi(data['city']),
-        style: const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF111827),
+      Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF3F7FC),
+          borderRadius: BorderRadius.circular(9),
+        ),
+        child: const Icon(
+          Icons.location_on_outlined,
+          size: 20,
+          color: Color(0xFF087CF0),
         ),
       ),
 
-      if ((data['address'] ?? '').toString().trim().isNotEmpty) ...[
-        const SizedBox(height: 6),
-        Text(
-          data['address'].toString(),
-          style: const TextStyle(
-            fontSize: 14,
-            color: Color(0xFF6B7280),
-            height: 1.4,
+      const SizedBox(width: 10),
+
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Konum',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF111827),
+              ),
+            ),
+
+            const SizedBox(height: 3),
+
+            Text(
+              bilgi(data['city']),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF4B5563),
+              ),
+            ),
+
+            if ((data['address'] ?? '')
+                .toString()
+                .trim()
+                .isNotEmpty) ...[
+              const SizedBox(height: 2),
+              Text(
+                data['address'].toString(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF6B7280),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+
+      const SizedBox(width: 8),
+
+      OutlinedButton.icon(
+        onPressed: () async {
+          final mapsUrl =
+              (data['mapsUrl'] ?? '').toString().trim();
+
+          final adres =
+              (data['address'] ?? '').toString().trim();
+
+          final sehir =
+              (data['city'] ?? '').toString().trim();
+
+          final hedef = [adres, sehir]
+              .where((e) => e.isNotEmpty)
+              .join(', ');
+
+          Uri? uri;
+
+          if (mapsUrl.isNotEmpty) {
+            final link = Uri.tryParse(mapsUrl);
+
+            if (link != null &&
+                (link.scheme == 'http' ||
+                    link.scheme == 'https')) {
+              uri = link;
+            }
+          }
+
+          if (uri == null && hedef.isNotEmpty) {
+            uri = Uri.parse(
+              'https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeComponent(hedef)}',
+            );
+          }
+
+          if (uri == null) return;
+
+          await launchUrl(
+            uri,
+            mode: LaunchMode.externalApplication,
+          );
+        },
+
+        icon: const Icon(
+          Icons.map_outlined,
+          size: 16,
+        ),
+
+        label: const Text(
+          'Haritada Gör',
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
           ),
         ),
-      ],
 
-      const SizedBox(height: 14),
-      SizedBox(
-  width: double.infinity,
-        
-     
-        child: OutlinedButton.icon(
-          onPressed: () async {
-  final mapsUrl =
-      (data['mapsUrl'] ?? '').toString().trim();
-  final adres =
-      (data['address'] ?? '').toString().trim();
-  final sehir =
-      (data['city'] ?? '').toString().trim();
-
-  final hedef = [adres, sehir]
-      .where((e) => e.isNotEmpty)
-      .join(', ');
-
-  Uri? uri;
-
-  if (mapsUrl.isNotEmpty) {
-    final link = Uri.tryParse(mapsUrl);
-
-    if (link != null &&
-        (link.scheme == 'http' ||
-            link.scheme == 'https')) {
-      uri = link;
-    }
-  }
-
-  if (uri == null && hedef.isNotEmpty) {
-    uri = Uri.parse(
-      'https://www.google.com/maps/dir/?api=1&destination=${Uri.encodeComponent(hedef)}',
-    );
-  }
-
-  if (uri == null) return;
-
-  await launchUrl(
-    uri,
-    mode: LaunchMode.externalApplication,
-  );
-},
-          icon: const Icon(Icons.map_outlined),
-          label: const Text('Haritada Gör'),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xFF087CF0),
-            side: const BorderSide(
-              color: Color(0xFF087CF0),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: const Color(0xFF087CF0),
+          backgroundColor: const Color(0xFFF0F7FF),
+          side: BorderSide.none,
+          minimumSize: const Size(0, 38),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 8,
+          ),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(9),
           ),
         ),
       ),
     ],
   ),
-),
+),          
 
 const SizedBox(height: 16),
       Row(
