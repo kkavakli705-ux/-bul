@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -201,10 +203,7 @@ void dispose() {
     }
   }
 
-  Future<void> girisAc() async {
-  await _videoController.pause();
-  await _videoController.setVolume(0.0);
-
+ Future<void> girisAc() async {
   if (!mounted) return;
 
   final girisYapildi = await Navigator.push<bool>(
@@ -218,25 +217,33 @@ void dispose() {
 
   if (girisYapildi == true ||
       FirebaseAuth.instance.currentUser != null) {
+    await _videoController.pause();
+    await _videoController.setVolume(0.0);
     await hesapKontrol();
   } else {
-    await _videoController.seekTo(Duration.zero);
     await _videoController.setVolume(1.0);
-    await _videoController.play();
-  }
-}
-  Future<void> cikis() async {
-    await FirebaseAuth.instance.signOut();
 
-    if (mounted) {
-      setState(() {
-        admin = false;
-        engelli = false;
-        kontrol = false;
-      });
+    if (!_videoController.value.isPlaying) {
+      await _videoController.play();
     }
   }
+} 
+  
+Future<void> cikis() async {
+  await FirebaseAuth.instance.signOut();
 
+  if (!mounted) return;
+
+  setState(() {
+    admin = false;
+    engelli = false;
+    kontrol = false;
+  });
+
+  await _videoController.seekTo(Duration.zero);
+  await _videoController.setVolume(1.0);
+  await _videoController.play();
+}
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -1318,15 +1325,60 @@ Future<void> kameradanFotografCek() async {
 for (int i = 0; i < _secilenFotograflar.length; i++) {
   final fotograf = _secilenFotograflar[i];
 
-  final ref = FirebaseStorage.instance
-      .ref()
-      .child('ilan_fotograflari')
-      .child('${user.uid}_${DateTime.now().millisecondsSinceEpoch}_$i.jpg');
+  final bytes = await fotograf.readAsBytes();
+final idToken = await user.getIdToken();
 
-  await ref.putData(await fotograf.readAsBytes());
+if (idToken == null || idToken.isEmpty) {
+  throw Exception('Oturum anahtarı alınamadı.');
+}
 
-  final url = await ref.getDownloadURL();
+final client = HttpClient();
+
+try {
+  final request = await client.postUrl(
+    Uri.parse(
+      'https://is-bul-fotograf-api.kkavakli705.workers.dev/upload',
+    ),
+  );
+
+  request.headers.set(
+    HttpHeaders.authorizationHeader,
+    'Bearer $idToken',
+  );
+
+  request.headers.set(
+    HttpHeaders.contentTypeHeader,
+    fotograf.mimeType ?? 'image/jpeg',
+  );
+
+  request.add(bytes);
+
+  final response = await request.close();
+
+  final responseText =
+      await utf8.decoder.bind(response).join();
+
+  final data = jsonDecode(responseText);
+
+  if (response.statusCode < 200 ||
+      response.statusCode >= 300) {
+    throw Exception(
+      data is Map && data['error'] != null
+          ? data['error'].toString()
+          : 'Fotoğraf yüklenemedi.',
+    );
+  }
+
+  final url = data['url']?.toString();
+
+  if (url == null || url.isEmpty) {
+    throw Exception('Fotoğraf adresi alınamadı.');
+  }
+
   fotografUrlListesi.add(url);
+} finally {
+  client.close(force: true);
+}
 }
   final firestore = FirebaseFirestore.instance;
 
