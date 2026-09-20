@@ -43,6 +43,7 @@ class IsBulApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'İş Bul',
       theme: ThemeData(
+       fontFamily: 'Roboto', 
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
