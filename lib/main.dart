@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -1334,54 +1335,40 @@ if (idToken == null || idToken.isEmpty) {
   throw Exception('Oturum anahtarı alınamadı.');
 }
 
-final client = HttpClient();
 
-try {
-  final request = await client.postUrl(
-    Uri.parse(
-      'https://is-bul-fotograf-api.kkavakli705.workers.dev/upload',
-    ),
+final response = await http
+    .post(
+      Uri.parse(
+        'https://is-bul-fotograf-api.kkavakli705.workers.dev/upload',
+      ),
+      headers: {
+        'Authorization': 'Bearer $idToken',
+        'Content-Type': fotograf.mimeType ?? 'image/jpeg',
+      },
+      body: bytes,
+    )
+    .timeout(const Duration(seconds: 30));
+
+final responseText = utf8.decode(response.bodyBytes);
+final data = jsonDecode(responseText);
+
+if (response.statusCode < 200 ||
+    response.statusCode >= 300) {
+  throw Exception(
+    data is Map && data['error'] != null
+        ? data['error'].toString()
+        : 'Fotoğraf yüklenemedi.',
   );
-
-  request.headers.set(
-    HttpHeaders.authorizationHeader,
-    'Bearer $idToken',
-  );
-
-  request.headers.set(
-    HttpHeaders.contentTypeHeader,
-    fotograf.mimeType ?? 'image/jpeg',
-  );
-request.contentLength = bytes.length;
-request.persistentConnection = false;
-  request.add(bytes);
-
-  final response = await request.close();
-
-  final responseText =
-      await utf8.decoder.bind(response).join();
-
-  final data = jsonDecode(responseText);
-
-  if (response.statusCode < 200 ||
-      response.statusCode >= 300) {
-    throw Exception(
-      data is Map && data['error'] != null
-          ? data['error'].toString()
-          : 'Fotoğraf yüklenemedi.',
-    );
-  }
-
-  final url = data['url']?.toString();
-
-  if (url == null || url.isEmpty) {
-    throw Exception('Fotoğraf adresi alınamadı.');
-  }
-
-  fotografUrlListesi.add(url);
-} finally {
-  client.close(force: true);
 }
+
+final url = data['url']?.toString();
+
+if (url == null || url.isEmpty) {
+  throw Exception('Fotoğraf adresi alınamadı.');
+}
+
+fotografUrlListesi.add(url);
+  
 }
   final firestore = FirebaseFirestore.instance;
 
