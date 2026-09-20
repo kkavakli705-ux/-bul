@@ -1329,46 +1329,61 @@ for (int i = 0; i < _secilenFotograflar.length; i++) {
   final fotograf = _secilenFotograflar[i];
 
   final bytes = await fotograf.readAsBytes();
-final idToken = await user.getIdToken();
+final contentType = fotograf.mimeType ?? 'image/jpeg';
 
-if (idToken == null || idToken.isEmpty) {
-  throw Exception('Oturum anahtarı alınamadı.');
-}
+final extension = contentType == 'image/png'
+    ? 'png'
+    : contentType == 'image/webp'
+        ? 'webp'
+        : 'jpg';
 
+const supabaseUrl = 'https://jwdqmfbbbwzjcgmenzdd.supabase.co';
+const supabaseKey =
+    'sb_publishable_aX-ufKnmFxI57G8t7Tznnw_4SWJ0EOs';
+
+final dosyaYolu =
+    '${user.uid}/${DateTime.now().microsecondsSinceEpoch}_$i.$extension';
 
 final response = await http
     .post(
       Uri.parse(
-        'https://is-bul-fotograf-api.kkavakli705.workers.dev/upload',
+        '$supabaseUrl/storage/v1/object/ilan-fotograflari/$dosyaYolu',
       ),
       headers: {
-        'Authorization': 'Bearer $idToken',
-        'Content-Type': fotograf.mimeType ?? 'image/jpeg',
+        'apikey': supabaseKey,
+        'Content-Type': contentType,
       },
       body: bytes,
     )
     .timeout(const Duration(seconds: 30));
 
-final responseText = utf8.decode(response.bodyBytes);
-final data = jsonDecode(responseText);
+if (response.statusCode < 200 || response.statusCode >= 300) {
+  String hata = 'Fotoğraf yüklenemedi.';
 
-if (response.statusCode < 200 ||
-    response.statusCode >= 300) {
-  throw Exception(
-    data is Map && data['error'] != null
-        ? data['error'].toString()
-        : 'Fotoğraf yüklenemedi.',
-  );
+  try {
+    final responseText = utf8.decode(response.bodyBytes);
+    final data = jsonDecode(responseText);
+
+    if (data is Map) {
+      final hataMesaji = data['message'] ?? data['error'];
+
+      if (hataMesaji != null &&
+          hataMesaji.toString().trim().isNotEmpty) {
+        hata = hataMesaji.toString();
+      }
+    }
+  } catch (_) {}
+
+  throw Exception(hata);
 }
 
-final url = data['url']?.toString();
+final publicPath =
+    dosyaYolu.split('/').map(Uri.encodeComponent).join('/');
 
-if (url == null || url.isEmpty) {
-  throw Exception('Fotoğraf adresi alınamadı.');
-}
+final url =
+    '$supabaseUrl/storage/v1/object/public/ilan-fotograflari/$publicPath';
 
 fotografUrlListesi.add(url);
-  
 }
   final firestore = FirebaseFirestore.instance;
 
