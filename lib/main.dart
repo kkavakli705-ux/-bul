@@ -207,6 +207,8 @@ void dispose() {
 
  Future<void> girisAc() async {
   if (!mounted) return;
+   await _videoController.pause();
+await _videoController.setVolume(0.0);
 
   final girisYapildi = await Navigator.push<bool>(
   context,
@@ -298,15 +300,26 @@ Future<void> cikis() async {
     centerTitle: true,
     actions: [
       IconButton(
-        icon: const Icon(Icons.notifications),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const BildirimlerSayfasi(),
-            ),
-          );
-        },
+  icon: const Icon(Icons.notifications),
+     onPressed: () async {
+  await _videoController.pause();
+  await _videoController.setVolume(0.0);
+
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const BildirimlerSayfasi(),
+    ),
+  );
+
+  if (!mounted) return;
+
+  if (FirebaseAuth.instance.currentUser == null) {
+    await _videoController.setVolume(1.0);
+    await _videoController.play();
+  }
+}, 
+        
       ),
     ],
   ),
@@ -4856,10 +4869,7 @@ final List<String> fotograflar =
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
+          Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (fotograflar.isNotEmpty) ...[
@@ -5767,14 +5777,9 @@ const SizedBox(height: 8),
 const SizedBox(height: 30),
         ],
       ),
-    ),
-  ),
 ],
 ),
-);
-  }
-}
-        
+);    
       
     
   
