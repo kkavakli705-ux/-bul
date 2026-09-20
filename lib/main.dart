@@ -4823,9 +4823,35 @@ final List<String> fotograflar =
         .toList() ??
     [];
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('İlan Detayı'),
-      ),
+  backgroundColor: const Color(0xFFF7F8FA),
+  appBar: AppBar(
+    backgroundColor: Colors.white,
+    elevation: 0,
+    surfaceTintColor: Colors.white,
+    foregroundColor: const Color(0xFF111827),
+    titleSpacing: 0,
+    title: const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'İlan Detayı',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF111827),
+          ),
+        ),
+        Text(
+          'İş fırsatını incele',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.normal,
+            color: Color(0xFF6B7280),
+          ),
+        ),
+      ],
+    ),
+  ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -4837,7 +4863,7 @@ final List<String> fotograflar =
                 children: [
                   if (fotograflar.isNotEmpty) ...[
   SizedBox(
-    height: 230,
+    height: 210,
     child: Row(
       children: [
         Expanded(
@@ -5028,32 +5054,35 @@ final List<String> fotograflar =
 ),
 const SizedBox(height: 10), 
                   Text(
-                    bilgi(data['title']),
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+  bilgi(data['title']),
+  style: const TextStyle(
+    fontSize: 25,
+    fontWeight: FontWeight.w800,
+    color: Color(0xFF111827),
+  ),
+),
 
-                  const SizedBox(height: 6),
+const SizedBox(height: 6),
 
-                  Text(
-                    'İlan No: ${data['ilanNo'] ?? 'Eski İlan'}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+Text(
+  'İlan No: ${data['ilanNo'] ?? 'Eski İlan'}',
+  style: const TextStyle(
+    fontSize: 13,
+    color: Color(0xFF6B7280),
+    fontWeight: FontWeight.w500,
+  ),
+),
 
-                  const Divider(height: 26),
+const SizedBox(height: 16),
 
-                  Container(
+Container(
   width: double.infinity,
-  padding: const EdgeInsets.all(14),
+  padding: const EdgeInsets.all(16),
   decoration: BoxDecoration(
-    color: const Color(0xFFF7FAFF),
-    borderRadius: BorderRadius.circular(14),
+    color: const Color(0xFFF8FAFC),
+    borderRadius: BorderRadius.circular(16),
     border: Border.all(
-      color: const Color(0xFFE3ECF7),
+      color: const Color(0xFFE5E7EB),
     ),
   ),
   child: Column(
@@ -5062,80 +5091,96 @@ const SizedBox(height: 10),
       Row(
         children: [
           const Icon(
-            Icons.business,
-            size: 20,
+            Icons.business_outlined,
             color: Color(0xFF087CF0),
+            size: 21,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
               bilgi(data['company']),
               style: const TextStyle(
-                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF111827),
               ),
             ),
           ),
         ],
       ),
-      const SizedBox(height: 10),
+
+      const SizedBox(height: 13),
+
       Row(
         children: [
           const Icon(
-            Icons.location_on,
-            size: 20,
+            Icons.location_on_outlined,
             color: Color(0xFF087CF0),
+            size: 21,
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(bilgi(data['city'])),
-          ),
-        ],
-      ),
-      const SizedBox(height: 10),
-      Row(
-        children: [
-          const Icon(
-            Icons.sell,
-            size: 20,
-            color: Color(0xFF087CF0),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(bilgi(data['category'])),
-          ),
-        ],
-      ),
-      const SizedBox(height: 10),
-      Row(
-        children: [
-          const Icon(
-            Icons.monetization_on,
-            size: 20,
-            color: Color(0xFF087CF0),
-          ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 10),
           Expanded(
             child: Text(
-              bilgi(data['salary']),
+              bilgi(data['city']),
               style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF087CF0),
+                fontSize: 15,
+                color: Color(0xFF374151),
               ),
             ),
           ),
         ],
       ),
+
+      const SizedBox(height: 13),
+
+      Row(
+        children: [
+          const Icon(
+            Icons.work_outline,
+            color: Color(0xFF087CF0),
+            size: 21,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              bilgi(data['category']),
+              style: const TextStyle(
+                fontSize: 15,
+                color: Color(0xFF374151),
+              ),
+            ),
+          ),
+        ],
+      ),
+
+      const SizedBox(height: 18),
+
+      Text(
+        '${bilgi(data['salary'])} TL / Gün',
+        style: const TextStyle(
+          fontSize: 25,
+          fontWeight: FontWeight.w800,
+          color: Color(0xFF087CF0),
+        ),
+      ),
+
       if (tarih.isNotEmpty) ...[
         const SizedBox(height: 10),
         Row(
           children: [
             const Icon(
               Icons.access_time,
-              size: 20,
-              color: Color(0xFF7A869F),
+              size: 18,
+              color: Color(0xFF6B7280),
             ),
-            const SizedBox(width: 8),
-            Text(tarih),
+            const SizedBox(width: 7),
+            Text(
+              tarih,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFF6B7280),
+              ),
+            ),
           ],
         ),
       ],
@@ -5143,32 +5188,54 @@ const SizedBox(height: 10),
   ),
 ),
 
-                  const Divider(height: 26),
+const SizedBox(height: 18),
 
-                  const Text(
-                    'İlan Açıklaması',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                 Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(16),
+  decoration: BoxDecoration(
+    color: const Color(0xFFF8FAFC),
+    borderRadius: BorderRadius.circular(16),
+    border: Border.all(
+      color: const Color(0xFFE3E8EF),
+    ),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'İlan Açıklaması',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF111827),
+        ),
+      ),
+      const SizedBox(height: 10),
+      Text(
+        bilgi(data['description']),
+        style: const TextStyle(
+          fontSize: 15,
+          height: 1.5,
+          color: Color(0xFF374151),
+        ),
+      ),
+    ],
+  ),
+),
 
-                  const SizedBox(height: 8),
+const SizedBox(height: 16),
 
-                  Text(
-                    bilgi(data['description']),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      height: 1.4,
-                    ),
-                  ),
+const Text(
+  'İletişim',
+  style: TextStyle(
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+    color: Color(0xFF111827),
+  ),
+),
 
-                  const Divider(height: 26),
-
-                  Text('Telefon: $telefon'),
-                  Text('WhatsApp: $whatsapp'),
-
-                  const SizedBox(height: 12),
+const SizedBox(height: 12), 
 
                   Row(
   children: [
@@ -5261,10 +5328,12 @@ const SizedBox(height: 10),
                       style: ElevatedButton.styleFrom(
   backgroundColor: const Color(0xFF087CF0),
   foregroundColor: Colors.white,
-  padding: const EdgeInsets.symmetric(vertical: 14),
+  elevation: 0,
+  padding: const EdgeInsets.symmetric(vertical: 16),
   shape: RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(12),
   ),
+),
 ),
                       
                     ),
@@ -5290,14 +5359,16 @@ const SizedBox(height: 10),
                       label: const Text('ŞİKAYET ET'),
                       style: OutlinedButton.styleFrom(
   foregroundColor: Colors.red,
+  backgroundColor: const Color(0xFFFFF5F5),
   side: const BorderSide(
-    color: Colors.red,
+    color: Color(0xFFFF3B30),
     width: 1.5,
   ),
-  padding: const EdgeInsets.symmetric(vertical: 14),
+  padding: const EdgeInsets.symmetric(vertical: 16),
   shape: RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(12),
   ),
+),
 ),
                     ),
                   ),
@@ -5325,42 +5396,97 @@ Container(
         style: TextStyle(
           fontSize: 18,
           fontWeight: FontWeight.bold,
+          color: Color(0xFF111827),
         ),
       ),
-      const SizedBox(height: 12),
+      const SizedBox(height: 14),
       Row(
         children: [
-          const Icon(
-            Icons.business,
-            color: Color(0xFF087CF0),
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(
+              Icons.business,
+              color: Color(0xFF087CF0),
+            ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              bilgi(data['company']),
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Firma',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  bilgi(data['company']),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
       ),
       if (telefon != 'Belirtilmemiş') ...[
-        const SizedBox(height: 10),
+        const SizedBox(height: 14),
         Row(
           children: [
-            const Icon(
-              Icons.phone,
-              color: Color(0xFF7A869F),
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF0FDF4),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.phone,
+                color: Color(0xFF16A34A),
+              ),
             ),
-            const SizedBox(width: 8),
-            Text(telefon),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Telefon',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF6B7280),
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    telefon,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF111827),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ],
     ],
   ),
 ),
+          
 
 const SizedBox(height: 16),
       Container(
@@ -5376,55 +5502,52 @@ const SizedBox(height: 16),
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      const Text(
-        'Konum',
-        style: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-      const SizedBox(height: 12),
-      Row(
+      const Row(
         children: [
-          const Icon(
+          Icon(
             Icons.location_on,
             color: Color(0xFF087CF0),
+            size: 24,
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              bilgi(data['city']),
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-              ),
+          SizedBox(width: 8),
+          Text(
+            'Konum',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF111827),
             ),
           ),
         ],
       ),
-     if ((data['address'] ?? '').toString().trim().isNotEmpty) ...[
-  const SizedBox(height: 8),
-  Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const Icon(
-        Icons.home_outlined,
-        color: Color(0xFF087CF0),
-      ),
-      const SizedBox(width: 8),
-      Expanded(
-        child: Text(
-          data['address'].toString(),
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-          ),
+      const SizedBox(height: 14),
+
+      Text(
+        bilgi(data['city']),
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF111827),
         ),
       ),
-    ],
-  ),
-], 
-      const SizedBox(height: 12),
+
+      if ((data['address'] ?? '').toString().trim().isNotEmpty) ...[
+        const SizedBox(height: 6),
+        Text(
+          data['address'].toString(),
+          style: const TextStyle(
+            fontSize: 14,
+            color: Color(0xFF6B7280),
+            height: 1.4,
+          ),
+        ),
+      ],
+
+      const SizedBox(height: 14),
       SizedBox(
-        width: double.infinity,
+  width: double.infinity,
+        
+     
         child: OutlinedButton.icon(
           onPressed: () async {
   final mapsUrl =
