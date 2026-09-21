@@ -127,16 +127,24 @@ bool _videoHazir = false;
   void initState() {
     super.initState();
     hesapKontrol();
-    _videoController = VideoPlayerController.asset('1789613362944.mp4')
-  ..initialize().then((_) {
-    _videoController.setLooping(true);
-    _videoController.play();
+   _videoController = VideoPlayerController.asset('1789613362944.mp4')
+  ..initialize().then((_) async {
+    await _videoController.setLooping(true);
+
+    if (FirebaseAuth.instance.currentUser == null) {
+      await _videoController.setVolume(1.0);
+      await _videoController.play();
+    } else {
+      await _videoController.setVolume(0.0);
+      await _videoController.pause();
+    }
+
     if (mounted) {
       setState(() {
         _videoHazir = true;
       });
     }
-  });
+  }); 
   }
 @override
 void dispose() {
@@ -4867,14 +4875,14 @@ final List<String> fotograflar =
     ),
   ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         children: [
           Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (fotograflar.isNotEmpty) ...[
   SizedBox(
-    height: 210,
+    height: 190,
     child: Row(
       children: [
         Expanded(
@@ -4975,7 +4983,7 @@ final List<String> fotograflar =
       ],
     ),
   ),
-  const SizedBox(height: 14),
+  const SizedBox(height: 8),
 ],
                  Row(
   children: [
@@ -5063,17 +5071,17 @@ final List<String> fotograflar =
     ),
   ],
 ),
-const SizedBox(height: 10), 
+const SizedBox(height: 4), 
                   Text(
   bilgi(data['title']),
   style: const TextStyle(
-    fontSize: 25,
+    fontSize: 23,
     fontWeight: FontWeight.w800,
     color: Color(0xFF111827),
   ),
 ),
 
-const SizedBox(height: 6),
+const SizedBox(height: 3),
 
 Text(
   'İlan No: ${data['ilanNo'] ?? 'Eski İlan'}',
@@ -5084,11 +5092,11 @@ Text(
   ),
 ),
 
-const SizedBox(height: 16),
+const SizedBox(height: 10),
 
 Container(
   width: double.infinity,
-  padding: const EdgeInsets.all(16),
+  EdgeInsets.all(16) → EdgeInsets.all(12)
   decoration: BoxDecoration(
     color: const Color(0xFFF8FAFC),
     borderRadius: BorderRadius.circular(16),
@@ -5120,7 +5128,7 @@ Container(
         ],
       ),
 
-      const SizedBox(height: 13),
+      const SizedBox(height: 8),
 
       Row(
         children: [
@@ -5142,7 +5150,7 @@ Container(
         ],
       ),
 
-      const SizedBox(height: 13),
+      const SizedBox(height: 8),
 
       Row(
         children: [
@@ -5164,24 +5172,24 @@ Container(
         ],
       ),
 
-      const SizedBox(height: 18),
+      const SizedBox(height: 10),
 
       Text(
         '${bilgi(data['salary'])} TL / Gün',
         style: const TextStyle(
-          fontSize: 25,
+          fontSize: 22,
           fontWeight: FontWeight.w800,
           color: Color(0xFF087CF0),
         ),
       ),
 
       if (tarih.isNotEmpty) ...[
-        const SizedBox(height: 10),
+        const SizedBox(height: 6),
         Row(
           children: [
             const Icon(
               Icons.access_time,
-              size: 18,
+              size: 10,
               color: Color(0xFF6B7280),
             ),
             const SizedBox(width: 7),
@@ -5199,11 +5207,11 @@ Container(
   ),
 ),
 
-const SizedBox(height: 18),
+const SizedBox(height: 10),
 
                  Container(
   width: double.infinity,
-  padding: const EdgeInsets.all(16),
+  EdgeInsets.all(16) → EdgeInsets.all(12)
   decoration: BoxDecoration(
     color: const Color(0xFFF8FAFC),
     borderRadius: BorderRadius.circular(16),
@@ -5217,16 +5225,16 @@ const SizedBox(height: 18),
       const Text(
         'İlan Açıklaması',
         style: TextStyle(
-          fontSize: 18,
+          fontSize: 16,
           fontWeight: FontWeight.bold,
           color: Color(0xFF111827),
         ),
       ),
-      const SizedBox(height: 10),
+      const SizedBox(height: 6),
       Text(
         bilgi(data['description']),
         style: const TextStyle(
-          fontSize: 15,
+          fontSize: 14,
           height: 1.5,
           color: Color(0xFF374151),
         ),
@@ -5235,18 +5243,18 @@ const SizedBox(height: 18),
   ),
 ),
 
-const SizedBox(height: 16),
+const SizedBox(height: 10),
 
 const Text(
   'İletişim',
   style: TextStyle(
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: FontWeight.bold,
     color: Color(0xFF111827),
   ),
 ),
 
-const SizedBox(height: 12), 
+const SizedBox(height: 8), 
 
                   Row(
   children: [
@@ -5260,7 +5268,7 @@ const SizedBox(height: 12),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF087CF0),
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -5278,7 +5286,7 @@ const SizedBox(height: 12),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF25D366),
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 14),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -5340,7 +5348,7 @@ const SizedBox(height: 12),
   backgroundColor: const Color(0xFF087CF0),
   foregroundColor: Colors.white,
   elevation: 0,
-  padding: const EdgeInsets.symmetric(vertical: 16),
+  padding: const EdgeInsets.symmetric(vertical: 14),
   shape: RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(12),
   ),
@@ -5375,7 +5383,7 @@ const SizedBox(height: 12),
     color: Color(0xFFFF3B30),
     width: 1.5,
   ),
-  padding: const EdgeInsets.symmetric(vertical: 16),
+  padding: const EdgeInsets.symmetric(vertical: 14),
   shape: RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(12),
   ),
