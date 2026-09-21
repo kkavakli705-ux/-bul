@@ -32,6 +32,7 @@ jobs:
           fi
           rm -rf android
           flutter create --platforms=android .
+          sed -i 's/-all.zip/-bin.zip/' android/gradle/wrapper/gradle-wrapper.properties
           flutter pub get
 
       - name: Debug anahtari olustur
@@ -55,9 +56,17 @@ jobs:
             -keystore ~/.android/debug.keystore \
             -storepass android \
             -keypass android
-
-      - name: APK olustur
-        run: flutter build apk --release
+       - name: APK olustur
+        run: |
+          for i in 1 2 3; do
+            flutter build apk --release && exit 0
+            if [ "$i" -lt 3 ]; then
+              echo "Gradle indirme hatasi, 15 saniye sonra tekrar deneniyor..."
+              sleep 15
+            fi
+          done
+          exit 1 
+      
 
       - name: APK yukle
         uses: actions/upload-artifact@v4
