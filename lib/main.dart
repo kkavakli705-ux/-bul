@@ -24,14 +24,17 @@ Future<void> main() async {
       storageBucket: 'is-bul-1652d.firebasestorage.app',
     ),
   );
-await FirebaseMessaging.instance.requestPermission(
-  alert: true,
-  badge: true,
-  sound: true,
-);
+runApp(const IsBulApp());
 
-await FirebaseMessaging.instance.subscribeToTopic('yeni_ilanlar');
-  runApp(const IsBulApp());
+try {
+  await FirebaseMessaging.instance.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
+  await FirebaseMessaging.instance.subscribeToTopic('yeni_ilanlar');
+} catch (_) {}
 }
 
 class IsBulApp extends StatelessWidget {
