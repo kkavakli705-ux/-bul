@@ -1303,6 +1303,11 @@ Future<void> kameradanFotografCek() async {
     });
   }
 }
+  void fotografSil(int index) {
+  setState(() {
+    _secilenFotograflar.removeAt(index);
+  });
+}
   final kategoriler = [
     'İnşaat',
     'Boya / Alçı',
@@ -1603,7 +1608,54 @@ Text(
     fontWeight: FontWeight.bold,
   ),
 ),
-
+if (_secilenFotograflar.isNotEmpty) ...[
+  const SizedBox(height: 10),
+  SizedBox(
+    height: 90,
+    child: ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemCount: _secilenFotograflar.length,
+      separatorBuilder: (context, index) =>
+          const SizedBox(width: 8),
+      itemBuilder: (context, index) {
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.file(
+                File(_secilenFotograflar[index].path),
+                width: 90,
+                height: 90,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Positioned(
+              right: -4,
+              top: -4,
+              child: GestureDetector(
+                onTap: () => fotografSil(index),
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    ),
+  ),
+],
 const SizedBox(height: 15),
           ElevatedButton.icon(
             onPressed: bekle ? null : gonder,
@@ -4836,7 +4888,48 @@ class IlanDetaySayfasi extends StatelessWidget {
         '${tarih.hour.toString().padLeft(2, '0')}:'
         '${tarih.minute.toString().padLeft(2, '0')}';
   }
-
+void fotografGalerisiniAc(
+  BuildContext context,
+  List<String> fotograflar,
+  int baslangicIndex,
+) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          title: Text('${baslangicIndex + 1}/${fotograflar.length}'),
+        ),
+        body: PageView.builder(
+          controller: PageController(
+            initialPage: baslangicIndex,
+          ),
+          itemCount: fotograflar.length,
+          itemBuilder: (context, index) {
+            return InteractiveViewer(
+              child: Center(
+                child: Image.network(
+                  fotograflar[index],
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(
+                      Icons.broken_image,
+                      color: Colors.white,
+                      size: 60,
+                    );
+                  },
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     final telefon = bilgi(data['phone']);
@@ -4891,19 +4984,25 @@ final List<String> fotograflar =
         Expanded(
           child: Stack(
             fit: StackFit.expand,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Image.network(
-                  fotograflar[0],
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Center(
-                      child: Icon(Icons.broken_image, size: 50),
-                    );
-                  },
-                ),
-              ),
+            GestureDetector(
+  onTap: () => fotografGalerisiniAc(
+    context,
+    fotograflar,
+    0,
+  ),
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(16),
+    child: Image.network(
+      fotograflar[0],
+      fit: BoxFit.cover,
+      errorBuilder: (context, error, stackTrace) {
+        return const Center(
+          child: Icon(Icons.broken_image, size: 50),
+        );
+      },
+    ),
+  ),
+),
               Positioned(
                 left: 10,
                 bottom: 10,
@@ -4936,49 +5035,61 @@ final List<String> fotograflar =
             child: Column(
               children: [
                 Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: Image.network(
-                      fotograflar[1],
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
+                  GestureDetector(
+  onTap: () => fotografGalerisiniAc(
+    context,
+    fotograflar,
+    1,
+  ),
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(14),
+    child: Image.network(
+      fotograflar[1],
+      width: double.infinity,
+      fit: BoxFit.cover,
+    ),
+  ),
+),
 
                 if (fotograflar.length > 2) ...[
                   const SizedBox(height: 8),
-                  Expanded(
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(14),
-                          child: Image.network(
-                            fotograflar[2],
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        if (fotograflar.length > 3)
-                          Container(
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: const Color(0x88000000),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: Text(
-                              '+${fotograflar.length - 3} Fotoğraf',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
+                 Expanded(
+  child: GestureDetector(
+    onTap: () => fotografGalerisiniAc(
+      context,
+      fotograflar,
+      2,
+    ),
+    child: Stack(
+      fit: StackFit.expand,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: Image.network(
+            fotograflar[2],
+            fit: BoxFit.cover,
+          ),
+        ),
+        if (fotograflar.length > 3)
+          Container(
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: const Color(0x88000000),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Text(
+              '+${fotograflar.length - 3} Fotoğraf',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+      ],
+    ),
+  ),
+), 
               ],
             ),
           ),
@@ -5078,7 +5189,7 @@ const SizedBox(height: 4),
                   Text(
   bilgi(data['title']),
   style: const TextStyle(
-    fontSize: 23,
+    fontSize:19 ,
     fontWeight: FontWeight.w800,
     color: Color(0xFF111827),
   ),
@@ -5089,13 +5200,13 @@ const SizedBox(height: 3),
 Text(
   'İlan No: ${data['ilanNo'] ?? 'Eski İlan'}',
   style: const TextStyle(
-    fontSize: 13,
+    fontSize: 11,
     color: Color(0xFF6B7280),
     fontWeight: FontWeight.w500,
   ),
 ),
 
-const SizedBox(height: 10),
+const SizedBox(height: 6),
 
 Container(
   width: double.infinity,
@@ -5131,21 +5242,21 @@ Container(
         ],
       ),
 
-      const SizedBox(height: 8),
+      const SizedBox(height: 5),
 
       Row(
         children: [
           const Icon(
             Icons.location_on_outlined,
             color: Color(0xFF087CF0),
-            size: 21,
+            size: 18,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 7),
           Expanded(
             child: Text(
               bilgi(data['city']),
               style: const TextStyle(
-                fontSize: 15,
+                fontSize: 13,
                 color: Color(0xFF374151),
               ),
             ),
@@ -5153,21 +5264,21 @@ Container(
         ],
       ),
 
-      const SizedBox(height: 8),
+      const SizedBox(height: 5),
 
       Row(
         children: [
           const Icon(
             Icons.work_outline,
             color: Color(0xFF087CF0),
-            size: 21,
+            size: 18,
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 7),
           Expanded(
             child: Text(
               bilgi(data['category']),
               style: const TextStyle(
-                fontSize: 15,
+                fontSize: 13,
                 color: Color(0xFF374151),
               ),
             ),
@@ -5175,12 +5286,12 @@ Container(
         ],
       ),
 
-      const SizedBox(height: 10),
+      const SizedBox(height: 6),
 
       Text(
         '${bilgi(data['salary'])} TL / Gün',
         style: const TextStyle(
-          fontSize: 22,
+          fontSize: 18,
           fontWeight: FontWeight.w800,
           color: Color(0xFF087CF0),
         ),
@@ -5192,14 +5303,14 @@ Container(
           children: [
             const Icon(
               Icons.access_time,
-              size: 18,
+              size: 15,
               color: Color(0xFF6B7280),
             ),
             const SizedBox(width: 7),
             Text(
               tarih,
               style: const TextStyle(
-                fontSize: 13,
+                fontSize: 11,
                 color: Color(0xFF6B7280),
               ),
             ),
@@ -5210,7 +5321,7 @@ Container(
   ),
 ),
 
-const SizedBox(height: 10),
+const SizedBox(height: 6),
 
                  Container(
   width: double.infinity,
@@ -5228,17 +5339,17 @@ const SizedBox(height: 10),
       const Text(
         'İlan Açıklaması',
         style: TextStyle(
-          fontSize: 16,
+          fontSize: 14,
           fontWeight: FontWeight.bold,
           color: Color(0xFF111827),
         ),
       ),
-      const SizedBox(height: 6),
+      const SizedBox(height: 4),
       Text(
         bilgi(data['description']),
         style: const TextStyle(
-          fontSize: 14,
-          height: 1.5,
+          fontSize: 12,
+          height: 1.3,
           color: Color(0xFF374151),
         ),
       ),
@@ -5246,18 +5357,18 @@ const SizedBox(height: 10),
   ),
 ),
 
-const SizedBox(height: 10),
+const SizedBox(height: 6),
 
 const Text(
   'İletişim',
   style: TextStyle(
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: FontWeight.bold,
     color: Color(0xFF111827),
   ),
 ),
 
-const SizedBox(height: 8), 
+const SizedBox(height: 5), 
 
                   Row(
   children: [
@@ -5271,7 +5382,7 @@ const SizedBox(height: 8),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF087CF0),
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -5289,7 +5400,7 @@ const SizedBox(height: 8),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF25D366),
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 6),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -5299,100 +5410,111 @@ const SizedBox(height: 8),
   ],
 ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 5),
 
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        final user =
-                            FirebaseAuth.instance.currentUser;
-                        final ownerUid =
-                            data['ownerUid']?.toString().trim() ?? '';
+                  Row(
+  children: [
+    Expanded(
+      child: ElevatedButton.icon(
+        onPressed: () {
+          final user = FirebaseAuth.instance.currentUser;
+          final ownerUid =
+              data['ownerUid']?.toString().trim() ?? '';
 
-                        if (user == null) {
-                          mesaj(
-                            context,
-                            'Mesaj göndermek için giriş yapmalısınız.',
-                          );
-                          return;
-                        }
+          if (user == null) {
+            mesaj(
+              context,
+              'Mesaj göndermek için giriş yapmalısınız.',
+            );
+            return;
+          }
 
-                        if (ownerUid.isEmpty) {
-                          mesaj(
-                            context,
-                            'İlan sahibi bulunamadı.',
-                          );
-                          return;
-                        }
+          if (ownerUid.isEmpty) {
+            mesaj(
+              context,
+              'İlan sahibi bulunamadı.',
+            );
+            return;
+          }
 
-                        if (user.uid == ownerUid) {
-                          mesaj(
-                            context,
-                            'Kendi ilanınıza mesaj gönderemezsiniz.',
-                          );
-                          return;
-                        }
+          if (user.uid == ownerUid) {
+            mesaj(
+              context,
+              'Kendi ilanınıza mesaj gönderemezsiniz.',
+            );
+            return;
+          }
 
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => MesajlasmaSayfasi(
-                              jobId: jobId,
-                              jobTitle: bilgi(data['title']),
-                              ownerUid: ownerUid,
-                            ),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.message),
-                      label: const Text('MESAJ GÖNDER'),
-                      style: ElevatedButton.styleFrom(
-  backgroundColor: const Color(0xFF087CF0),
-  foregroundColor: Colors.white,
-  elevation: 0,
-  padding: const EdgeInsets.symmetric(vertical: 10),
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(12),
-  ),
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => MesajlasmaSayfasi(
+                jobId: jobId,
+                jobTitle: bilgi(data['title']),
+                ownerUid: ownerUid,
+              ),
+            ),
+          );
+        },
+        icon: const Icon(Icons.message, size: 18),
+        label: const Text(
+          'MESAJ GÖNDER',
+          style: TextStyle(fontSize: 12),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF087CF0),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(vertical: 7),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ),
+    ),
+    const SizedBox(width: 8),
+    Expanded(
+      child: OutlinedButton.icon(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => SikayetEtSayfasi(
+                jobId: jobId,
+                jobTitle: bilgi(data['title']),
+              ),
+            ),
+          );
+        },
+        icon: const Icon(Icons.flag, size: 18),
+        label: const Text(
+          'ŞİKAYET ET',
+          style: TextStyle(fontSize: 12),
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.red,
+          backgroundColor: const Color(0xFFFFF5F5),
+          side: const BorderSide(
+            color: Color(0xFFFF3B30),
+            width: 1.2,
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 7),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      ),
+    ),
+  ],
 ),
-),
+
+                        
                       
-                    ),
+                    
                   
 
-                  const SizedBox(height: 8),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => SikayetEtSayfasi(
-                              jobId: jobId,
-                              jobTitle: bilgi(data['title']),
-                            ),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.flag),
-                      label: const Text('ŞİKAYET ET'),
-                      style: OutlinedButton.styleFrom(
-  foregroundColor: Colors.red,
-  backgroundColor: const Color(0xFFFFF5F5),
-  side: const BorderSide(
-    color: Color(0xFFFF3B30),
-    width: 1.5,
-  ),
-  padding: const EdgeInsets.symmetric(vertical: 10),
-  shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(12),
-  ),
-),
-),
-                    ),
+                  
+                    
                   
                 
               
