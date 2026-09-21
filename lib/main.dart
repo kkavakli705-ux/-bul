@@ -4984,6 +4984,7 @@ final List<String> fotograflar =
         Expanded(
           child: Stack(
             fit: StackFit.expand,
+            children: [
             GestureDetector(
   onTap: () => fotografGalerisiniAc(
     context,
@@ -5035,7 +5036,8 @@ final List<String> fotograflar =
             child: Column(
               children: [
                 Expanded(
-                  GestureDetector(
+  child: GestureDetector(
+                
   onTap: () => fotografGalerisiniAc(
     context,
     fotograflar,
@@ -5050,7 +5052,7 @@ final List<String> fotograflar =
     ),
   ),
 ),
-
+),
                 if (fotograflar.length > 2) ...[
                   const SizedBox(height: 8),
                  Expanded(
