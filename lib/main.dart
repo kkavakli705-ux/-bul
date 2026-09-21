@@ -5096,7 +5096,7 @@ const SizedBox(height: 10),
 
 Container(
   width: double.infinity,
-  EdgeInsets.all(16) → EdgeInsets.all(12)
+  padding: const EdgeInsets.all(12),
   decoration: BoxDecoration(
     color: const Color(0xFFF8FAFC),
     borderRadius: BorderRadius.circular(16),
@@ -5189,7 +5189,7 @@ Container(
           children: [
             const Icon(
               Icons.access_time,
-              size: 10,
+              size: 18,
               color: Color(0xFF6B7280),
             ),
             const SizedBox(width: 7),
@@ -5211,7 +5211,7 @@ const SizedBox(height: 10),
 
                  Container(
   width: double.infinity,
-  EdgeInsets.all(16) → EdgeInsets.all(12)
+  padding: const EdgeInsets.all(12),
   decoration: BoxDecoration(
     color: const Color(0xFFF8FAFC),
     borderRadius: BorderRadius.circular(16),
