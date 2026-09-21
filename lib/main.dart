@@ -5096,7 +5096,7 @@ const SizedBox(height: 10),
 
 Container(
   width: double.infinity,
-  padding: const EdgeInsets.all(12),
+  padding: const EdgeInsets.all(6),
   decoration: BoxDecoration(
     color: const Color(0xFFF8FAFC),
     borderRadius: BorderRadius.circular(16),
@@ -5211,7 +5211,7 @@ const SizedBox(height: 10),
 
                  Container(
   width: double.infinity,
-  padding: const EdgeInsets.all(12),
+  padding: const EdgeInsets.all(6),
   decoration: BoxDecoration(
     color: const Color(0xFFF8FAFC),
     borderRadius: BorderRadius.circular(16),
@@ -5268,7 +5268,7 @@ const SizedBox(height: 8),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF087CF0),
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -5286,7 +5286,7 @@ const SizedBox(height: 8),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF25D366),
           foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -5348,7 +5348,7 @@ const SizedBox(height: 8),
   backgroundColor: const Color(0xFF087CF0),
   foregroundColor: Colors.white,
   elevation: 0,
-  padding: const EdgeInsets.symmetric(vertical: 14),
+  padding: const EdgeInsets.symmetric(vertical: 10),
   shape: RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(12),
   ),
@@ -5383,7 +5383,7 @@ const SizedBox(height: 8),
     color: Color(0xFFFF3B30),
     width: 1.5,
   ),
-  padding: const EdgeInsets.symmetric(vertical: 14),
+  padding: const EdgeInsets.symmetric(vertical: 10),
   shape: RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(12),
   ),
