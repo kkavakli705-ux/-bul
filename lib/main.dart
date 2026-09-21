@@ -4882,7 +4882,7 @@ final List<String> fotograflar =
                 children: [
                   if (fotograflar.isNotEmpty) ...[
   SizedBox(
-    height: 190,
+    height: 160,
     child: Row(
       children: [
         Expanded(
@@ -5096,7 +5096,7 @@ const SizedBox(height: 10),
 
 Container(
   width: double.infinity,
-  padding: const EdgeInsets.all(6),
+  padding: const EdgeInsets.all(4),
   decoration: BoxDecoration(
     color: const Color(0xFFF8FAFC),
     borderRadius: BorderRadius.circular(16),
@@ -5211,7 +5211,7 @@ const SizedBox(height: 10),
 
                  Container(
   width: double.infinity,
-  padding: const EdgeInsets.all(6),
+  padding: const EdgeInsets.all(4),
   decoration: BoxDecoration(
     color: const Color(0xFFF8FAFC),
     borderRadius: BorderRadius.circular(16),
