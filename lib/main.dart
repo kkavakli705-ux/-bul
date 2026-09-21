@@ -5093,7 +5093,7 @@ final List<String> fotograflar =
   ),
 ), 
               ],
-            ),
+],            ),
           ),
         ],
       ],
