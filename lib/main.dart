@@ -6142,25 +6142,57 @@ Future<void> ikinciElGaleridenFotografSec() async {
     setState(() {
       bekle = true;
     });
+    try {
 final List<String> fotografUrlListesi = [];
 
 for (int i = 0; i < _ikinciElFotograflar.length; i++) {
   final fotograf = _ikinciElFotograflar[i];
 
-  final ref = FirebaseStorage.instance.ref().child(
-    'secondhand_images/${user.uid}/'
-    '${DateTime.now().microsecondsSinceEpoch}_$i.jpg',
+  final bytes = await fotograf.readAsBytes();
+final contentType = fotograf.mimeType ?? 'image/jpeg';
+
+final extension = contentType == 'image/png'
+    ? 'png'
+    : contentType == 'image/webp'
+        ? 'webp'
+        : 'jpg';
+
+const supabaseUrl =
+    'https://jwdqmfbbbwzjcgmenzdd.supabase.co';
+
+const supabaseKey =
+    'sb_publishable_aX-ufKnmFxI57G8t7Tznnw_4SWJ0EOs';
+
+final dosyaYolu =
+    '${user.uid}/${DateTime.now().microsecondsSinceEpoch}_$i.$extension';
+
+final response = await http.post(
+  Uri.parse(
+    '$supabaseUrl/storage/v1/object/ikinci-el-fotograflari/$dosyaYolu',
+  ),
+  headers: {
+    'apikey': supabaseKey,
+    'Content-Type': contentType,
+  },
+  body: bytes,
+);
+
+if (response.statusCode < 200 ||
+    response.statusCode >= 300) {
+  throw Exception(
+    'İkinci el fotoğrafı yüklenemedi: ${response.body}',
   );
-
-  await ref.putFile(
-    File(fotograf.path),
-  );
-
-  final url = await ref.getDownloadURL();
-
-  fotografUrlListesi.add(url);
 }
-    try {
+
+final publicPath =
+    dosyaYolu.split('/').map(Uri.encodeComponent).join('/');
+
+final url =
+    '$supabaseUrl/storage/v1/object/public/ikinci-el-fotograflari/$publicPath';
+
+fotografUrlListesi.add(url);
+}
+    
       await FirebaseFirestore.instance
           .collection('secondhand_posts')
           .add({
