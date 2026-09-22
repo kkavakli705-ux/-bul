@@ -6007,17 +6007,54 @@ const SizedBox(height: 30),
             itemBuilder: (context, index) {
               final belge = ilanlar[index];
               final data = belge.data();
+             final resimler = data['imageUrls'] is List
+    ? List<String>.from(data['imageUrls'])
+    : <String>[]; 
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
                 child: ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: Color(0xFFE2F7E9),
-                    child: Icon(
-                      Icons.shopping_bag_outlined,
-                      color: Color(0xFF18A957),
-                    ),
-                  ),
+                  onTap: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => IkinciElDetaySayfasi(
+        data: data,
+      ),
+    ),
+  );
+},
+leading: ClipRRect(
+  borderRadius: BorderRadius.circular(10),
+  child: resimler.isNotEmpty
+      ? Image.network(
+          resimler.first,
+          width: 70,
+          height: 70,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            width: 70,
+            height: 70,
+            color: const Color(0xFFE2F7E9),
+            child: const Icon(
+              Icons.broken_image,
+              color: Color(0xFF18A957),
+            ),
+          ),
+        )
+      : Container(
+          width: 70,
+          height: 70,
+          color: const Color(0xFFE2F7E9),
+          child: const Icon(
+            Icons.shopping_bag_outlined,
+            color: Color(0xFF18A957),
+          ),
+        ),
+),
+                  
+                    
+                  
                   title: Text(
                     bilgi(data['title']),
                     style: const TextStyle(
@@ -6057,6 +6094,9 @@ class _IkinciElIlanVerSayfasiState
   final baslik = TextEditingController();
   final fiyat = TextEditingController();
   final konum = TextEditingController();
+  final ilce = TextEditingController();
+final mahalle = TextEditingController();
+final mapsLink = TextEditingController();
   final aciklama = TextEditingController();
   final telefon = TextEditingController();
   final whatsapp = TextEditingController();
@@ -6133,6 +6173,7 @@ Future<void> ikinciElGaleridenFotografSec() async {
     if (baslik.text.trim().isEmpty ||
         fiyat.text.trim().isEmpty ||
         konum.text.trim().isEmpty ||
+        ilce.text.trim().isEmpty ||
         aciklama.text.trim().isEmpty ||
         kategori == null) {
       mesaj(context, 'Zorunlu alanları doldurun.');
@@ -6200,6 +6241,9 @@ fotografUrlListesi.add(url);
         'category': kategori,
         'price': fiyat.text.trim(),
         'city': konum.text.trim(),
+            'district': ilce.text.trim(),
+'neighborhood': mahalle.text.trim(),
+'mapsLink': mapsLink.text.trim(),
         'description': aciklama.text.trim(),
         'phone': telefon.text.trim(),
         'whatsapp': whatsapp.text.trim(),
@@ -6233,6 +6277,9 @@ fotografUrlListesi.add(url);
     baslik.dispose();
     fiyat.dispose();
     konum.dispose();
+    ilce.dispose();
+mahalle.dispose();
+mapsLink.dispose();
     aciklama.dispose();
     telefon.dispose();
     whatsapp.dispose();
@@ -6298,12 +6345,41 @@ fotografUrlListesi.add(url);
           TextField(
             controller: konum,
             decoration: const InputDecoration(
-              labelText: 'Şehir / İlçe',
+              labelText: 'İl',
               border: OutlineInputBorder(),
             ),
           ),
 
           const SizedBox(height: 12),
+          TextField(
+  controller: ilce,
+  decoration: const InputDecoration(
+    labelText: 'İlçe',
+    border: OutlineInputBorder(),
+  ),
+),
+
+const SizedBox(height: 12),
+
+TextField(
+  controller: mahalle,
+  decoration: const InputDecoration(
+    labelText: 'Mahalle (isteğe bağlı)',
+    border: OutlineInputBorder(),
+  ),
+),
+
+const SizedBox(height: 12),
+
+TextField(
+  controller: mapsLink,
+  decoration: const InputDecoration(
+    labelText: 'Google Maps Konum Linki (isteğe bağlı)',
+    border: OutlineInputBorder(),
+  ),
+),
+
+const SizedBox(height: 12),
 
           TextField(
             controller: aciklama,
@@ -6433,4 +6509,151 @@ Text(
     );
   }
 } 
+class IkinciElDetaySayfasi extends StatelessWidget {
+  final Map<String, dynamic> data;
 
+  const IkinciElDetaySayfasi({
+    super.key,
+    required this.data,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final resimler = data['imageUrls'] is List
+        ? List<String>.from(data['imageUrls'])
+        : <String>[];
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F9F6),
+      appBar: AppBar(
+        title: const Text('İlan Detayı'),
+        backgroundColor: const Color(0xFF18A957),
+        foregroundColor: Colors.white,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          if (resimler.isNotEmpty)
+  SizedBox(
+    height: 280,
+    child: PageView.builder(
+      itemCount: resimler.length > 10 ? 10 : resimler.length,
+      itemBuilder: (context, index) {
+        return Stack(
+  children: [
+    Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: Image.network(
+          resimler[index],
+          width: double.infinity,
+          height: 280,
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Container(
+            height: 280,
+            color: const Color(0xFFE2F7E9),
+            alignment: Alignment.center,
+            child: const Icon(
+              Icons.broken_image,
+              size: 60,
+              color: Color(0xFF18A957),
+            ),
+          ),
+        ),
+      ),
+    ),
+
+    Positioned(
+      top: 12,
+      right: 16,
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: 6,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.black54,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          '${index + 1}/${resimler.length > 10 ? 10 : resimler.length}',
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    ),
+  ],
+);
+      },
+    ),
+  ),
+
+          const SizedBox(height: 18),
+
+          Text(
+            bilgi(data['title']),
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          Text(
+            '${bilgi(data['price'])} TL',
+            style: const TextStyle(
+              fontSize: 22,
+              color: Color(0xFF18A957),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 15),
+
+          Text('Kategori: ${bilgi(data['category'])}'),
+          Text('Konum: ${bilgi(data['city'])}'),
+          Text('İlçe: ${bilgi(data['district'])}'),
+
+if (bilgi(data['neighborhood']).isNotEmpty)
+  Text('Mahalle: ${bilgi(data['neighborhood'])}'),
+          
+         if (bilgi(data['mapsLink']).isNotEmpty)
+  TextButton.icon(
+    onPressed: () async {
+      final uri = Uri.tryParse(bilgi(data['mapsLink']));
+      if (uri != null) {
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      }
+    },
+    icon: const Icon(Icons.location_on),
+    label: const Text('Konumu Haritada Aç'),
+  ), 
+
+          const SizedBox(height: 18),
+
+          const Text(
+            'Açıklama',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          Text(
+            bilgi(data['description']),
+            style: const TextStyle(fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+}
