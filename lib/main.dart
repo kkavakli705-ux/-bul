@@ -8889,7 +8889,18 @@ class IkinciElDetaySayfasi extends StatelessWidget {
     final telefon = data['phone']?.toString().trim() ?? '';
 final whatsapp = data['whatsapp']?.toString().trim() ?? '';
     final ownerUid = data['ownerUid']?.toString().trim() ?? '';
+final createdAt = data['createdAt'];
+String tarihSaat = '';
 
+if (createdAt is Timestamp) {
+  final t = createdAt.toDate();
+  final gun = t.day.toString().padLeft(2, '0');
+  final ay = t.month.toString().padLeft(2, '0');
+  final saat = t.hour.toString().padLeft(2, '0');
+  final dakika = t.minute.toString().padLeft(2, '0');
+
+  tarihSaat = '$gun.$ay.${t.year} $saat:$dakika';
+}
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9F6),
       appBar: AppBar(
@@ -8898,27 +8909,28 @@ final whatsapp = data['whatsapp']?.toString().trim() ?? '';
         foregroundColor: Colors.white,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+       padding: const EdgeInsets.fromLTRB(12, 8, 12, 20), 
+        
         children: [
           if (resimler.isNotEmpty)
   SizedBox(
-    height: 280,
+    height: 235,
     child: PageView.builder(
       itemCount: resimler.length > 10 ? 10 : resimler.length,
       itemBuilder: (context, index) {
         return Stack(
   children: [
     Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(14),
         child: Image.network(
           resimler[index],
           width: double.infinity,
-          height: 280,
+          height: 235,
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => Container(
-            height: 280,
+            height: 235,
             color: const Color(0xFFE2F7E9),
             alignment: Alignment.center,
             child: const Icon(
@@ -8958,17 +8970,67 @@ final whatsapp = data['whatsapp']?.toString().trim() ?? '';
     ),
   ),
 
-          const SizedBox(height: 18),
-
-          Text(
-            bilgi(data['title']),
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
           const SizedBox(height: 8),
+
+          Row(
+  children: [
+    Expanded(
+      child: Text(
+        bilgi(data['title']),
+        style: const TextStyle(
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+
+    FutureBuilder<SharedPreferences>(
+      future: SharedPreferences.getInstance(),
+      builder: (context, snapshot) {
+        final prefs = snapshot.data;
+
+        return StatefulBuilder(
+          builder: (context, setKalpState) {
+            final favoriler =
+                prefs?.getStringList('ikinci_el_favoriler') ?? [];
+
+            final favoride = favoriler.contains(postId);
+
+            return IconButton(
+              onPressed: prefs == null
+                  ? null
+                  : () async {
+                      final liste = List<String>.from(favoriler);
+
+                      if (favoride) {
+                        liste.remove(postId);
+                      } else {
+                        liste.add(postId);
+                      }
+
+                      await prefs.setStringList(
+                        'ikinci_el_favoriler',
+                        liste,
+                      );
+
+                      setKalpState(() {});
+                    },
+              icon: Icon(
+                favoride
+                    ? Icons.favorite
+                    : Icons.favorite_border,
+                color: const Color(0xFF18A957),
+                size: 30,
+              ),
+            );
+          },
+        );
+      },
+    ),
+  ],
+),
+
+          const SizedBox(height: 4),
 
           Text(
             '${bilgi(data['price'])} TL',
@@ -8978,98 +9040,111 @@ final whatsapp = data['whatsapp']?.toString().trim() ?? '';
               fontWeight: FontWeight.bold,
             ),
           ),
-
-          const SizedBox(height: 15),
+if (tarihSaat.isNotEmpty)
+  Padding(
+    padding: const EdgeInsets.only(top: 4),
+    child: Row(
+      children: [
+        const Icon(
+          Icons.access_time,
+          size: 16,
+          color: Colors.grey,
+        ),
+        const SizedBox(width: 5),
+        Text(
+          tarihSaat,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Colors.grey,
+          ),
+        ),
+      ],
+    ),
+  ),
+          const SizedBox(height: 6),
 
           Text('Kategori: ${bilgi(data['category'])}'),
-          Text('Konum: ${bilgi(data['city'])}'),
-          Text('İlçe: ${bilgi(data['district'])}'),
+
+Row(
+  children: [
+    Expanded(
+      child: Text(
+        'Konum: ${bilgi(data['city'])}',
+        style: const TextStyle(fontSize: 14),
+      ),
+    ),
+    TextButton.icon(
+      onPressed: () async {
+        final mapsLink =
+            data['mapsLink']?.toString().trim() ?? '';
+
+        Uri uri;
+
+        if (mapsLink.isNotEmpty) {
+          var link = mapsLink;
+
+          if (!link.startsWith('http://') &&
+              !link.startsWith('https://')) {
+            link = 'https://$link';
+          }
+
+          uri = Uri.parse(link);
+        } else {
+          final il = data['city']?.toString().trim() ?? '';
+          final ilce = data['district']?.toString().trim() ?? '';
+          final mahalle =
+              data['neighborhood']?.toString().trim() ?? '';
+
+          final konumMetni = [
+            il,
+            ilce,
+            mahalle,
+          ].where((e) => e.isNotEmpty).join(' ');
+
+          uri = Uri.https(
+            'www.google.com',
+            '/maps/search/',
+            {
+              'api': '1',
+              'query': konumMetni,
+            },
+          );
+        }
+
+        await launchUrl(
+          uri,
+          mode: LaunchMode.externalApplication,
+        );
+      },
+      icon: const Icon(
+        Icons.location_on,
+        size: 18,
+      ),
+      label: const Text(
+        'Haritada Gör',
+        style: TextStyle(fontSize: 13),
+      ),
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 4,
+          vertical: 0,
+        ),
+        visualDensity: VisualDensity.compact,
+      ),
+    ),
+  ],
+),
+
+Text('İlçe: ${bilgi(data['district'])}'),
 
 if (bilgi(data['neighborhood']).isNotEmpty)
   Text('Mahalle: ${bilgi(data['neighborhood'])}'),
-          
-        TextButton.icon(
-  onPressed: () async {
-    final mapsLink =
-        data['mapsLink']?.toString().trim() ?? '';
+  ),
+),
 
-    Uri uri;
-
-    if (mapsLink.isNotEmpty) {
-      var link = mapsLink;
-
-      if (!link.startsWith('http://') &&
-          !link.startsWith('https://')) {
-        link = 'https://$link';
-      }
-
-      uri = Uri.parse(link);
-    } else {
-      final il =
-          data['city']?.toString().trim() ?? '';
-
-      final ilce =
-          data['district']?.toString().trim() ?? '';
-
-      final mahalle =
-          data['neighborhood']?.toString().trim() ?? '';
-
-      final konumMetni = [
-        il,
-        ilce,
-        mahalle,
-      ].where((e) => e.isNotEmpty).join(' ');
-
-      uri = Uri.https(
-        'www.google.com',
-        '/maps/search/',
-        {
-          'api': '1',
-          'query': konumMetni,
-        },
-      );
-    }
-
-    final acildi = await launchUrl(
-      uri,
-      mode: LaunchMode.externalApplication,
-    );
-
-    if (!acildi && context.mounted) {
-      mesaj(
-        context,
-        'Konum açılamadı.',
-      );
-    }
-  },
-  icon: const Icon(Icons.location_on),
-  label: const Text('Konumu Haritada Aç'),
-), 
-
-          const SizedBox(height: 18),
+          const SizedBox(height: 6),
 
           // TELEFON - WHATSAPP
-const SizedBox(height: 12),
-
-Text(
-  'Telefon: ${telefon.isEmpty ? 'Belirtilmemiş' : telefon}',
-  style: const TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-  ),
-),
-
-const SizedBox(height: 4),
-
-Text(
-  'WhatsApp: ${whatsapp.isEmpty ? 'Belirtilmemiş' : whatsapp}',
-  style: const TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-  ),
-),
-
-const SizedBox(height: 12),
 
 Row(
   children: [
@@ -9128,14 +9203,14 @@ Row(
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF25D366),
           foregroundColor: Colors.white,
-          minimumSize: const Size(0, 50),
+          minimumSize: const Size(0, 44),
         ),
       ),
     ),
   ],
 ),
 
-const SizedBox(height: 20),
+const SizedBox(height: 6),
           // İKİNCİ EL MESAJ GÖNDER
 SizedBox(
   width: double.infinity,
@@ -9183,12 +9258,12 @@ SizedBox(
     style: ElevatedButton.styleFrom(
       backgroundColor: const Color(0xFF087CF0),
       foregroundColor: Colors.white,
-      minimumSize: const Size(double.infinity, 50),
+      minimumSize: const Size(double.infinity, 44),
     ),
   ),
 ),
 
-const SizedBox(height: 12),
+const SizedBox(height: 6),
 
           // İKİNCİ EL ŞİKAYET ET
 SizedBox(
@@ -9305,28 +9380,45 @@ SizedBox(
       ),
       minimumSize: const Size(
         double.infinity,
-        50,
+        44,
       ),
     ),
   ),
 ),
 
-const SizedBox(height: 12),
+const SizedBox(height: 6),
 
-          const Text(
-            'Açıklama',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          Text(
-            bilgi(data['description']),
-            style: const TextStyle(fontSize: 16),
-          ),
+          Container(
+  width: double.infinity,
+  padding: const EdgeInsets.all(12),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(14),
+    border: Border.all(
+      color: Colors.grey.shade300,
+    ),
+  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Text(
+        'İlan Açıklaması',
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      const SizedBox(height: 6),
+      Text(
+        bilgi(data['description']),
+        style: const TextStyle(
+          fontSize: 15,
+          height: 1.35,
+        ),
+      ),
+    ],
+  ),
+),
         ],
       ),
     );
