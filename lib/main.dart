@@ -9139,8 +9139,8 @@ Text('İlçe: ${bilgi(data['district'])}'),
 
 if (bilgi(data['neighborhood']).isNotEmpty)
   Text('Mahalle: ${bilgi(data['neighborhood'])}'),
-  ),
-),
+  
+
 
           const SizedBox(height: 6),
 
