@@ -422,8 +422,10 @@ InkWell(
       ),
     );
   },
+  child: ClipPath(
+  clipper: YamukKartClipper(),
   child: Container(
-    height: 110,
+    height: 90,
     decoration: BoxDecoration(
       gradient: const LinearGradient(
         colors: [
@@ -465,8 +467,8 @@ InkWell(
           child: Row(
             children: [
               Container(
-                width: 64,
-                height: 64,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.15),
                   shape: BoxShape.circle,
@@ -474,7 +476,7 @@ InkWell(
                 child: const Icon(
                   Icons.search,
                   color: Colors.white,
-                  size: 38,
+                  size: 30,
                 ),
               ),
               const SizedBox(width: 18),
@@ -514,6 +516,7 @@ InkWell(
     ),
   ),
 ),
+  ),
 
 const SizedBox(height: 12),
 
@@ -530,8 +533,10 @@ InkWell(
       ),
     );
   },
+  child: ClipPath(
+  clipper: YamukKartClipper(),
   child: Container(
-    height: 110,
+    height: 90,
     decoration: BoxDecoration(
       gradient: const LinearGradient(
         colors: [
@@ -573,8 +578,8 @@ InkWell(
           child: Row(
             children: [
               Container(
-                width: 64,
-                height: 64,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.15),
                   shape: BoxShape.circle,
@@ -582,7 +587,7 @@ InkWell(
                 child: const Icon(
                   Icons.edit_note,
                   color: Colors.white,
-                  size: 38,
+                  size: 30,
                 ),
               ),
               const SizedBox(width: 18),
@@ -622,7 +627,7 @@ InkWell(
     ),
   ),
 ),
-
+),
 const SizedBox(height: 12),
 
 // ===============================
@@ -638,8 +643,10 @@ InkWell(
       ),
     );
   },
+  child: ClipPath(
+  clipper: YamukKartClipper(),
   child: Container(
-    height: 110,
+    height: 90,
     decoration: BoxDecoration(
       gradient: const LinearGradient(
         colors: [
@@ -681,8 +688,8 @@ InkWell(
           child: Row(
             children: [
               Container(
-                width: 64,
-                height: 64,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.15),
                   shape: BoxShape.circle,
@@ -690,7 +697,7 @@ InkWell(
                 child: const Icon(
                   Icons.shopping_cart_outlined,
                   color: Colors.white,
-                  size: 38,
+                  size:30 ,
                 ),
               ),
               const SizedBox(width: 18),
@@ -730,7 +737,7 @@ InkWell(
     ),
   ),
 ),
-
+),
 const SizedBox(height: 12),
 
 // ===============================
@@ -746,8 +753,10 @@ InkWell(
       ),
     );
   },
+  child: ClipPath(
+  clipper: YamukKartClipper(),
   child: Container(
-    height: 110,
+    height: 90,
     decoration: BoxDecoration(
       gradient: const LinearGradient(
         colors: [
@@ -789,8 +798,8 @@ InkWell(
           child: Row(
             children: [
               Container(
-                width: 64,
-                height: 64,
+                width: 52,
+                height: 52,
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.15),
                   shape: BoxShape.circle,
@@ -798,7 +807,7 @@ InkWell(
                 child: const Icon(
                   Icons.sell_outlined,
                   color: Colors.white,
-                  size: 38,
+                  size: 30,
                 ),
               ),
               const SizedBox(width: 18),
@@ -838,6 +847,7 @@ InkWell(
     ),
   ),
 ),
+  ),
 
 const SizedBox(height: 14),
 
@@ -853,7 +863,7 @@ InkWell(
     );
   },
   child: Container(
-    height: 82,
+    height: 62,
     padding: const EdgeInsets.symmetric(horizontal: 18),
     decoration: BoxDecoration(
       color: Colors.white,
@@ -870,7 +880,7 @@ InkWell(
       children: [
         Icon(
           Icons.list_alt,
-          size: 38,
+          size: 28,
           color: Color(0xFF405A7A),
         ),
         SizedBox(width: 18),
@@ -882,7 +892,7 @@ InkWell(
               Text(
                 'KENDİ İLANLARIM',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF142A4A),
                 ),
@@ -891,7 +901,7 @@ InkWell(
               Text(
                 'Tüm ilanlarını görüntüle ve yönet',
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 11,
                   color: Color(0xFF63738A),
                 ),
               ),
@@ -900,7 +910,7 @@ InkWell(
         ),
         Icon(
           Icons.chevron_right,
-          size: 32,
+          size: 26,
           color: Color(0xFF63738A),
         ),
       ],
@@ -922,7 +932,7 @@ InkWell(
     );
   },
   child: Container(
-    height: 82,
+    height: 62,
     padding: const EdgeInsets.symmetric(horizontal: 18),
     decoration: BoxDecoration(
       color: Colors.white,
@@ -939,7 +949,7 @@ InkWell(
       children: [
         Icon(
           Icons.settings,
-          size: 38,
+          size: 28,
           color: Color(0xFF405A7A),
         ),
         SizedBox(width: 18),
@@ -951,7 +961,7 @@ InkWell(
               Text(
                 'AYARLAR',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF142A4A),
                 ),
@@ -960,7 +970,7 @@ InkWell(
               Text(
                 'Uygulama tercihlerini düzenle',
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 11,
                   color: Color(0xFF63738A),
                 ),
               ),
@@ -969,7 +979,7 @@ InkWell(
         ),
         Icon(
           Icons.chevron_right,
-          size: 32,
+          size: 26,
           color: Color(0xFF63738A),
         ),
       ],
@@ -992,7 +1002,7 @@ if (admin)
       );
     },
     child: Container(
-      height: 82,
+      height: 62,
       padding: const EdgeInsets.symmetric(horizontal: 18),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -1009,7 +1019,7 @@ if (admin)
         children: [
           Icon(
             Icons.admin_panel_settings,
-            size: 38,
+            size: 28,
             color: Color(0xFF405A7A),
           ),
           SizedBox(width: 18),
@@ -1021,7 +1031,7 @@ if (admin)
                 Text(
                   'YÖNETİM PANELİ',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF142A4A),
                   ),
@@ -1030,7 +1040,7 @@ if (admin)
                 Text(
                   'Sistem yönetimi ve istatistikler',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 11,
                     color: Color(0xFF63738A),
                   ),
                 ),
@@ -1039,7 +1049,7 @@ if (admin)
           ),
           Icon(
             Icons.chevron_right,
-            size: 32,
+            size: 26,
             color: Color(0xFF63738A),
           ),
         ],
@@ -1054,7 +1064,7 @@ InkWell(
   borderRadius: BorderRadius.circular(18),
   onTap: cikis,
   child: Container(
-    height: 82,
+    height: 62,
     padding: const EdgeInsets.symmetric(horizontal: 18),
     decoration: BoxDecoration(
       color: Colors.white,
@@ -1071,7 +1081,7 @@ InkWell(
       children: [
         Icon(
           Icons.logout,
-          size: 38,
+          size: 28,
           color: Colors.red,
         ),
         SizedBox(width: 18),
@@ -1083,7 +1093,7 @@ InkWell(
               Text(
                 'ÇIKIŞ YAP',
                 style: TextStyle(
-                  fontSize: 18,
+                  fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF142A4A),
                 ),
@@ -1092,7 +1102,7 @@ InkWell(
               Text(
                 'Güvenli şekilde oturumu kapat',
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 11,
                   color: Color(0xFF63738A),
                 ),
               ),
@@ -1101,7 +1111,7 @@ InkWell(
         ),
         Icon(
           Icons.chevron_right,
-          size: 32,
+          size: 26,
           color: Color(0xFF63738A),
         ),
       ],
@@ -1115,7 +1125,22 @@ InkWell(
   }
                 
 }
-  
+  class YamukKartClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    const double kesim = 18;
+
+    return Path()
+      ..moveTo(kesim, 0)
+      ..lineTo(size.width, 0)
+      ..lineTo(size.width - kesim, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
+}
 class GirisSayfasi extends StatefulWidget {
   const GirisSayfasi({super.key});
 
