@@ -3968,7 +3968,32 @@ Widget build(BuildContext context) {
                                 const SizedBox(
                                   height: 12,
                                 ),
+                                
+SizedBox(
+  width: double.infinity,
+  child: ElevatedButton.icon(
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => IkinciElDuzenleSayfasi(
+            postId: belge.id,
+            data: data,
+          ),
+        ),
+      );
+    },
+    icon: const Icon(Icons.edit),
+    label: const Text('İLANI DÜZENLE'),
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xFF18A957),
+      foregroundColor: Colors.white,
+      minimumSize: const Size(double.infinity, 50),
+    ),
+  ),
+),
 
+const SizedBox(height: 8),
                                 SizedBox(
                                   width:
                                       double.infinity,
@@ -7051,6 +7076,7 @@ const SizedBox(height: 30),
     context,
     MaterialPageRoute(
       builder: (_) => IkinciElDetaySayfasi(
+        postId: belge.id,
         data: data,
       ),
     ),
@@ -7542,10 +7568,12 @@ Text(
   }
 } 
 class IkinciElDetaySayfasi extends StatelessWidget {
+  final String postId;
   final Map<String, dynamic> data;
 
   const IkinciElDetaySayfasi({
     super.key,
+    required this.postId,
     required this.data,
   });
 
@@ -7554,6 +7582,9 @@ class IkinciElDetaySayfasi extends StatelessWidget {
     final resimler = data['imageUrls'] is List
         ? List<String>.from(data['imageUrls'])
         : <String>[];
+    final telefon = data['phone']?.toString().trim() ?? '';
+final whatsapp = data['whatsapp']?.toString().trim() ?? '';
+    final ownerUid = data['ownerUid']?.toString().trim() ?? '';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9F6),
@@ -7713,6 +7744,271 @@ if (bilgi(data['neighborhood']).isNotEmpty)
 
           const SizedBox(height: 18),
 
+          // TELEFON - WHATSAPP
+const SizedBox(height: 12),
+
+Text(
+  'Telefon: ${telefon.isEmpty ? 'Belirtilmemiş' : telefon}',
+  style: const TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+  ),
+),
+
+const SizedBox(height: 4),
+
+Text(
+  'WhatsApp: ${whatsapp.isEmpty ? 'Belirtilmemiş' : whatsapp}',
+  style: const TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+  ),
+),
+
+const SizedBox(height: 12),
+
+Row(
+  children: [
+    Expanded(
+      child: ElevatedButton.icon(
+        onPressed: telefon.isEmpty
+            ? null
+            : () async {
+                final numara =
+                    telefon.replaceAll(RegExp(r'[^0-9+]'), '');
+
+                final uri = Uri(
+                  scheme: 'tel',
+                  path: numara,
+                );
+
+                await launchUrl(uri);
+              },
+        icon: const Icon(Icons.phone),
+        label: const Text('ARA'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF1976D2),
+          foregroundColor: Colors.white,
+          minimumSize: const Size(0, 50),
+        ),
+      ),
+    ),
+
+    const SizedBox(width: 10),
+
+    Expanded(
+      child: ElevatedButton.icon(
+        onPressed: whatsapp.isEmpty
+            ? null
+            : () async {
+                var numara =
+                    whatsapp.replaceAll(RegExp(r'[^0-9]'), '');
+
+                if (numara.startsWith('0')) {
+                  numara = '90${numara.substring(1)}';
+                } else if (!numara.startsWith('90')) {
+                  numara = '90$numara';
+                }
+
+                final uri = Uri.parse(
+                  'https://wa.me/$numara',
+                );
+
+                await launchUrl(
+                  uri,
+                  mode: LaunchMode.externalApplication,
+                );
+              },
+        icon: const Icon(Icons.chat),
+        label: const Text('WHATSAPP'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF25D366),
+          foregroundColor: Colors.white,
+          minimumSize: const Size(0, 50),
+        ),
+      ),
+    ),
+  ],
+),
+
+const SizedBox(height: 20),
+          // İKİNCİ EL MESAJ GÖNDER
+SizedBox(
+  width: double.infinity,
+  child: ElevatedButton.icon(
+    onPressed: () {
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        mesaj(
+          context,
+          'Mesaj göndermek için giriş yapmalısınız.',
+        );
+        return;
+      }
+
+      if (ownerUid.isEmpty) {
+        mesaj(
+          context,
+          'İlan sahibi bulunamadı.',
+        );
+        return;
+      }
+
+      if (user.uid == ownerUid) {
+        mesaj(
+          context,
+          'Kendi ilanınıza mesaj gönderemezsiniz.',
+        );
+        return;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => IkinciElMesajlasmaSayfasi(
+            postId: postId,
+            postTitle: bilgi(data['title']),
+            ownerUid: ownerUid,
+          ),
+        ),
+      );
+    },
+    icon: const Icon(Icons.message),
+    label: const Text('MESAJ GÖNDER'),
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xFF087CF0),
+      foregroundColor: Colors.white,
+      minimumSize: const Size(double.infinity, 50),
+    ),
+  ),
+),
+
+const SizedBox(height: 12),
+
+          // İKİNCİ EL ŞİKAYET ET
+SizedBox(
+  width: double.infinity,
+  child: OutlinedButton.icon(
+    onPressed: () async {
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user == null) {
+        mesaj(
+          context,
+          'Şikayet etmek için giriş yapmalısınız.',
+        );
+        return;
+      }
+
+      if (user.uid == ownerUid) {
+        mesaj(
+          context,
+          'Kendi ilanınızı şikayet edemezsiniz.',
+        );
+        return;
+      }
+
+      String sebep = '';
+
+      final onay = await showDialog<bool>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text('İlanı Şikayet Et'),
+            content: TextField(
+              maxLines: 4,
+              onChanged: (value) {
+                sebep = value.trim();
+              },
+              decoration: const InputDecoration(
+                hintText: 'Şikayet nedeninizi yazın...',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext, false);
+                },
+                child: const Text('VAZGEÇ'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext, true);
+                },
+                child: const Text('GÖNDER'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (onay != true) return;
+
+      if (sebep.isEmpty) {
+        if (context.mounted) {
+          mesaj(
+            context,
+            'Şikayet nedenini yazmalısınız.',
+          );
+        }
+        return;
+      }
+
+      try {
+        await FirebaseFirestore.instance
+            .collection('secondhand_complaints')
+            .add({
+          'postId': postId,
+          'postTitle': bilgi(data['title']),
+          'ownerUid': ownerUid,
+          'reporterUid': user.uid,
+          'reason': sebep,
+          'status': 'pending',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        if (context.mounted) {
+          mesaj(
+            context,
+            'Şikayetiniz gönderildi.',
+          );
+        }
+      } catch (_) {
+        if (context.mounted) {
+          mesaj(
+            context,
+            'Şikayet gönderilemedi.',
+          );
+        }
+      }
+    },
+    icon: const Icon(
+      Icons.flag_outlined,
+      color: Colors.red,
+    ),
+    label: const Text(
+      'ŞİKAYET ET',
+      style: TextStyle(
+        color: Colors.red,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    style: OutlinedButton.styleFrom(
+      side: const BorderSide(
+        color: Colors.red,
+      ),
+      minimumSize: const Size(
+        double.infinity,
+        50,
+      ),
+    ),
+  ),
+),
+
+const SizedBox(height: 12),
+
           const Text(
             'Açıklama',
             style: TextStyle(
@@ -7726,6 +8022,589 @@ if (bilgi(data['neighborhood']).isNotEmpty)
           Text(
             bilgi(data['description']),
             style: const TextStyle(fontSize: 16),
+          ),
+        ],
+      ),
+    );
+  }
+}
+class IkinciElMesajlasmaSayfasi extends StatefulWidget {
+  final String postId;
+  final String postTitle;
+  final String ownerUid;
+
+  const IkinciElMesajlasmaSayfasi({
+    super.key,
+    required this.postId,
+    required this.postTitle,
+    required this.ownerUid,
+  });
+
+  @override
+  State<IkinciElMesajlasmaSayfasi> createState() =>
+      _IkinciElMesajlasmaSayfasiState();
+}
+
+class _IkinciElMesajlasmaSayfasiState
+    extends State<IkinciElMesajlasmaSayfasi> {
+  final TextEditingController mesajController =
+      TextEditingController();
+
+  bool gonderiliyor = false;
+
+  String conversationIdOlustur(
+    String uid1,
+    String uid2,
+  ) {
+    final kullanicilar = [uid1, uid2]..sort();
+
+    return '${widget.postId}_${kullanicilar[0]}_${kullanicilar[1]}';
+  }
+
+  Future<void> mesajGonder() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final mesajMetni = mesajController.text.trim();
+
+    if (user == null ||
+        mesajMetni.isEmpty ||
+        gonderiliyor) {
+      return;
+    }
+
+    final conversationId =
+        conversationIdOlustur(
+      user.uid,
+      widget.ownerUid,
+    );
+
+    setState(() {
+      gonderiliyor = true;
+    });
+
+    try {
+      final sohbetRef = FirebaseFirestore.instance
+          .collection('secondhand_conversations')
+          .doc(conversationId);
+
+      await sohbetRef.set({
+        'postId': widget.postId,
+        'postTitle': widget.postTitle,
+        'ownerUid': widget.ownerUid,
+        'participants': [
+          user.uid,
+          widget.ownerUid,
+        ],
+        'lastMessage': mesajMetni,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      await sohbetRef
+          .collection('messages')
+          .add({
+        'senderUid': user.uid,
+        'text': mesajMetni,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      mesajController.clear();
+    } catch (_) {
+      if (mounted) {
+        mesaj(
+          context,
+          'Mesaj gönderilemedi.',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          gonderiliyor = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    mesajController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user =
+        FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      return const Scaffold(
+        body: Center(
+          child: Text(
+            'Mesajlaşmak için giriş yapmalısınız.',
+          ),
+        ),
+      );
+    }
+
+    final conversationId =
+        conversationIdOlustur(
+      user.uid,
+      widget.ownerUid,
+    );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.postTitle),
+        backgroundColor:
+            const Color(0xFF18A957),
+        foregroundColor: Colors.white,
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: StreamBuilder<
+                QuerySnapshot<Map<String, dynamic>>>(
+              stream: FirebaseFirestore.instance
+                  .collection(
+                    'secondhand_conversations',
+                  )
+                  .doc(conversationId)
+                  .collection('messages')
+                  .orderBy(
+                    'createdAt',
+                    descending: true,
+                  )
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return const Center(
+                    child: Text(
+                      'Mesajlar yüklenemedi.',
+                    ),
+                  );
+                }
+
+                if (!snapshot.hasData) {
+                  return const Center(
+                    child:
+                        CircularProgressIndicator(),
+                  );
+                }
+
+                final mesajlar =
+                    snapshot.data!.docs;
+
+                if (mesajlar.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      'Henüz mesaj yok. İlk mesajı gönder.',
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  reverse: true,
+                  padding:
+                      const EdgeInsets.all(12),
+                  itemCount: mesajlar.length,
+                  itemBuilder:
+                      (context, index) {
+                    final data =
+                        mesajlar[index].data();
+
+                    final benim =
+                        data['senderUid'] ==
+                            user.uid;
+
+                    return Align(
+                      alignment: benim
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        constraints:
+                            const BoxConstraints(
+                          maxWidth: 280,
+                        ),
+                        margin:
+                            const EdgeInsets.symmetric(
+                          vertical: 4,
+                        ),
+                        padding:
+                            const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: benim
+                              ? const Color(
+                                  0xFFDDF7E7,
+                                )
+                              : const Color(
+                                  0xFFF0F0F0,
+                                ),
+                          borderRadius:
+                              BorderRadius.circular(
+                            16,
+                          ),
+                        ),
+                        child: Text(
+                          data['text']
+                                  ?.toString() ??
+                              '',
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding:
+                  const EdgeInsets.all(10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller:
+                          mesajController,
+                      textInputAction:
+                          TextInputAction.send,
+                      onSubmitted: (_) =>
+                          mesajGonder(),
+                      decoration:
+                          const InputDecoration(
+                        hintText:
+                            'Mesaj yaz...',
+                        border:
+                            OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: gonderiliyor
+                        ? null
+                        : mesajGonder,
+                    icon: gonderiliyor
+                        ? const SizedBox(
+                            width: 22,
+                            height: 22,
+                            child:
+                                CircularProgressIndicator(
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Icon(
+                            Icons.send,
+                            color: Color(
+                              0xFF18A957,
+                            ),
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+class IkinciElDuzenleSayfasi extends StatefulWidget {
+  final String postId;
+  final Map<String, dynamic> data;
+
+  const IkinciElDuzenleSayfasi({
+    super.key,
+    required this.postId,
+    required this.data,
+  });
+
+  @override
+  State<IkinciElDuzenleSayfasi> createState() =>
+      _IkinciElDuzenleSayfasiState();
+}
+
+class _IkinciElDuzenleSayfasiState
+    extends State<IkinciElDuzenleSayfasi> {
+  late final TextEditingController baslik;
+  late final TextEditingController fiyat;
+  late final TextEditingController il;
+  late final TextEditingController ilce;
+  late final TextEditingController mahalle;
+  late final TextEditingController aciklama;
+  late final TextEditingController telefon;
+  late final TextEditingController whatsapp;
+
+  String? kategori;
+  bool bekle = false;
+
+  final List<String> kategoriler = [
+    'Araç',
+    'Motosiklet',
+    'Telefon',
+    'Bilgisayar',
+    'Elektronik',
+    'Ev Eşyası',
+    'İnşaat Malzemesi',
+    'Giyim',
+    'Hobi',
+    'Diğer',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    baslik = TextEditingController(
+      text: widget.data['title']?.toString() ?? '',
+    );
+
+    fiyat = TextEditingController(
+      text: widget.data['price']?.toString() ?? '',
+    );
+
+    il = TextEditingController(
+      text: widget.data['city']?.toString() ?? '',
+    );
+
+    ilce = TextEditingController(
+      text: widget.data['district']?.toString() ?? '',
+    );
+
+    mahalle = TextEditingController(
+      text: widget.data['neighborhood']?.toString() ?? '',
+    );
+
+    aciklama = TextEditingController(
+      text: widget.data['description']?.toString() ?? '',
+    );
+
+    telefon = TextEditingController(
+      text: widget.data['phone']?.toString() ?? '',
+    );
+
+    whatsapp = TextEditingController(
+      text: widget.data['whatsapp']?.toString() ?? '',
+    );
+
+    final mevcutKategori =
+        widget.data['category']?.toString();
+
+    if (kategoriler.contains(mevcutKategori)) {
+      kategori = mevcutKategori;
+    }
+  }
+
+  Future<void> kaydet() async {
+    if (baslik.text.trim().isEmpty ||
+        fiyat.text.trim().isEmpty ||
+        il.text.trim().isEmpty ||
+        ilce.text.trim().isEmpty ||
+        aciklama.text.trim().isEmpty ||
+        kategori == null) {
+      mesaj(
+        context,
+        'Zorunlu alanları doldurun.',
+      );
+      return;
+    }
+
+    setState(() {
+      bekle = true;
+    });
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('secondhand_posts')
+          .doc(widget.postId)
+          .update({
+        'title': baslik.text.trim(),
+        'category': kategori,
+        'price': fiyat.text.trim(),
+        'city': il.text.trim(),
+        'district': ilce.text.trim(),
+        'neighborhood': mahalle.text.trim(),
+        'description': aciklama.text.trim(),
+        'phone': telefon.text.trim(),
+        'whatsapp': whatsapp.text.trim(),
+      });
+
+      if (!mounted) return;
+
+      mesaj(
+        context,
+        'İkinci el ilanı güncellendi.',
+      );
+
+      Navigator.pop(context);
+    } catch (_) {
+      if (mounted) {
+        mesaj(
+          context,
+          'İlan güncellenemedi.',
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          bekle = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    baslik.dispose();
+    fiyat.dispose();
+    il.dispose();
+    ilce.dispose();
+    mahalle.dispose();
+    aciklama.dispose();
+    telefon.dispose();
+    whatsapp.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'İkinci El İlanını Düzenle',
+        ),
+        backgroundColor:
+            const Color(0xFF18A957),
+        foregroundColor: Colors.white,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          TextField(
+            controller: baslik,
+            decoration: const InputDecoration(
+              labelText: 'İlan Başlığı',
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          DropdownButtonFormField<String>(
+            value: kategori,
+            decoration: const InputDecoration(
+              labelText: 'Kategori',
+              border: OutlineInputBorder(),
+            ),
+            items: kategoriler
+                .map(
+                  (e) => DropdownMenuItem(
+                    value: e,
+                    child: Text(e),
+                  ),
+                )
+                .toList(),
+            onChanged: (value) {
+              setState(() {
+                kategori = value;
+              });
+            },
+          ),
+
+          const SizedBox(height: 12),
+
+          TextField(
+            controller: fiyat,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Fiyat',
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          TextField(
+            controller: il,
+            decoration: const InputDecoration(
+              labelText: 'İl',
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          TextField(
+            controller: ilce,
+            decoration: const InputDecoration(
+              labelText: 'İlçe',
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          TextField(
+            controller: mahalle,
+            decoration: const InputDecoration(
+              labelText: 'Mahalle',
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          TextField(
+            controller: telefon,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'Telefon',
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          TextField(
+            controller: whatsapp,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'WhatsApp',
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          TextField(
+            controller: aciklama,
+            maxLines: 5,
+            decoration: const InputDecoration(
+              labelText: 'Açıklama',
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          ElevatedButton.icon(
+            onPressed: bekle ? null : kaydet,
+            icon: const Icon(Icons.save),
+            label: Text(
+              bekle
+                  ? 'KAYDEDİLİYOR...'
+                  : 'DEĞİŞİKLİKLERİ KAYDET',
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor:
+                  const Color(0xFF18A957),
+              foregroundColor: Colors.white,
+              minimumSize:
+                  const Size(double.infinity, 55),
+            ),
           ),
         ],
       ),
