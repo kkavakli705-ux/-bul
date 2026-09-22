@@ -362,8 +362,12 @@ Future<void> cikis() async {
           ),
         ],
       )
-         : ListView(
-              padding: const EdgeInsets.all(20),
+        
+              : ListView(
+  physics: const BouncingScrollPhysics(
+    parent: AlwaysScrollableScrollPhysics(),
+  ),
+  padding: const EdgeInsets.fromLTRB(20, 12, 20, 120),
               children: [
                 const SizedBox(height: 15),
                 const Center(
@@ -425,7 +429,7 @@ InkWell(
   child: ClipPath(
   clipper: YamukKartClipper(),
   child: Container(
-    height: 90,
+    height: 72,
     decoration: BoxDecoration(
       gradient: const LinearGradient(
         colors: [
@@ -536,7 +540,7 @@ InkWell(
   child: ClipPath(
   clipper: YamukKartClipper(),
   child: Container(
-    height: 90,
+    height: 72,
     decoration: BoxDecoration(
       gradient: const LinearGradient(
         colors: [
@@ -646,7 +650,7 @@ InkWell(
   child: ClipPath(
   clipper: YamukKartClipper(),
   child: Container(
-    height: 90,
+    height: 72,
     decoration: BoxDecoration(
       gradient: const LinearGradient(
         colors: [
@@ -756,7 +760,7 @@ InkWell(
   child: ClipPath(
   clipper: YamukKartClipper(),
   child: Container(
-    height: 90,
+    height: 72,
     decoration: BoxDecoration(
       gradient: const LinearGradient(
         colors: [
@@ -3108,7 +3112,7 @@ padding: const EdgeInsets.symmetric(
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (_) => const AyarlarSayfasi(),
+      builder: (_) => const ProfilSayfasi(),
     ),
   );
 }
@@ -4272,6 +4276,42 @@ class YonetimPaneli extends StatelessWidget {
               },
             ),
           ),
+          Card(
+  child: ListTile(
+    leading: const Icon(
+      Icons.storefront,
+      color: Color(0xFF18A957),
+    ),
+    title: const Text('İkinci El İlanlarını Yönet'),
+    trailing: const Icon(Icons.arrow_forward_ios),
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const IkinciElYonetimSayfasi(),
+        ),
+      );
+    },
+  ),
+),
+          Card(
+  child: ListTile(
+    leading: const Icon(
+      Icons.report_outlined,
+      color: Color(0xFF18A957),
+    ),
+    title: const Text('İkinci El Şikayetleri'),
+    trailing: const Icon(Icons.arrow_forward_ios),
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const IkinciElSikayetlerSayfasi(),
+        ),
+      );
+    },
+  ),
+),
 
           Card(
             child: ListTile(
@@ -4422,7 +4462,653 @@ class YonetimPaneli extends StatelessWidget {
     );
   }
 }
+class IkinciElYonetimSayfasi extends StatelessWidget {
+  const IkinciElYonetimSayfasi({super.key});
 
+  Future<void> durumDegistir(
+    BuildContext context,
+    String id,
+    String durum,
+  ) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('secondhand_posts')
+          .doc(id)
+          .update({
+        'status': durum,
+      });
+
+      if (context.mounted) {
+        mesaj(
+          context,
+          durum == 'approved'
+              ? 'İkinci el ilanı onaylandı.'
+              : 'İkinci el ilanı reddedildi.',
+        );
+      }
+    } catch (_) {
+      if (context.mounted) {
+        mesaj(context, 'İşlem yapılamadı.');
+      }
+    }
+  }
+
+  Future<void> ilanSil(
+    BuildContext context,
+    String id,
+  ) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('secondhand_posts')
+          .doc(id)
+          .delete();
+
+      if (context.mounted) {
+        mesaj(context, 'İkinci el ilanı silindi.');
+      }
+    } catch (_) {
+      if (context.mounted) {
+        mesaj(context, 'İlan silinemedi.');
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final stream = FirebaseFirestore.instance
+        .collection('secondhand_posts')
+        .snapshots();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('İkinci El İlanlarını Yönet'),
+        backgroundColor: const Color(0xFF18A957),
+        foregroundColor: Colors.white,
+      ),
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: stream,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('İkinci el ilanları yüklenemedi.'),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          final ilanlar = snapshot.data!.docs;
+
+          if (ilanlar.isEmpty) {
+            return const Center(
+              child: Text('İkinci el ilanı bulunmuyor.'),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: ilanlar.length,
+            itemBuilder: (context, index) {
+              final belge = ilanlar[index];
+              final data = belge.data();
+
+              final durum =
+                  data['status']?.toString() ?? 'pending';
+
+              final resimler = data['imageUrls'] is List
+                  ? List<String>.from(
+                      (data['imageUrls'] as List)
+                          .map((e) => e.toString()),
+                    )
+                  : <String>[];
+
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (resimler.isNotEmpty)
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.network(
+                            resimler.first,
+                            width: 85,
+                            height: 85,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) =>
+                                const SizedBox(
+                              width: 85,
+                              height: 85,
+                              child: Icon(Icons.image),
+                            ),
+                          ),
+                        )
+                      else
+                        const SizedBox(
+                          width: 85,
+                          height: 85,
+                          child: Icon(Icons.image, size: 40),
+                        ),
+
+                      const SizedBox(width: 10),
+
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              bilgi(data['title']),
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              '${bilgi(data['price'])} TL',
+                              style: const TextStyle(
+                                color: Color(0xFF18A957),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'Kategori: ${bilgi(data['category'])}',
+                            ),
+                            Text(
+                              'Konum: ${bilgi(data['city'])}',
+                            ),
+                            Text(
+                              'Durum: $durum',
+                            ),
+
+                            const SizedBox(height: 8),
+
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: ElevatedButton(
+                                    onPressed: durum == 'approved'
+                                        ? null
+                                        : () {
+                                            durumDegistir(
+                                              context,
+                                              belge.id,
+                                              'approved',
+                                            );
+                                          },
+                                    child: const Text('ONAYLA'),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: OutlinedButton(
+                                    onPressed: durum == 'rejected'
+                                        ? null
+                                        : () {
+                                            durumDegistir(
+                                              context,
+                                              belge.id,
+                                              'rejected',
+                                            );
+                                          },
+                                    child: const Text('REDDET'),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                IconButton(
+                                  onPressed: () {
+                                    ilanSil(
+                                      context,
+                                      belge.id,
+                                    );
+                                  },
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+class IkinciElSikayetlerSayfasi extends StatelessWidget {
+  const IkinciElSikayetlerSayfasi({super.key});
+
+  Future<void> cozuldu(
+    BuildContext context,
+    String id,
+  ) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('secondhand_complaints')
+          .doc(id)
+          .update({
+        'status': 'resolved',
+      });
+
+      if (context.mounted) {
+        mesaj(context, 'Şikayet çözüldü.');
+      }
+    } catch (_) {
+      if (context.mounted) {
+        mesaj(context, 'İşlem yapılamadı.');
+      }
+    }
+  }
+
+  Future<void> sil(
+    BuildContext context,
+    String id,
+  ) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('secondhand_complaints')
+          .doc(id)
+          .delete();
+
+      if (context.mounted) {
+        mesaj(context, 'Şikayet silindi.');
+      }
+    } catch (_) {
+      if (context.mounted) {
+        mesaj(context, 'Şikayet silinemedi.');
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final stream = FirebaseFirestore.instance
+        .collection('secondhand_complaints')
+        .snapshots();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('İkinci El Şikayetleri'),
+        backgroundColor: const Color(0xFF18A957),
+        foregroundColor: Colors.white,
+      ),
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: stream,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('Şikayetler yüklenemedi.'),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          final liste = snapshot.data!.docs;
+
+          if (liste.isEmpty) {
+            return const Center(
+              child: Text('İkinci el şikayeti yok.'),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: liste.length,
+            itemBuilder: (context, index) {
+              final belge = liste[index];
+              final data = belge.data();
+
+              final resolved =
+                  data['status'] == 'resolved';
+
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        bilgi(data['postTitle']),
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      const SizedBox(height: 5),
+
+                      Text(
+                        'Neden: ${bilgi(data['reason'])}',
+                      ),
+
+                      Text(
+                        resolved
+                            ? 'Durum: ÇÖZÜLDÜ'
+                            : 'Durum: AÇIK',
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: resolved
+                                  ? null
+                                  : () {
+                                      cozuldu(
+                                        context,
+                                        belge.id,
+                                      );
+                                    },
+                              child:
+                                  const Text('ÇÖZÜLDÜ'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () {
+                                sil(
+                                  context,
+                                  belge.id,
+                                );
+                              },
+                              child: const Text('SİL'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
+class ProfilSayfasi extends StatefulWidget {
+  const ProfilSayfasi({super.key});
+
+  @override
+  State<ProfilSayfasi> createState() => _ProfilSayfasiState();
+}
+
+class _ProfilSayfasiState extends State<ProfilSayfasi> {
+  final adSoyad = TextEditingController();
+  final telefon = TextEditingController();
+  final sehir = TextEditingController();
+  final hakkinda = TextEditingController();
+
+  bool yukleniyor = true;
+
+  User? get user => FirebaseAuth.instance.currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    profilYukle();
+  }
+
+  Future<void> profilYukle() async {
+    final mevcutUser = user;
+
+    if (mevcutUser == null) {
+      if (mounted) {
+        setState(() {
+          yukleniyor = false;
+        });
+      }
+      return;
+    }
+
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(mevcutUser.uid)
+          .get();
+
+      final data = doc.data() ?? {};
+
+      adSoyad.text =
+          data['name']?.toString() ?? '';
+
+      telefon.text =
+          data['phone']?.toString() ??
+          mevcutUser.phoneNumber ??
+          '';
+
+      sehir.text =
+          data['city']?.toString() ?? '';
+
+      hakkinda.text =
+          data['bio']?.toString() ?? '';
+    } catch (_) {}
+
+    if (mounted) {
+      setState(() {
+        yukleniyor = false;
+      });
+    }
+  }
+
+  Future<void> profilKaydet() async {
+    final mevcutUser = user;
+
+    if (mevcutUser == null) {
+      mesaj(context, 'Önce giriş yapmalısınız.');
+      return;
+    }
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(mevcutUser.uid)
+          .set({
+        'uid': mevcutUser.uid,
+        'email': mevcutUser.email ?? '',
+        'name': adSoyad.text.trim(),
+        'phone': telefon.text.trim(),
+        'city': sehir.text.trim(),
+        'bio': hakkinda.text.trim(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      if (mounted) {
+        mesaj(context, 'Profil kaydedildi.');
+        setState(() {});
+      }
+    } catch (_) {
+      if (mounted) {
+        mesaj(context, 'Profil kaydedilemedi.');
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    adSoyad.dispose();
+    telefon.dispose();
+    sehir.dispose();
+    hakkinda.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mevcutUser = user;
+
+    if (mevcutUser == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Profilim'),
+        ),
+        body: const Center(
+          child: Text('Profil için giriş yapmalısınız.'),
+        ),
+      );
+    }
+
+    if (yukleniyor) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    final harf = adSoyad.text.trim().isNotEmpty
+        ? adSoyad.text.trim()[0].toUpperCase()
+        : (mevcutUser.email?.isNotEmpty == true
+            ? mevcutUser.email![0].toUpperCase()
+            : '?');
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F8FB),
+
+      appBar: AppBar(
+        title: const Text('Profilim'),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const AyarlarSayfasi(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.settings),
+          ),
+        ],
+      ),
+
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Center(
+            child: CircleAvatar(
+              radius: 46,
+              backgroundColor:
+                  const Color(0xFF087CF0),
+              child: Text(
+                harf,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          Center(
+            child: Text(
+              adSoyad.text.trim().isEmpty
+                  ? 'Kullanıcı'
+                  : adSoyad.text.trim(),
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          Center(
+            child: Text(
+              mevcutUser.email ?? '',
+              style: const TextStyle(
+                color: Colors.grey,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          TextField(
+            controller: adSoyad,
+            decoration: const InputDecoration(
+              labelText: 'Ad Soyad',
+              prefixIcon: Icon(Icons.person_outline),
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          TextField(
+            controller: telefon,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'Telefon',
+              prefixIcon: Icon(Icons.phone_outlined),
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          TextField(
+            controller: sehir,
+            decoration: const InputDecoration(
+              labelText: 'Şehir',
+              prefixIcon: Icon(Icons.location_on_outlined),
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          TextField(
+            controller: hakkinda,
+            maxLines: 3,
+            maxLength: 250,
+            decoration: const InputDecoration(
+              labelText: 'Hakkımda',
+              prefixIcon: Icon(Icons.info_outline),
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          SizedBox(
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: profilKaydet,
+              icon: const Icon(Icons.save),
+              label: const Text('PROFİLİ KAYDET'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
 class AyarlarSayfasi extends StatefulWidget {
   const AyarlarSayfasi({super.key});
 
@@ -8050,8 +8736,8 @@ bilgiSatiri(
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) =>
-                    const AyarlarSayfasi(),
+                builder: (_) => const ProfilSayfasi(),
+                    
               ),
             );
           }
@@ -8908,8 +9594,11 @@ if (createdAt is Timestamp) {
         backgroundColor: const Color(0xFF18A957),
         foregroundColor: Colors.white,
       ),
-      body: ListView(
-       padding: const EdgeInsets.fromLTRB(12, 8, 12, 20), 
+      
+       body: SafeArea(
+  top: false,
+  child: ListView(
+    padding: const EdgeInsets.fromLTRB(12, 8, 12, 80),
         
         children: [
           if (resimler.isNotEmpty)
@@ -9421,6 +10110,7 @@ const SizedBox(height: 6),
 ),
         ],
       ),
+        ), 
     );
   }
 }
