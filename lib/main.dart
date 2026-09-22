@@ -406,31 +406,229 @@ const SizedBox(height: 15),
                       ],
                     ),
                   ),
+
+                  // ===============================
+// İŞ İLANLARI
+// ===============================
+InkWell(
+  borderRadius: BorderRadius.circular(22),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const IsAraSayfasi(),
+      ),
+    );
+  },
+  child: Container(
+    height: 110,
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [
+          Color(0xFF1194FF),
+          Color(0xFF087CF0),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(22),
+      boxShadow: const [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 8,
+          offset: Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Stack(
+      children: [
+        Positioned(
+          right: -25,
+          top: -20,
+          bottom: -20,
+          child: Transform(
+            transform: Matrix4.skewX(-0.20),
+            child: Container(
+              width: 120,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.10),
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 14,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  shape: BoxShape.circle,
                 ),
-                const SizedBox(height: 15),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const IsAraSayfasi()),
-                    );
-                  },
-                  icon: const Icon(Icons.search),
-                  label: const Text('İŞ ARA'),
+                child: const Icon(
+                  Icons.search,
+                  color: Colors.white,
+                  size: 38,
                 ),
-                const SizedBox(height: 10),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const IlanVerSayfasi()),
-                    );
-                  },
-                  icon: const Icon(Icons.add_business),
-                  label: const Text('ÜCRETSİZ İŞ İLANI VER'),
+              ),
+              const SizedBox(width: 18),
+              const Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'İŞ İLANLARI',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 23,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Sana uygun iş fırsatlarını keşfet',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
-                ElevatedButton.icon(
-  onPressed: () {
+              ),
+              const Icon(
+                Icons.chevron_right,
+                color: Colors.white,
+                size: 40,
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  ),
+),
+
+const SizedBox(height: 12),
+
+// ===============================
+// İŞ İLANI VER
+// ===============================
+InkWell(
+  borderRadius: BorderRadius.circular(22),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const IlanVerSayfasi(),
+      ),
+    );
+  },
+  child: Container(
+    height: 110,
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [
+          Color(0xFF38A9FF),
+          Color(0xFF1688F5),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(22),
+      boxShadow: const [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 8,
+          offset: Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Stack(
+      children: [
+        Positioned(
+          right: -25,
+          top: -20,
+          bottom: -20,
+          child: Transform(
+            transform: Matrix4.skewX(-0.20),
+            child: Container(
+              width: 120,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.10),
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 14,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.edit_note,
+                  color: Colors.white,
+                  size: 38,
+                ),
+              ),
+              const SizedBox(width: 18),
+              const Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'İŞ İLANI VER',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 23,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'İş fırsatını herkese duyur',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right,
+                color: Colors.white,
+                size: 40,
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  ),
+),
+
+const SizedBox(height: 12),
+
+// ===============================
+// İKİNCİ EL
+// ===============================
+InkWell(
+  borderRadius: BorderRadius.circular(22),
+  onTap: () {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -438,18 +636,107 @@ const SizedBox(height: 15),
       ),
     );
   },
-  icon: const Icon(Icons.storefront),
-  label: const Text('İKİNCİ EL'),
-  style: ElevatedButton.styleFrom(
-    backgroundColor: const Color(0xFF18A957),
-    foregroundColor: Colors.white,
+  child: Container(
+    height: 110,
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [
+          Color(0xFF2DD56F),
+          Color(0xFF12AD50),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(22),
+      boxShadow: const [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 8,
+          offset: Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Stack(
+      children: [
+        Positioned(
+          right: -25,
+          top: -20,
+          bottom: -20,
+          child: Transform(
+            transform: Matrix4.skewX(-0.20),
+            child: Container(
+              width: 120,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.10),
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 14,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.shopping_cart_outlined,
+                  color: Colors.white,
+                  size: 38,
+                ),
+              ),
+              const SizedBox(width: 18),
+              const Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'İKİNCİ EL',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 23,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Aradığın ikinci el ürünü bul',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right,
+                color: Colors.white,
+                size: 40,
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
   ),
 ),
 
-const SizedBox(height: 10),
+const SizedBox(height: 12),
 
-ElevatedButton.icon(
-  onPressed: () {
+// ===============================
+// İKİNCİ EL İLANI VER
+// ===============================
+InkWell(
+  borderRadius: BorderRadius.circular(22),
+  onTap: () {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -457,63 +744,374 @@ ElevatedButton.icon(
       ),
     );
   },
-  icon: const Icon(Icons.add_circle_outline),
-  label: const Text('İKİNCİ EL İLANI VER'),
-  style: ElevatedButton.styleFrom(
-    backgroundColor: const Color(0xFF18A957),
-    foregroundColor: Colors.white,
+  child: Container(
+    height: 110,
+    decoration: BoxDecoration(
+      gradient: const LinearGradient(
+        colors: [
+          Color(0xFF43DB76),
+          Color(0xFF20BA58),
+        ],
+      ),
+      borderRadius: BorderRadius.circular(22),
+      boxShadow: const [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 8,
+          offset: Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Stack(
+      children: [
+        Positioned(
+          right: -25,
+          top: -20,
+          bottom: -20,
+          child: Transform(
+            transform: Matrix4.skewX(-0.20),
+            child: Container(
+              width: 120,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.10),
+                borderRadius: BorderRadius.circular(18),
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 14,
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.sell_outlined,
+                  color: Colors.white,
+                  size: 38,
+                ),
+              ),
+              const SizedBox(width: 18),
+              const Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'İKİNCİ EL İLANI VER',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 21,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'Ürününü kolayca ilanla',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right,
+                color: Colors.white,
+                size: 40,
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
   ),
 ),
 
+const SizedBox(height: 14),
 
-                const SizedBox(height: 10),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const KendiIlanlarimSayfasi(),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.list_alt),
-                  label: const Text('KENDİ İLANLARIM'),
+// KENDİ İLANLARIM
+InkWell(
+  borderRadius: BorderRadius.circular(18),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const KendiIlanlarimSayfasi(),
+      ),
+    );
+  },
+  child: Container(
+    height: 82,
+    padding: const EdgeInsets.symmetric(horizontal: 18),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      boxShadow: const [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 8,
+          offset: Offset(0, 3),
+        ),
+      ],
+    ),
+    child: const Row(
+      children: [
+        Icon(
+          Icons.list_alt,
+          size: 38,
+          color: Color(0xFF405A7A),
+        ),
+        SizedBox(width: 18),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'KENDİ İLANLARIM',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF142A4A),
                 ),
-                const SizedBox(height: 10),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AyarlarSayfasi(),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.settings),
-                  label: const Text('AYARLAR'),
+              ),
+              SizedBox(height: 3),
+              Text(
+                'Tüm ilanlarını görüntüle ve yönet',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF63738A),
                 ),
-                const SizedBox(height: 15),
-                if (admin)
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const YonetimPaneli()),
-                      );
-                    },
-                    icon: const Icon(Icons.admin_panel_settings),
-                    label: const Text('YÖNETİM PANELİ'),
+              ),
+            ],
+          ),
+        ),
+        Icon(
+          Icons.chevron_right,
+          size: 32,
+          color: Color(0xFF63738A),
+        ),
+      ],
+    ),
+  ),
+),
+
+const SizedBox(height: 12),
+
+// AYARLAR
+InkWell(
+  borderRadius: BorderRadius.circular(18),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const AyarlarSayfasi(),
+      ),
+    );
+  },
+  child: Container(
+    height: 82,
+    padding: const EdgeInsets.symmetric(horizontal: 18),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      boxShadow: const [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 8,
+          offset: Offset(0, 3),
+        ),
+      ],
+    ),
+    child: const Row(
+      children: [
+        Icon(
+          Icons.settings,
+          size: 38,
+          color: Color(0xFF405A7A),
+        ),
+        SizedBox(width: 18),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'AYARLAR',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF142A4A),
+                ),
+              ),
+              SizedBox(height: 3),
+              Text(
+                'Uygulama tercihlerini düzenle',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF63738A),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Icon(
+          Icons.chevron_right,
+          size: 32,
+          color: Color(0xFF63738A),
+        ),
+      ],
+    ),
+  ),
+),
+
+const SizedBox(height: 12),
+
+// YÖNETİM PANELİ
+if (admin)
+  InkWell(
+    borderRadius: BorderRadius.circular(18),
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const YonetimPaneli(),
+        ),
+      );
+    },
+    child: Container(
+      height: 82,
+      padding: const EdgeInsets.symmetric(horizontal: 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: const Row(
+        children: [
+          Icon(
+            Icons.admin_panel_settings,
+            size: 38,
+            color: Color(0xFF405A7A),
+          ),
+          SizedBox(width: 18),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'YÖNETİM PANELİ',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF142A4A),
                   ),
-                const SizedBox(height: 15),
-                OutlinedButton.icon(
-                  onPressed: cikis,
-                  icon: const Icon(Icons.logout),
-                  label: const Text('ÇIKIŞ YAP'),
                 ),
+                SizedBox(height: 3),
+                Text(
+                  'Sistem yönetimi ve istatistikler',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF63738A),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.chevron_right,
+            size: 32,
+            color: Color(0xFF63738A),
+          ),
+        ],
+      ),
+    ),
+  ),
+
+if (admin) const SizedBox(height: 12),
+
+// ÇIKIŞ YAP
+InkWell(
+  borderRadius: BorderRadius.circular(18),
+  onTap: cikis,
+  child: Container(
+    height: 82,
+    padding: const EdgeInsets.symmetric(horizontal: 18),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(18),
+      boxShadow: const [
+        BoxShadow(
+          color: Colors.black12,
+          blurRadius: 8,
+          offset: Offset(0, 3),
+        ),
+      ],
+    ),
+    child: const Row(
+      children: [
+        Icon(
+          Icons.logout,
+          size: 38,
+          color: Colors.red,
+        ),
+        SizedBox(width: 18),
+        Expanded(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'ÇIKIŞ YAP',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF142A4A),
+                ),
+              ),
+              SizedBox(height: 3),
+              Text(
+                'Güvenli şekilde oturumu kapat',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF63738A),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Icon(
+          Icons.chevron_right,
+          size: 32,
+          color: Color(0xFF63738A),
+        ),
+      ],
+    ),
+  ),
+),
+
               ],
             ),
     );
   }
+                
 }
   
 class GirisSayfasi extends StatefulWidget {
@@ -2726,8 +3324,17 @@ class _SikayetEtSayfasiState extends State<SikayetEtSayfasi> {
   }
 }
 
-class KendiIlanlarimSayfasi extends StatelessWidget {
+class KendiIlanlarimSayfasi extends StatefulWidget {
   const KendiIlanlarimSayfasi({super.key});
+
+  @override
+  State<KendiIlanlarimSayfasi> createState() =>
+      _KendiIlanlarimSayfasiState();
+}
+
+class _KendiIlanlarimSayfasiState
+    extends State<KendiIlanlarimSayfasi> {
+  int seciliSekme = 0;
 
   String durumYazisi(String durum) {
     if (durum == 'approved') return 'YAYINDA';
@@ -2860,119 +3467,542 @@ class KendiIlanlarimSayfasi extends StatelessWidget {
       }
     }
   }
-
-  @override
-  Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-
-    if (user == null) {
-      return const Scaffold(
-        body: Center(child: Text('Önce giriş yapmalısınız.')),
-      );
-    }
-
-    final stream = FirebaseFirestore.instance
-        .collection('jobs')
-        .where('ownerUid', isEqualTo: user.uid)
-        .snapshots();
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('Kendi İlanlarım')),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: stream,
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final ilanlar = snapshot.data!.docs;
-
-          if (ilanlar.isEmpty) {
-            return const Center(child: Text('Henüz ilanınız yok.'));
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: ilanlar.length,
-            itemBuilder: (context, index) {
-              final belge = ilanlar[index];
-              final data = belge.data();
-              final durum = bilgi(data['status']);
-              final featured = aktifOneCikan(data);
-
-              return Card(
-                margin: const EdgeInsets.only(bottom: 12),
-                child: Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        bilgi(data['title']),
-                        style: const TextStyle(
-                          fontSize: 19,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(durumYazisi(durum)),
-                      if (featured) ...[
-                        const SizedBox(height: 8),
-                        Text('★ ÖNE ÇIKAN İLAN - ${kalanSure(data)}'),
-                      ],
-                      const SizedBox(height: 12),
-                      if (durum == 'approved' && !featured)
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              oneCikarmaTalebi(context, belge.id, data);
-                            },
-                            icon: const Icon(Icons.star),
-                            label: const Text('ÜCRETLİ ÖNE ÇIKAR'),
-                          ),
-                        ),
-                      const SizedBox(height: 8),
-                      
-                        SizedBox(
-  width: double.infinity,
-  child: ElevatedButton.icon(
-    onPressed: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => IlanDuzenleSayfasi(
-            ilanId: belge.id,
-            data: data,
-          ),
+Future<void> ikinciElIlanSil(
+  BuildContext context,
+  String id,
+) async {
+  final cevap = await showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('İkinci El İlanını Sil'),
+        content: const Text(
+          'Bu ikinci el ilanını silmek istediğinize emin misiniz?',
         ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('VAZGEÇ'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('SİL'),
+          ),
+        ],
       );
     },
-    icon: const Icon(Icons.edit),
-    label: const Text('İLANI DÜZENLE'),
-  ),
-),
-const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton.icon(
-                          onPressed: () {
-                            ilanSil(context, belge.id);
-                          },
-                          icon: const Icon(Icons.delete),
-                          label: const Text('İLANI SİL'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
+  );
+
+  if (cevap != true) return;
+
+  try {
+    await FirebaseFirestore.instance
+        .collection('secondhand_posts')
+        .doc(id)
+        .delete();
+
+    if (context.mounted) {
+      mesaj(context, 'İkinci el ilanı silindi.');
+    }
+  } catch (_) {
+    if (context.mounted) {
+      mesaj(context, 'İkinci el ilanı silinemedi.');
+    }
+  }
+}
+ 
+
+@override
+Widget build(BuildContext context) {
+  final user = FirebaseAuth.instance.currentUser;
+
+  if (user == null) {
+    return const Scaffold(
+      body: Center(
+        child: Text('Önce giriş yapmalısınız.'),
       ),
     );
   }
+
+  final isIlanlariStream = FirebaseFirestore.instance
+      .collection('jobs')
+      .where('ownerUid', isEqualTo: user.uid)
+      .snapshots();
+
+  final ikinciElIlanlariStream = FirebaseFirestore.instance
+      .collection('secondhand_posts')
+      .where('ownerUid', isEqualTo: user.uid)
+      .snapshots();
+
+  return Scaffold(
+    backgroundColor: const Color(0xFFF7F9FC),
+    appBar: AppBar(
+      title: const Text('Kendi İlanlarım'),
+    ),
+    body: Column(
+      children: [
+
+        // İKİ SEKME
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: Container(
+            height: 65,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: const [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 6,
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+
+                // İŞ İLANLARIM
+                Expanded(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () {
+                      setState(() {
+                        seciliSekme = 0;
+                      });
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: seciliSekme == 0
+                            ? const Color(0xFF1976D2)
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment:
+                              MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.work,
+                              color: seciliSekme == 0
+                                  ? Colors.white
+                                  : const Color(0xFF1976D2),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'İş İlanlarım',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: seciliSekme == 0
+                                    ? Colors.white
+                                    : const Color(0xFF1976D2),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // İKİNCİ EL İLANLARIM
+                Expanded(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () {
+                      setState(() {
+                        seciliSekme = 1;
+                      });
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: seciliSekme == 1
+                            ? const Color(0xFF18A957)
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment:
+                              MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.storefront,
+                              color: seciliSekme == 1
+                                  ? Colors.white
+                                  : const Color(0xFF18A957),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'İkinci El İlanlarım',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: seciliSekme == 1
+                                    ? Colors.white
+                                    : const Color(0xFF18A957),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        // SEÇİLEN SEKME
+        Expanded(
+          child: seciliSekme == 0
+
+              // =========================
+              // İŞ İLANLARI
+              // =========================
+              ? StreamBuilder<
+                  QuerySnapshot<Map<String, dynamic>>>(
+                  stream: isIlanlariStream,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+
+                    final ilanlar = snapshot.data!.docs;
+
+                    if (ilanlar.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'Henüz iş ilanınız yok.',
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(12),
+                      itemCount: ilanlar.length,
+                      itemBuilder: (context, index) {
+                        final belge = ilanlar[index];
+                        final data = belge.data();
+
+                        final durum =
+                            bilgi(data['status']);
+
+                        final featured =
+                            aktifOneCikan(data);
+
+                        return Card(
+                          margin:
+                              const EdgeInsets.only(
+                            bottom: 12,
+                          ),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.all(15),
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  bilgi(data['title']),
+                                  style:
+                                      const TextStyle(
+                                    fontSize: 19,
+                                    fontWeight:
+                                        FontWeight.bold,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 8),
+
+                                Text(
+                                  durumYazisi(durum),
+                                ),
+
+                                if (featured) ...[
+                                  const SizedBox(
+                                    height: 8,
+                                  ),
+                                  Text(
+                                    '★ ÖNE ÇIKAN İLAN - ${kalanSure(data)}',
+                                  ),
+                                ],
+
+                                const SizedBox(
+                                  height: 12,
+                                ),
+
+                                if (durum ==
+                                        'approved' &&
+                                    !featured)
+                                  SizedBox(
+                                    width:
+                                        double.infinity,
+                                    child:
+                                        ElevatedButton.icon(
+                                      onPressed: () {
+                                        oneCikarmaTalebi(
+                                          context,
+                                          belge.id,
+                                          data,
+                                        );
+                                      },
+                                      icon: const Icon(
+                                        Icons.star,
+                                      ),
+                                      label: const Text(
+                                        'ÜCRETLİ ÖNE ÇIKAR',
+                                      ),
+                                    ),
+                                  ),
+
+                                const SizedBox(
+                                  height: 8,
+                                ),
+
+                                SizedBox(
+                                  width:
+                                      double.infinity,
+                                  child:
+                                      ElevatedButton.icon(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              IlanDuzenleSayfasi(
+                                            ilanId:
+                                                belge.id,
+                                            data: data,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(
+                                      Icons.edit,
+                                    ),
+                                    label: const Text(
+                                      'İLANI DÜZENLE',
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(
+                                  height: 8,
+                                ),
+
+                                SizedBox(
+                                  width:
+                                      double.infinity,
+                                  child:
+                                      OutlinedButton.icon(
+                                    onPressed: () {
+                                      ilanSil(
+                                        context,
+                                        belge.id,
+                                      );
+                                    },
+                                    icon: const Icon(
+                                      Icons.delete,
+                                    ),
+                                    label: const Text(
+                                      'İLANI SİL',
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                )
+
+              // =========================
+              // İKİNCİ EL İLANLARI
+              // =========================
+              : StreamBuilder<
+                  QuerySnapshot<Map<String, dynamic>>>(
+                  stream: ikinciElIlanlariStream,
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+
+                    final ilanlar = snapshot.data!.docs;
+
+                    if (ilanlar.isEmpty) {
+                      return const Center(
+                        child: Text(
+                          'Henüz ikinci el ilanınız yok.',
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.all(12),
+                      itemCount: ilanlar.length,
+                      itemBuilder: (context, index) {
+                        final belge = ilanlar[index];
+                        final data = belge.data();
+
+                        final resimler =
+                            data['imageUrls'] is List
+                                ? List<String>.from(
+                                    data['imageUrls'],
+                                  )
+                                : <String>[];
+
+                        return Card(
+                          margin:
+                              const EdgeInsets.only(
+                            bottom: 12,
+                          ),
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.all(12),
+                            child: Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius:
+                                          BorderRadius
+                                              .circular(10),
+                                      child:
+                                          resimler.isNotEmpty
+                                              ? Image.network(
+                                                  resimler
+                                                      .first,
+                                                  width: 90,
+                                                  height:
+                                                      90,
+                                                  fit: BoxFit
+                                                      .cover,
+                                                )
+                                              : Container(
+                                                  width: 90,
+                                                  height:
+                                                      90,
+                                                  color:
+                                                      const Color(
+                                                    0xFFE2F7E9,
+                                                  ),
+                                                  child:
+                                                      const Icon(
+                                                    Icons
+                                                        .storefront,
+                                                    color:
+                                                        Color(
+                                                      0xFF18A957,
+                                                    ),
+                                                  ),
+                                                ),
+                                    ),
+
+                                    const SizedBox(
+                                      width: 12,
+                                    ),
+
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment
+                                                .start,
+                                        children: [
+                                          Text(
+                                            bilgi(
+                                              data[
+                                                  'title'],
+                                            ),
+                                            style:
+                                                const TextStyle(
+                                              fontSize:
+                                                  18,
+                                              fontWeight:
+                                                  FontWeight
+                                                      .bold,
+                                            ),
+                                          ),
+
+                                          const SizedBox(
+                                            height: 6,
+                                          ),
+
+                                          Text(
+                                            '${bilgi(data['price'])} TL',
+                                            style:
+                                                const TextStyle(
+                                              color: Color(
+                                                0xFF18A957,
+                                              ),
+                                              fontSize:
+                                                  17,
+                                              fontWeight:
+                                                  FontWeight
+                                                      .bold,
+                                            ),
+                                          ),
+
+                                          const SizedBox(
+                                            height: 5,
+                                          ),
+
+                                          Text(
+                                            '${bilgi(data['city'])} / ${bilgi(data['district'])}',
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(
+                                  height: 12,
+                                ),
+
+                                SizedBox(
+                                  width:
+                                      double.infinity,
+                                  child:
+                                      OutlinedButton.icon(
+                                    onPressed: () {
+                                      ikinciElIlanSil(
+                                        context,
+                                        belge.id,
+                                      );
+                                    },
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                    ),
+                                    label: const Text(
+                                      'İLANI SİL',
+                                      style: TextStyle(
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+        ),
+      ],
+    ),
+  );
+}
 }
 class IlanDuzenleSayfasi extends StatefulWidget {
   final String ilanId;
@@ -6621,20 +7651,63 @@ class IkinciElDetaySayfasi extends StatelessWidget {
 if (bilgi(data['neighborhood']).isNotEmpty)
   Text('Mahalle: ${bilgi(data['neighborhood'])}'),
           
-         if (bilgi(data['mapsLink']).isNotEmpty)
-  TextButton.icon(
-    onPressed: () async {
-      final uri = Uri.tryParse(bilgi(data['mapsLink']));
-      if (uri != null) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
+        TextButton.icon(
+  onPressed: () async {
+    final mapsLink =
+        data['mapsLink']?.toString().trim() ?? '';
+
+    Uri uri;
+
+    if (mapsLink.isNotEmpty) {
+      var link = mapsLink;
+
+      if (!link.startsWith('http://') &&
+          !link.startsWith('https://')) {
+        link = 'https://$link';
       }
-    },
-    icon: const Icon(Icons.location_on),
-    label: const Text('Konumu Haritada Aç'),
-  ), 
+
+      uri = Uri.parse(link);
+    } else {
+      final il =
+          data['city']?.toString().trim() ?? '';
+
+      final ilce =
+          data['district']?.toString().trim() ?? '';
+
+      final mahalle =
+          data['neighborhood']?.toString().trim() ?? '';
+
+      final konumMetni = [
+        il,
+        ilce,
+        mahalle,
+      ].where((e) => e.isNotEmpty).join(' ');
+
+      uri = Uri.https(
+        'www.google.com',
+        '/maps/search/',
+        {
+          'api': '1',
+          'query': konumMetni,
+        },
+      );
+    }
+
+    final acildi = await launchUrl(
+      uri,
+      mode: LaunchMode.externalApplication,
+    );
+
+    if (!acildi && context.mounted) {
+      mesaj(
+        context,
+        'Konum açılamadı.',
+      );
+    }
+  },
+  icon: const Icon(Icons.location_on),
+  label: const Text('Konumu Haritada Aç'),
+), 
 
           const SizedBox(height: 18),
 
