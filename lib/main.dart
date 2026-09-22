@@ -429,6 +429,43 @@ const SizedBox(height: 15),
                   icon: const Icon(Icons.add_business),
                   label: const Text('ÜCRETSİZ İŞ İLANI VER'),
                 ),
+                ElevatedButton.icon(
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const IkinciElSayfasi(),
+      ),
+    );
+  },
+  icon: const Icon(Icons.storefront),
+  label: const Text('İKİNCİ EL'),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: const Color(0xFF18A957),
+    foregroundColor: Colors.white,
+  ),
+),
+
+const SizedBox(height: 10),
+
+ElevatedButton.icon(
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const IkinciElIlanVerSayfasi(),
+      ),
+    );
+  },
+  icon: const Icon(Icons.add_circle_outline),
+  label: const Text('İKİNCİ EL İLANI VER'),
+  style: ElevatedButton.styleFrom(
+    backgroundColor: const Color(0xFF18A957),
+    foregroundColor: Colors.white,
+  ),
+),
+
+
                 const SizedBox(height: 10),
                 ElevatedButton.icon(
                   onPressed: () {
@@ -5918,6 +5955,312 @@ const SizedBox(height: 30),
   }
 }
       
-    
-  
+ class IkinciElSayfasi extends StatelessWidget {
+  const IkinciElSayfasi({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final stream = FirebaseFirestore.instance
+        .collection('secondhand_posts')
+        .where('status', isEqualTo: 'approved')
+        .snapshots();
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F9F6),
+      appBar: AppBar(
+        title: const Text('İkinci El'),
+        backgroundColor: const Color(0xFF18A957),
+        foregroundColor: Colors.white,
+      ),
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: stream,
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(
+              child: Text('İlanlar yüklenemedi.'),
+            );
+          }
+
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          final ilanlar = snapshot.data!.docs;
+
+          if (ilanlar.isEmpty) {
+            return const Center(
+              child: Text(
+                'Henüz ikinci el ilanı yok.',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: ilanlar.length,
+            itemBuilder: (context, index) {
+              final belge = ilanlar[index];
+              final data = belge.data();
+
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Color(0xFFE2F7E9),
+                    child: Icon(
+                      Icons.shopping_bag_outlined,
+                      color: Color(0xFF18A957),
+                    ),
+                  ),
+                  title: Text(
+                    bilgi(data['title']),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${bilgi(data['category'])}\n'
+                    '${bilgi(data['city'])}',
+                  ),
+                  trailing: Text(
+                    '${bilgi(data['price'])} TL',
+                    style: const TextStyle(
+                      color: Color(0xFF18A957),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}   
+ class IkinciElIlanVerSayfasi extends StatefulWidget {
+  const IkinciElIlanVerSayfasi({super.key});
+
+  @override
+  State<IkinciElIlanVerSayfasi> createState() =>
+      _IkinciElIlanVerSayfasiState();
+}
+
+class _IkinciElIlanVerSayfasiState
+    extends State<IkinciElIlanVerSayfasi> {
+  final baslik = TextEditingController();
+  final fiyat = TextEditingController();
+  final konum = TextEditingController();
+  final aciklama = TextEditingController();
+  final telefon = TextEditingController();
+  final whatsapp = TextEditingController();
+
+  String? kategori;
+  bool bekle = false;
+
+  final kategoriler = [
+    'Araç',
+    'Motosiklet',
+    'Telefon',
+    'Bilgisayar',
+    'Elektronik',
+    'Ev Eşyası',
+    'İnşaat Malzemesi',
+    'Giyim',
+    'Hobi',
+    'Diğer',
+  ];
+
+  Future<void> ilanYayinla() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      mesaj(context, 'Önce giriş yapmalısınız.');
+      return;
+    }
+
+    if (baslik.text.trim().isEmpty ||
+        fiyat.text.trim().isEmpty ||
+        konum.text.trim().isEmpty ||
+        aciklama.text.trim().isEmpty ||
+        kategori == null) {
+      mesaj(context, 'Zorunlu alanları doldurun.');
+      return;
+    }
+
+    setState(() {
+      bekle = true;
+    });
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('secondhand_posts')
+          .add({
+        'title': baslik.text.trim(),
+        'category': kategori,
+        'price': fiyat.text.trim(),
+        'city': konum.text.trim(),
+        'description': aciklama.text.trim(),
+        'phone': telefon.text.trim(),
+        'whatsapp': whatsapp.text.trim(),
+        'ownerUid': user.uid,
+        'ownerEmail': user.email ?? '',
+        'status': 'approved',
+        'featured': false,
+        'imageUrls': [],
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      if (!mounted) return;
+
+      mesaj(context, 'İkinci el ilanınız yayınlandı.');
+      Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        mesaj(context, 'İlan yayınlanamadı: $e');
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        bekle = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    baslik.dispose();
+    fiyat.dispose();
+    konum.dispose();
+    aciklama.dispose();
+    telefon.dispose();
+    whatsapp.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F9F6),
+      appBar: AppBar(
+        title: const Text('İkinci El İlanı Ver'),
+        backgroundColor: const Color(0xFF18A957),
+        foregroundColor: Colors.white,
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(18),
+        children: [
+          TextField(
+            controller: baslik,
+            decoration: const InputDecoration(
+              labelText: 'Ürün Başlığı',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          DropdownButtonFormField<String>(
+            value: kategori,
+            decoration: const InputDecoration(
+              labelText: 'Kategori',
+              border: OutlineInputBorder(),
+            ),
+            items: kategoriler
+                .map(
+                  (item) => DropdownMenuItem<String>(
+                    value: item,
+                    child: Text(item),
+                  ),
+                )
+                .toList(),
+            onChanged: (value) {
+              setState(() {
+                kategori = value;
+              });
+            },
+          ),
+
+          const SizedBox(height: 12),
+
+          TextField(
+            controller: fiyat,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Fiyat',
+              suffixText: 'TL',
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          TextField(
+            controller: konum,
+            decoration: const InputDecoration(
+              labelText: 'Şehir / İlçe',
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          TextField(
+            controller: aciklama,
+            maxLines: 5,
+            decoration: const InputDecoration(
+              labelText: 'Ürün Açıklaması',
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          TextField(
+            controller: telefon,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'Telefon (isteğe bağlı)',
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          TextField(
+            controller: whatsapp,
+            keyboardType: TextInputType.phone,
+            decoration: const InputDecoration(
+              labelText: 'WhatsApp (isteğe bağlı)',
+              border: OutlineInputBorder(),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          ElevatedButton.icon(
+            onPressed: bekle ? null : ilanYayinla,
+            icon: const Icon(Icons.publish),
+            label: Text(
+              bekle
+                  ? 'YAYINLANIYOR...'
+                  : 'İKİNCİ EL İLANINI YAYINLA',
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF18A957),
+              foregroundColor: Colors.white,
+              minimumSize: const Size(double.infinity, 55),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+} 
 
