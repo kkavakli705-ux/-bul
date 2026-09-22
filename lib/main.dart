@@ -6060,6 +6060,8 @@ class _IkinciElIlanVerSayfasiState
   final aciklama = TextEditingController();
   final telefon = TextEditingController();
   final whatsapp = TextEditingController();
+  final ImagePicker _ikinciElImagePicker = ImagePicker();
+final List<XFile> _ikinciElFotograflar = [];
 
   String? kategori;
   bool bekle = false;
@@ -6076,7 +6078,50 @@ class _IkinciElIlanVerSayfasiState
     'Hobi',
     'Diğer',
   ];
+Future<void> ikinciElGaleridenFotografSec() async {
+  if (_ikinciElFotograflar.length >= 10) {
+    mesaj(context, 'En fazla 10 fotoğraf ekleyebilirsiniz.');
+    return;
+  }
 
+  final List<XFile> fotograflar =
+      await _ikinciElImagePicker.pickMultiImage(
+    imageQuality: 75,
+  );
+
+  if (fotograflar.isNotEmpty) {
+    setState(() {
+      final kalan = 10 - _ikinciElFotograflar.length;
+
+      _ikinciElFotograflar.addAll(
+        fotograflar.take(kalan),
+      );
+    });
+  }
+}
+  Future<void> ikinciElKameradanFotografCek() async {
+  if (_ikinciElFotograflar.length >= 10) {
+    mesaj(context, 'En fazla 10 fotoğraf ekleyebilirsiniz.');
+    return;
+  }
+
+  final XFile? fotograf =
+      await _ikinciElImagePicker.pickImage(
+    source: ImageSource.camera,
+    imageQuality: 75,
+  );
+
+  if (fotograf != null) {
+    setState(() {
+      _ikinciElFotograflar.add(fotograf);
+    });
+  }
+}
+  void ikinciElFotografSil(int index) {
+  setState(() {
+    _ikinciElFotograflar.removeAt(index);
+  });
+}
   Future<void> ilanYayinla() async {
     final user = FirebaseAuth.instance.currentUser;
 
@@ -6097,7 +6142,24 @@ class _IkinciElIlanVerSayfasiState
     setState(() {
       bekle = true;
     });
+final List<String> fotografUrlListesi = [];
 
+for (int i = 0; i < _ikinciElFotograflar.length; i++) {
+  final fotograf = _ikinciElFotograflar[i];
+
+  final ref = FirebaseStorage.instance.ref().child(
+    'secondhand_images/${user.uid}/'
+    '${DateTime.now().microsecondsSinceEpoch}_$i.jpg',
+  );
+
+  await ref.putFile(
+    File(fotograf.path),
+  );
+
+  final url = await ref.getDownloadURL();
+
+  fotografUrlListesi.add(url);
+}
     try {
       await FirebaseFirestore.instance
           .collection('secondhand_posts')
@@ -6113,7 +6175,7 @@ class _IkinciElIlanVerSayfasiState
         'ownerEmail': user.email ?? '',
         'status': 'approved',
         'featured': false,
-        'imageUrls': [],
+        'imageUrls': fotografUrlListesi,
         'createdAt': FieldValue.serverTimestamp(),
       });
 
@@ -6241,7 +6303,83 @@ class _IkinciElIlanVerSayfasiState
               border: OutlineInputBorder(),
             ),
           ),
+          
+Row(
+  children: [
+    Expanded(
+      child: ElevatedButton.icon(
+        onPressed: ikinciElGaleridenFotografSec,
+        icon: const Icon(Icons.photo_library),
+        label: const Text('GALERİDEN'),
+      ),
+    ),
+    const SizedBox(width: 10),
+    Expanded(
+      child: ElevatedButton.icon(
+        onPressed: ikinciElKameradanFotografCek,
+        icon: const Icon(Icons.camera_alt),
+        label: const Text('KAMERA'),
+      ),
+    ),
+  ],
+),
 
+const SizedBox(height: 10),
+
+Text(
+  'Seçilen fotoğraf: ${_ikinciElFotograflar.length}/10',
+  style: const TextStyle(
+    fontWeight: FontWeight.bold,
+  ),
+),
+          if (_ikinciElFotograflar.isNotEmpty) ...[
+  const SizedBox(height: 10),
+
+  SizedBox(
+    height: 95,
+    child: ListView.separated(
+      scrollDirection: Axis.horizontal,
+      itemCount: _ikinciElFotograflar.length,
+      separatorBuilder: (_, __) => const SizedBox(width: 8),
+      itemBuilder: (context, index) {
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.file(
+                File(_ikinciElFotograflar[index].path),
+                width: 95,
+                height: 95,
+                fit: BoxFit.cover,
+              ),
+            ),
+            Positioned(
+              right: -4,
+              top: -4,
+              child: GestureDetector(
+                onTap: () => ikinciElFotografSil(index),
+                child: Container(
+                  width: 25,
+                  height: 25,
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 17,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    ),
+  ),
+],
           const SizedBox(height: 20),
 
           ElevatedButton.icon(
