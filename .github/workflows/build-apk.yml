@@ -77,7 +77,7 @@ jobs:
       - name: APK yukle
         uses: actions/upload-artifact@v4
         with:
-          name: is-bul-apk
+          name: gozat360-apk
           
           path: build/app/outputs/flutter-apk/app-release.apk
       - name: AAB yukle
