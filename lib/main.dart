@@ -10183,7 +10183,9 @@ SizedBox(
     ),
   ),
 ),
-    );
+          ],
+    ),
+  );
   }
 } 
 class IkinciElDetaySayfasi extends StatelessWidget {
