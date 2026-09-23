@@ -218,33 +218,24 @@ void dispose() {
 
  Future<void> girisAc() async {
   if (!mounted) return;
-   await _videoController.pause();
-await _videoController.setVolume(0.0);
 
   final girisYapildi = await Navigator.push<bool>(
-  context,
-  PageRouteBuilder(
-    pageBuilder: (_, __, ___) => const GirisSayfasi(),
-    transitionDuration: Duration.zero,
-    reverseTransitionDuration: Duration.zero,
-  ),
-);
+    context,
+    PageRouteBuilder(
+      pageBuilder: (_, __, ___) => const GirisSayfasi(),
+      transitionDuration: Duration.zero,
+      reverseTransitionDuration: Duration.zero,
+    ),
+  );
 
   if (!mounted) return;
 
   if (girisYapildi == true ||
       FirebaseAuth.instance.currentUser != null) {
-    await _videoController.pause();
-    await _videoController.setVolume(0.0);
     await hesapKontrol();
-  } else {
-    await _videoController.setVolume(1.0);
-
-    if (!_videoController.value.isPlaying) {
-      await _videoController.play();
-    }
   }
-} 
+}
+  
   
 Future<void> cikis() async {
   await FirebaseAuth.instance.signOut();
@@ -257,9 +248,7 @@ Future<void> cikis() async {
     kontrol = false;
   });
 
-  await _videoController.seekTo(Duration.zero);
-  await _videoController.setVolume(1.0);
-  await _videoController.play();
+  
 }
   @override
   Widget build(BuildContext context) {
@@ -312,25 +301,15 @@ Future<void> cikis() async {
     actions: [
       IconButton(
   icon: const Icon(Icons.notifications),
-     onPressed: () async {
-  await _videoController.pause();
-  await _videoController.setVolume(0.0);
-
+     
+       onPressed: () async {
   await Navigator.push(
     context,
     MaterialPageRoute(
       builder: (_) => const BildirimlerSayfasi(),
     ),
   );
-
-  if (!mounted) return;
-
-  if (FirebaseAuth.instance.currentUser == null) {
-    await _videoController.setVolume(1.0);
-    await _videoController.play();
-  }
 }, 
-        
       ),
     ],
   ),
