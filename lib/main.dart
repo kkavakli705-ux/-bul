@@ -2138,129 +2138,429 @@ mapsLink.dispose();
     return Scaffold(
       appBar: AppBar(title: const Text('Ücretsiz İş İlanı Ver')),
       body: ListView(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
         children: [
-          const Card(
-            child: Padding(
-              padding: EdgeInsets.all(14),
-              child: Text(
-                'Normal iş ilanı vermek ücretsizdir. İlan yayınlandıktan sonra isterseniz ücretli olarak öne çıkarabilirsiniz.',
-                textAlign: TextAlign.center,
+         Container(
+  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+  decoration: BoxDecoration(
+    color: const Color(0xFFEAF4FF),
+    borderRadius: BorderRadius.circular(16),
+    border: Border.all(
+      color: const Color(0xFF2196F3).withOpacity(0.20),
+    ),
+  ),
+  child: const Row(
+    children: [
+      CircleAvatar(
+        radius: 20,
+        backgroundColor: Color(0xFF2196F3),
+        child: Icon(
+          Icons.info_outline,
+          color: Colors.white,
+          size: 24,
+        ),
+      ),
+      SizedBox(width: 12),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Normal iş ilanı vermek ücretsizdir.',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF102A56),
               ),
             ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: baslik,
-            decoration: const InputDecoration(
-              labelText: 'İş başlığı',
-              border: OutlineInputBorder(),
+            SizedBox(height: 3),
+            Text(
+              'İlanınızı isterseniz daha sonra öne çıkarabilirsiniz.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF64748B),
+              ),
             ),
-          ),
+          ],
+        ),
+      ),
+    ],
+  ),
+), 
           const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            value: kategori,
-            decoration: const InputDecoration(
-              labelText: 'Meslek / Kategori',
-              border: OutlineInputBorder(),
-            ),
-            items: kategoriler
-                .map(
-                  (item) => DropdownMenuItem<String>(
-                    value: item,
-                    child: Text(item),
-                  ),
-                )
-                .toList(),
-            onChanged: (value) {
-              setState(() {
-                kategori = value;
-              });
-            },
-          ),
+          SizedBox(
+  height: 64,
+  child: TextField(
+    controller: baslik,
+    decoration: InputDecoration(
+      labelText: 'İş başlığı',
+      hintText: 'Örn. Garson, Yazılım Uzmanı...',
+      prefixIcon: const Icon(
+        Icons.work_outline,
+        color: Color(0xFF087CF0),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
+  ),
+),
           const SizedBox(height: 12),
-          TextField(
-            controller: firma,
-            decoration: const InputDecoration(
-              labelText: 'Firma / İşveren',
-              border: OutlineInputBorder(),
-            ),
+         SizedBox(
+  height: 64,
+  child: DropdownButtonFormField<String>(
+    value: kategori,
+    decoration: InputDecoration(
+      labelText: 'Meslek / Kategori',
+      prefixIcon: const Icon(
+        Icons.grid_view_rounded,
+        color: Color(0xFF087CF0),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
+    items: kategoriler
+        .map(
+          (item) => DropdownMenuItem<String>(
+            value: item,
+            child: Text(item),
           ),
+        )
+        .toList(),
+    onChanged: (value) {
+      setState(() {
+        kategori = value;
+      });
+    },
+  ),
+), 
           const SizedBox(height: 12),
-          TextField(
-            controller: konum,
-            decoration: const InputDecoration(
-              labelText: 'Şehir / İlçe',
-              border: OutlineInputBorder(),
-            ),
-          ),
+         SizedBox(
+  height: 64,
+  child: TextField(
+    controller: firma,
+    decoration: InputDecoration(
+      labelText: 'Firma / İşveren',
+      hintText: 'Firma adını girin',
+      prefixIcon: const Icon(
+        Icons.business_outlined,
+        color: Color(0xFF087CF0),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
+  ),
+), 
+          const SizedBox(height: 12),
+          SizedBox(
+  height: 64,
+  child: TextField(
+    controller: konum,
+    decoration: InputDecoration(
+      labelText: 'Şehir / İlçe',
+      hintText: 'Şehir / İlçe girin',
+      prefixIcon: const Icon(
+        Icons.location_on_outlined,
+        color: Color(0xFF087CF0),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
+  ),
+),
         const SizedBox(height: 12),
-TextField(
-  controller: adres,
-  decoration: const InputDecoration(
-    labelText: 'Açık Adres',
-    border: OutlineInputBorder(),
+SizedBox(
+  height: 64,
+  child: TextField(
+    controller: adres,
+    decoration: InputDecoration(
+      labelText: 'Açık Adres',
+      hintText: 'Açık adresi girin',
+      prefixIcon: const Icon(
+        Icons.home_outlined,
+        color: Color(0xFF087CF0),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
   ),
 ),
 const SizedBox(height: 12),
-TextField(
-  controller: mapsLink,
-  decoration: const InputDecoration(
-    labelText: 'Google Maps Konum Linki (isteğe bağlı)',
-    border: OutlineInputBorder(),
+
+SizedBox(
+  height: 64,
+  child: TextField(
+    controller: mapsLink,
+    decoration: InputDecoration(
+      labelText: 'Google Maps Konum Linki (isteğe bağlı)',
+      hintText: 'https://maps.google.com/...',
+      prefixIcon: const Icon(
+        Icons.link,
+        color: Color(0xFF087CF0),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
   ),
-),  
+),          const SizedBox(height: 12),
+          SizedBox(
+  height: 64,
+  child: TextField(
+    controller: telefon,
+    keyboardType: TextInputType.phone,
+    decoration: InputDecoration(
+      labelText: 'Telefon (isteğe bağlı)',
+      hintText: '0 (5XX) XXX XX XX',
+      prefixIcon: const Icon(
+        Icons.phone_outlined,
+        color: Color(0xFF087CF0),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
+  ),
+),
           const SizedBox(height: 12),
-          TextField(
-            controller: telefon,
-            keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(
-            labelText: 'Telefon isteğe bağlı',  
-              border: OutlineInputBorder(),
-            ),
-          ),
+          SizedBox(
+  height: 64,
+  child: TextField(
+    controller: whatsapp,
+    keyboardType: TextInputType.phone,
+    decoration: InputDecoration(
+      labelText: 'WhatsApp (isteğe bağlı)',
+      hintText: '0 (5XX) XXX XX XX',
+      prefixIcon: const Icon(
+        Icons.chat_outlined,
+        color: Color(0xFF25D366),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
+  ),
+),
           const SizedBox(height: 12),
-          TextField(
-            controller: whatsapp,
-            keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(
-              labelText: 'WhatsApp isteğe bağlı',
-              border: OutlineInputBorder(),
-            ),
-          ),
+          SizedBox(
+  height: 64,
+  child: TextField(
+    controller: ucret,
+    decoration: InputDecoration(
+      labelText: 'Ücret / Maaş',
+      hintText: 'Örn. 25.000 TL, Pazarlık usulü...',
+      prefixIcon: const Icon(
+        Icons.currency_lira,
+        color: Color(0xFF087CF0),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
+  ),
+),
           const SizedBox(height: 12),
-          TextField(
-            controller: ucret,
-            decoration: const InputDecoration(
-              labelText: 'Ücret / Maaş',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: aciklama,
-            maxLines: 5,
-            decoration: const InputDecoration(
-              labelText: 'İlan açıklaması',
-              border: OutlineInputBorder(),
-            ),
-          ),
+          SizedBox(
+  height: 130,
+  child: TextField(
+    controller: aciklama,
+    maxLines: 5,
+    maxLength: 1000,
+    decoration: InputDecoration(
+      labelText: 'İş Açıklaması',
+      hintText: 'İş tanımı, çalışma koşulları, aranan nitelikler vb.',
+      prefixIcon: const Padding(
+        padding: EdgeInsets.only(bottom: 65),
+        child: Icon(
+          Icons.description_outlined,
+          color: Color(0xFF087CF0),
+        ),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      alignLabelWithHint: true,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
+  ),
+),
           const SizedBox(height: 15),
           Row(
   children: [
     Expanded(
-      child: ElevatedButton.icon(
-        onPressed: galeridenFotografSec,
-        icon: const Icon(Icons.photo_library),
-        label: const Text('GALERİDEN'),
+      child: SizedBox(
+        height: 52,
+        child: OutlinedButton.icon(
+          onPressed: galeridenFotografSec,
+          icon: const Icon(
+            Icons.photo_library_outlined,
+            color: Color(0xFF087CF0),
+          ),
+          label: const Text(
+            'GALERİDEN',
+            style: TextStyle(
+              color: Color(0xFF087CF0),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          style: OutlinedButton.styleFrom(
+            backgroundColor: Colors.white,
+            side: const BorderSide(
+              color: Color(0xFFD8E0EC),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
       ),
     ),
-    const SizedBox(width: 10),
+    const SizedBox(width: 12),
     Expanded(
-      child: ElevatedButton.icon(
-        onPressed: kameradanFotografCek,
-        icon: const Icon(Icons.camera_alt),
-        label: const Text('KAMERA'),
+      child: SizedBox(
+        height: 52,
+        child: OutlinedButton.icon(
+          onPressed: kameradanFotografCek,
+          icon: const Icon(
+            Icons.camera_alt_outlined,
+            color: Color(0xFF087CF0),
+          ),
+          label: const Text(
+            'KAMERA',
+            style: TextStyle(
+              color: Color(0xFF087CF0),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          style: OutlinedButton.styleFrom(
+            backgroundColor: Colors.white,
+            side: const BorderSide(
+              color: Color(0xFFD8E0EC),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
       ),
     ),
   ],
@@ -2323,13 +2623,33 @@ if (_secilenFotograflar.isNotEmpty) ...[
   ),
 ],
 const SizedBox(height: 15),
-          ElevatedButton.icon(
-            onPressed: bekle ? null : gonder,
-            icon: const Icon(Icons.send),
-            label: Text(
-              bekle ? 'GÖNDERİLİYOR...' : 'ÜCRETSİZ İLANI YAYINLA',
-            ),
-          ),
+          SizedBox(
+  width: double.infinity,
+  height: 56,
+  child: ElevatedButton.icon(
+    onPressed: bekle ? null : gonder,
+    icon: const Icon(
+      Icons.send_rounded,
+      color: Colors.white,
+    ),
+    label: Text(
+      bekle ? 'GÖNDERİLİYOR...' : 'İLANI YAYINLA',
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
+      ),
+    ),
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xFF087CF0),
+      foregroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      elevation: 0,
+    ),
+  ),
+),
         ],
       ),
     );
@@ -9343,10 +9663,41 @@ mapsLink.dispose();
         backgroundColor: const Color(0xFF18A957),
         foregroundColor: Colors.white,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(18),
+    
+        body: ListView(
+  padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
+  
         children: [
           TextField(
+            SizedBox(
+  height: 64,
+  child: TextField(
+    controller: baslik,
+    decoration: InputDecoration(
+      labelText: 'Ürün Başlığı',
+      hintText: 'Örn. iPhone 15, Koltuk Takımı...',
+      prefixIcon: const Icon(
+        Icons.shopping_bag_outlined,
+        color: Color(0xFF18A957),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
+  ),
+),
             controller: baslik,
             decoration: const InputDecoration(
               labelText: 'Ürün Başlığı',
@@ -9356,125 +9707,364 @@ mapsLink.dispose();
           const SizedBox(height: 12),
 
           DropdownButtonFormField<String>(
-            value: kategori,
-            decoration: const InputDecoration(
-              labelText: 'Kategori',
-              border: OutlineInputBorder(),
-            ),
-            items: kategoriler
-                .map(
-                  (item) => DropdownMenuItem<String>(
-                    value: item,
-                    child: Text(item),
-                  ),
-                )
-                .toList(),
-            onChanged: (value) {
-              setState(() {
-                kategori = value;
-              });
-            },
-          ),
+  value: kategori,
+  decoration: InputDecoration(
+    labelText: 'Kategori',
+    hintText: 'Kategori seçin',
+    prefixIcon: const Icon(
+      Icons.category_outlined,
+      color: Color(0xFF18A957),
+    ),
+    filled: true,
+    fillColor: Colors.white,
+    contentPadding: const EdgeInsets.symmetric(
+      horizontal: 14,
+      vertical: 14,
+    ),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(
+        color: Color(0xFFD8E0EC),
+      ),
+    ),
+  ),
+  items: kategoriler
+      .map(
+        (item) => DropdownMenuItem<String>(
+          value: item,
+          child: Text(item),
+        ),
+      )
+      .toList(),
+  onChanged: (value) {
+    setState(() {
+      kategori = value;
+    });
+  },
+),
 
           const SizedBox(height: 12),
 
-          TextField(
-            controller: fiyat,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Fiyat',
-              suffixText: 'TL',
-              border: OutlineInputBorder(),
-            ),
-          ),
+          SizedBox(
+  height: 64,
+  child: TextField(
+    controller: fiyat,
+    keyboardType: TextInputType.number,
+    decoration: InputDecoration(
+      labelText: 'Fiyat',
+      hintText: 'Örn. 15.000',
+      prefixIcon: const Icon(
+        Icons.payments_outlined,
+        color: Color(0xFF18A957),
+      ),
+      suffixText: 'TL',
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
+  ),
+),
 
           const SizedBox(height: 12),
 
-          TextField(
-            controller: konum,
-            decoration: const InputDecoration(
-              labelText: 'İl',
-              border: OutlineInputBorder(),
-            ),
-          ),
+          SizedBox(
+  height: 64,
+  child: TextField(
+    controller: konum,
+    decoration: InputDecoration(
+      labelText: 'İl',
+      hintText: 'Örn. Balıkesir',
+      prefixIcon: const Icon(
+        Icons.location_city_outlined,
+        color: Color(0xFF18A957),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
+  ),
+),
 
           const SizedBox(height: 12),
-          TextField(
-  controller: ilce,
-  decoration: const InputDecoration(
-    labelText: 'İlçe',
-    border: OutlineInputBorder(),
+          SizedBox(
+  height: 64,
+  child: TextField(
+    controller: ilce,
+    decoration: InputDecoration(
+      labelText: 'İlçe',
+      hintText: 'Örn. Edremit',
+      prefixIcon: const Icon(
+        Icons.location_on_outlined,
+        color: Color(0xFF18A957),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
   ),
 ),
 
 const SizedBox(height: 12),
 
-TextField(
-  controller: mahalle,
-  decoration: const InputDecoration(
-    labelText: 'Mahalle (isteğe bağlı)',
-    border: OutlineInputBorder(),
+
+SizedBox(
+  height: 64,
+  child: TextField(
+    controller: mahalle,
+    decoration: InputDecoration(
+      labelText: 'Mahalle (isteğe bağlı)',
+      hintText: 'Örn. Akçay Mahallesi',
+      prefixIcon: const Icon(
+        Icons.home_outlined,
+        color: Color(0xFF18A957),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
+  ),
+),
+const SizedBox(height: 12),
+
+SizedBox(
+  height: 64,
+  child: TextField(
+    controller: mapsLink,
+    decoration: InputDecoration(
+      labelText: 'Google Maps Konum Linki (isteğe bağlı)',
+      hintText: 'Konum bağlantısını yapıştırın',
+      prefixIcon: const Icon(
+        Icons.map_outlined,
+        color: Color(0xFF18A957),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
   ),
 ),
 
 const SizedBox(height: 12),
 
-TextField(
-  controller: mapsLink,
-  decoration: const InputDecoration(
-    labelText: 'Google Maps Konum Linki (isteğe bağlı)',
-    border: OutlineInputBorder(),
+          SizedBox(
+  height: 130,
+  child: TextField(
+    controller: aciklama,
+    maxLines: 5,
+    maxLength: 1000,
+    decoration: InputDecoration(
+      labelText: 'Ürün Açıklaması',
+      hintText: 'Ürünün durumu, özellikleri ve detaylarını yazın',
+      prefixIcon: const Padding(
+        padding: EdgeInsets.only(bottom: 65),
+        child: Icon(
+          Icons.description_outlined,
+          color: Color(0xFF18A957),
+        ),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      alignLabelWithHint: true,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
   ),
 ),
 
+          const SizedBox(height: 12),
+
+          SizedBox(
+  height: 64,
+  child: TextField(
+    controller: telefon,
+    keyboardType: TextInputType.phone,
+    decoration: InputDecoration(
+      labelText: 'Telefon (isteğe bağlı)',
+      hintText: 'Örn. 05XX XXX XX XX',
+      prefixIcon: const Icon(
+        Icons.phone_outlined,
+        color: Color(0xFF18A957),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
+  ),
+),
+
+          const SizedBox(height: 12),
 const SizedBox(height: 12),
 
-          TextField(
-            controller: aciklama,
-            maxLines: 5,
-            decoration: const InputDecoration(
-              labelText: 'Ürün Açıklaması',
-              border: OutlineInputBorder(),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          TextField(
-            controller: telefon,
-            keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(
-              labelText: 'Telefon (isteğe bağlı)',
-              border: OutlineInputBorder(),
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          TextField(
-            controller: whatsapp,
-            keyboardType: TextInputType.phone,
-            decoration: const InputDecoration(
-              labelText: 'WhatsApp (isteğe bağlı)',
-              border: OutlineInputBorder(),
-            ),
-          ),
+SizedBox(
+  height: 64,
+  child: TextField(
+    controller: whatsapp,
+    keyboardType: TextInputType.phone,
+    decoration: InputDecoration(
+      labelText: 'WhatsApp (isteğe bağlı)',
+      hintText: 'Örn. 05XX XXX XX XX',
+      prefixIcon: const Icon(
+        Icons.chat_outlined,
+        color: Color(0xFF18A957),
+      ),
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 14,
+        vertical: 14,
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(
+          color: Color(0xFFD8E0EC),
+        ),
+      ),
+    ),
+  ),
+),
           
 Row(
   children: [
     Expanded(
-      child: ElevatedButton.icon(
-        onPressed: ikinciElGaleridenFotografSec,
-        icon: const Icon(Icons.photo_library),
-        label: const Text('GALERİDEN'),
+      child: SizedBox(
+        height: 52,
+        child: OutlinedButton.icon(
+          onPressed: ikinciElGaleridenFotografSec,
+          icon: const Icon(
+            Icons.photo_library_outlined,
+            color: Color(0xFF18A957),
+          ),
+          label: const Text(
+            'GALERİDEN',
+            style: TextStyle(
+              color: Color(0xFF18A957),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          style: OutlinedButton.styleFrom(
+            backgroundColor: Colors.white,
+            side: const BorderSide(
+              color: Color(0xFFD8E0EC),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
       ),
     ),
-    const SizedBox(width: 10),
+    const SizedBox(width: 12),
     Expanded(
-      child: ElevatedButton.icon(
-        onPressed: ikinciElKameradanFotografCek,
-        icon: const Icon(Icons.camera_alt),
-        label: const Text('KAMERA'),
+      child: SizedBox(
+        height: 52,
+        child: OutlinedButton.icon(
+          onPressed: ikinciElKameradanFotografCek,
+          icon: const Icon(
+            Icons.camera_alt_outlined,
+            color: Color(0xFF18A957),
+          ),
+          label: const Text(
+            'KAMERA',
+            style: TextStyle(
+              color: Color(0xFF18A957),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          style: OutlinedButton.styleFrom(
+            backgroundColor: Colors.white,
+            side: const BorderSide(
+              color: Color(0xFFD8E0EC),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
       ),
     ),
   ],
@@ -9482,10 +10072,31 @@ Row(
 
 const SizedBox(height: 10),
 
-Text(
-  'Seçilen fotoğraf: ${_ikinciElFotograflar.length}/10',
-  style: const TextStyle(
-    fontWeight: FontWeight.bold,
+Container(
+  padding: const EdgeInsets.symmetric(
+    horizontal: 12,
+    vertical: 9,
+  ),
+  decoration: BoxDecoration(
+    color: const Color(0xFFEAF8F0),
+    borderRadius: BorderRadius.circular(10),
+  ),
+  child: Row(
+    children: [
+      const Icon(
+        Icons.photo_library_outlined,
+        size: 20,
+        color: Color(0xFF18A957),
+      ),
+      const SizedBox(width: 8),
+      Text(
+        'Seçilen fotoğraf: ${_ikinciElFotograflar.length}/10',
+        style: const TextStyle(
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF18A957),
+        ),
+      ),
+    ],
   ),
 ),
           if (_ikinciElFotograflar.isNotEmpty) ...[
@@ -9536,24 +10147,47 @@ Text(
     ),
   ),
 ],
-          const SizedBox(height: 20),
+          
+      const SizedBox(height: 20),
 
-          ElevatedButton.icon(
-            onPressed: bekle ? null : ilanYayinla,
-            icon: const Icon(Icons.publish),
-            label: Text(
-              bekle
-                  ? 'YAYINLANIYOR...'
-                  : 'İKİNCİ EL İLANINI YAYINLA',
+SizedBox(
+  width: double.infinity,
+  height: 55,
+  child: ElevatedButton.icon(
+    onPressed: bekle ? null : ilanYayinla,
+    icon: bekle
+        ? const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.white,
             ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF18A957),
-              foregroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 55),
-            ),
+          )
+        : const Icon(
+            Icons.publish_outlined,
+            color: Colors.white,
           ),
-        ],
+    label: Text(
+      bekle ? 'YAYINLANIYOR...' : 'İKİNCİ EL İLANINI YAYINLA',
+      style: const TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
       ),
+    ),
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xFF18A957),
+      foregroundColor: Colors.white,
+      disabledBackgroundColor: const Color(0xFF18A957),
+      minimumSize: const Size(double.infinity, 55),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+    ),
+  ),
+),
     );
   }
 } 
