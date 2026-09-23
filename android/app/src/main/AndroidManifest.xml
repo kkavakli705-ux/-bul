@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
-        android:label="İş Bul"
+        android:label="Gözat360"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
