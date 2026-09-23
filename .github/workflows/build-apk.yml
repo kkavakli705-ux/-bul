@@ -39,6 +39,7 @@ jobs:
           find android/app/src/main/kotlin -name MainActivity.kt -exec sed -i 's/^package .*/package com.gozat360.app/' {} \;
           sed -i 's/-all.zip/-bin.zip/' android/gradle/wrapper/gradle-wrapper.properties
           flutter pub get
+          dart run flutter_launcher_icons
 
       - name: Debug anahtari olustur
         run: |
