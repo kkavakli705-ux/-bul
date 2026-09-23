@@ -32,6 +32,8 @@ jobs:
           fi
           rm -rf android
           flutter create --platforms=android .
+          sed -i 's/android:label="[^"]*"/android:label="Gözat360"/' android/app/src/main/AndroidManifest.xml
+          
           sed -i 's/-all.zip/-bin.zip/' android/gradle/wrapper/gradle-wrapper.properties
           flutter pub get
 
@@ -56,6 +58,8 @@ jobs:
             -keystore ~/.android/debug.keystore \
             -storepass android \
             -keypass android
+      
+        
 
       - name: APK olustur
         run: |
@@ -67,9 +71,18 @@ jobs:
             fi
           done
           exit 1
+      - name: AAB olustur
+        run: flutter build appbundle --release 
 
       - name: APK yukle
         uses: actions/upload-artifact@v4
         with:
           name: is-bul-apk
+          
           path: build/app/outputs/flutter-apk/app-release.apk
+      - name: AAB yukle
+     
+        uses: actions/upload-artifact@v4
+        with:
+          name: gozat360-aab
+          path: build/app/outputs/bundle/release/app-release.aab
