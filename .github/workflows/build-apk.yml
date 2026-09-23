@@ -31,9 +31,12 @@ jobs:
             cp Pubspec.yaml pubspec.yaml
           fi
           rm -rf android
+         
           flutter create --platforms=android .
           sed -i 's/android:label="[^"]*"/android:label="Gözat360"/' android/app/src/main/AndroidManifest.xml
-          
+          sed -i 's/namespace = ".*"/namespace = "com.gozat360.app"/' android/app/build.gradle.kts
+          sed -i 's/applicationId = ".*"/applicationId = "com.gozat360.app"/' android/app/build.gradle.kts
+          find android/app/src/main/kotlin -name MainActivity.kt -exec sed -i 's/^package .*/package com.gozat360.app/' {} \;
           sed -i 's/-all.zip/-bin.zip/' android/gradle/wrapper/gradle-wrapper.properties
           flutter pub get
 
