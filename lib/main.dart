@@ -9668,7 +9668,7 @@ mapsLink.dispose();
   padding: const EdgeInsets.fromLTRB(16, 12, 16, 80),
   
         children: [
-          TextField(
+        
             SizedBox(
   height: 64,
   child: TextField(
@@ -9698,12 +9698,7 @@ mapsLink.dispose();
     ),
   ),
 ),
-            controller: baslik,
-            decoration: const InputDecoration(
-              labelText: 'Ürün Başlığı',
-              border: OutlineInputBorder(),
-            ),
-          ),
+            
           const SizedBox(height: 12),
 
           DropdownButtonFormField<String>(
