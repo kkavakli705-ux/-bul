@@ -4590,7 +4590,7 @@ class YonetimPaneli extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => const BekleyenIlanlarSayfasi(),
+                    builder: (_) => const IsIlanlariYonetSayfasi(),
                   ),
                 );
               },
@@ -4832,6 +4832,43 @@ class IkinciElYonetimSayfasi extends StatelessWidget {
       }
     }
   }
+  Future<void> oneCikarmaDegistir(
+  BuildContext context,
+  String id,
+  bool oneCikan,
+) async {
+  try {
+    final ref = FirebaseFirestore.instance
+        .collection('secondhand_posts')
+        .doc(id);
+
+    if (oneCikan) {
+      await ref.update({
+        'featured': false,
+        'featuredUntil': FieldValue.delete(),
+        'featuredDays': FieldValue.delete(),
+      });
+
+      if (context.mounted) {
+        mesaj(context, 'İkinci el ilanı öne çıkarmadan kaldırıldı.');
+      }
+    } else {
+      await ref.update({
+        'featured': true,
+        'featuredUntil': FieldValue.delete(),
+        'featuredDays': FieldValue.delete(),
+      });
+
+      if (context.mounted) {
+        mesaj(context, 'İkinci el ilanı öne çıkarıldı.');
+      }
+    }
+  } catch (_) {
+    if (context.mounted) {
+      mesaj(context, 'Öne çıkarma işlemi yapılamadı.');
+    }
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -4877,6 +4914,7 @@ class IkinciElYonetimSayfasi extends StatelessWidget {
 
               final durum =
                   data['status']?.toString() ?? 'pending';
+              final featured = aktifOneCikan(data);
 
               final resimler = data['imageUrls'] is List
                   ? List<String>.from(
@@ -4944,6 +4982,53 @@ class IkinciElYonetimSayfasi extends StatelessWidget {
                             Text(
                               'Durum: $durum',
                             ),
+                            Text(
+  'Satıcı: ${bilgi(data['sellerName'])}',
+),
+Text(
+  'E-posta: ${bilgi(data['ownerEmail'])}',
+),
+Text(
+  'UID: ${bilgi(data['ownerUid'])}',
+  style: const TextStyle(
+    fontSize: 11,
+    color: Colors.grey,
+  ),
+),
+                            Text(
+  featured
+      ? 'Öne Çıkarma: AKTİF - ${kalanSure(data)}'
+      : 'Öne Çıkarma: KAPALI',
+  style: TextStyle(
+    fontWeight: FontWeight.bold,
+    color: featured
+        ? const Color(0xFF18A957)
+        : Colors.grey,
+  ),
+),
+
+const SizedBox(height: 6),
+
+SizedBox(
+  width: double.infinity,
+  child: ElevatedButton.icon(
+    onPressed: () {
+      oneCikarmaDegistir(
+        context,
+        belge.id,
+        featured,
+      );
+    },
+    icon: Icon(
+      featured ? Icons.star : Icons.star_border,
+    ),
+    label: Text(
+      featured
+          ? 'ÖNE ÇIKARMAYI KALDIR'
+          : 'ÖNE ÇIKAR',
+    ),
+  ),
+),
 
                             const SizedBox(height: 8),
 
@@ -5849,6 +5934,20 @@ class OneCikarmaTalepleriSayfasi extends StatelessWidget {
         'status': 'approved',
         'approvedAt': FieldValue.serverTimestamp(),
       });
+      final jobData = jobDoc.data();
+
+await FirebaseFirestore.instance
+    .collection('bildirimler')
+    .add({
+  'baslik': 'Öne Çıkan İş İlanı',
+  'mesaj':
+      '${bilgi(jobData?['title'])} ilanı öne çıkarıldı.',
+  'tarih': FieldValue.serverTimestamp(),
+  'hedefUid': 'all',
+  'hedefEmail': 'Tüm Kullanıcılar',
+  'tur': 'job_featured',
+  'jobId': jobId,
+});
 
       if (context.mounted) {
         mesaj(context, 'İlan $gun gün öne çıkarıldı.');
@@ -6253,7 +6352,135 @@ class SikayetlerSayfasi extends StatelessWidget {
     );
   }
 }
+class IsIlanlariYonetSayfasi extends StatelessWidget {
+  const IsIlanlariYonetSayfasi({super.key});
 
+  Future<void> ilanSil(
+    BuildContext context,
+    String id,
+  ) async {
+    final onay = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('İlanı Sil'),
+        content: const Text(
+          'Bu iş ilanını kalıcı olarak silmek istediğinize emin misiniz?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('VAZGEÇ'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('SİL'),
+          ),
+        ],
+      ),
+    );
+
+    if (onay != true) return;
+
+    try {
+      await FirebaseFirestore.instance
+          .collection('jobs')
+          .doc(id)
+          .delete();
+
+      if (context.mounted) {
+        mesaj(context, 'İş ilanı silindi.');
+      }
+    } catch (_) {
+      if (context.mounted) {
+        mesaj(context, 'İlan silinemedi.');
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final stream =
+        FirebaseFirestore.instance.collection('jobs').snapshots();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('İş İlanlarını Yönet'),
+      ),
+      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+        stream: stream,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          final ilanlar = snapshot.data!.docs;
+
+          if (ilanlar.isEmpty) {
+            return const Center(
+              child: Text('İş ilanı bulunmuyor.'),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: ilanlar.length,
+            itemBuilder: (context, index) {
+              final belge = ilanlar[index];
+              final data = belge.data();
+
+              return Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        bilgi(data['title']),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'E-posta: ${bilgi(data['ownerEmail'])}',
+                      ),
+                      Text(
+                        'UID: ${bilgi(data['ownerUid'])}',
+                      ),
+                      Text(
+                        'Durum: ${bilgi(data['status'])}',
+                      ),
+                      Text(
+                        'Firma: ${bilgi(data['company'])}',
+                      ),
+                      Text(
+                        'Konum: ${bilgi(data['city'])}',
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            ilanSil(context, belge.id);
+                          },
+                          icon: const Icon(Icons.delete),
+                          label: const Text('İLANI SİL'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+}
 class BekleyenIlanlarSayfasi extends StatelessWidget {
   const BekleyenIlanlarSayfasi({super.key});
 
@@ -8294,19 +8521,25 @@ class _IkinciElSayfasiState extends State<IkinciElSayfasi> {
               .toList();
 
           ilanlar.sort((a, b) {
-            final aTarih =
-                a.data()['createdAt'];
+  final aData = a.data();
+  final bData = b.data();
 
-            final bTarih =
-                b.data()['createdAt'];
+  final aFeatured = aktifOneCikan(aData);
+  final bFeatured = aktifOneCikan(bData);
 
-            if (aTarih is Timestamp &&
-                bTarih is Timestamp) {
-              return bTarih.compareTo(aTarih);
-            }
+  if (aFeatured != bFeatured) {
+    return aFeatured ? -1 : 1;
+  }
 
-            return 0;
-          });
+  final aTarih = aData['createdAt'];
+  final bTarih = bData['createdAt'];
+
+  if (aTarih is Timestamp && bTarih is Timestamp) {
+    return bTarih.compareTo(aTarih);
+  }
+
+  return 0;
+});
 
           return Column(
             children: [
