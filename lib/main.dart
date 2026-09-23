@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
@@ -9,7 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:video_player/video_player.dart';
+
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 Future<void> main() async {
@@ -44,7 +45,7 @@ class IsBulApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'İş Bul',
+      title: 'Gözat360',
       theme: ThemeData(
       
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
@@ -124,36 +125,13 @@ class _AnaSayfaState extends State<AnaSayfa> {
   bool admin = false;
   bool engelli = false;
   bool kontrol = true;
-late VideoPlayerController _videoController;
-bool _videoHazir = false;
+
   @override
   void initState() {
     super.initState();
     hesapKontrol();
-   _videoController = VideoPlayerController.asset('1789613362944.mp4')
-  ..initialize().then((_) async {
-    await _videoController.setLooping(true);
-
-    if (FirebaseAuth.instance.currentUser == null) {
-      await _videoController.setVolume(1.0);
-      await _videoController.play();
-    } else {
-      await _videoController.setVolume(0.0);
-      await _videoController.pause();
-    }
-
-    if (mounted) {
-      setState(() {
-        _videoHazir = true;
-      });
-    }
-  }); 
+   
   }
-@override
-void dispose() {
-  _videoController.dispose();
-  super.dispose();
-}
   Future<void> kullaniciKaydiOlustur(User user) async {
     try {
       final ref = FirebaseFirestore.instance.collection('users').doc(user.uid);
@@ -263,7 +241,7 @@ Future<void> cikis() async {
     if (user != null && engelli) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('İŞ BUL'),
+         title: const Text('Gözat360'), 
           centerTitle: true,
         ),
         body: Center(
@@ -296,7 +274,7 @@ Future<void> cikis() async {
     }
     return Scaffold(
   appBar: AppBar(
-    title: const Text('İŞ BUL'),
+  title: const Text('Gözat360'),
     centerTitle: true,
     actions: [
       IconButton(
@@ -317,16 +295,9 @@ Future<void> cikis() async {
      body: user == null
     ? Column(
         children: [
-          Expanded(
-            child: Center(
-              child: _videoHazir
-                  ? AspectRatio(
-                      aspectRatio: _videoController.value.aspectRatio,
-                      child: VideoPlayer(_videoController),
-                    )
-                  : const CircularProgressIndicator(),
-            ),
-          ),
+         Expanded(
+  child: const Gozat360Slider(),
+), 
           Padding(
             padding: const EdgeInsets.only(bottom: 30),
             child: ElevatedButton.icon(
@@ -351,7 +322,7 @@ Future<void> cikis() async {
                 const SizedBox(height: 15),
                 const Center(
                   child: Text(
-                    'İş Bul',
+                    'Gözat360',
                     style: TextStyle(
                       fontSize: 26,
                       fontWeight: FontWeight.bold,
@@ -359,20 +330,13 @@ Future<void> cikis() async {
                   ),
                 ),
 
-  Row(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: [
-    ClipRRect(
-      borderRadius: BorderRadius.circular(15),
-      child: Image.asset(
-        'file_0000000043a88210aa303ce3db3df68d.png',
-        width: 150,
-        height: 110,
-        fit: BoxFit.contain,
-      ),
-    ),
-    
-  ],
+  ClipRRect(
+  borderRadius: BorderRadius.circular(18),
+  child: Image.asset(
+    'file_00000000e26c81f58631d89abd23397f.png',
+    width: double.infinity,
+    fit: BoxFit.contain,
+  ),
 ),
 const SizedBox(height: 15),
                 Card(
@@ -1578,7 +1542,7 @@ if (mounted) {
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 30),
           children: [
             const Text(
-              'İŞ BUL',
+              'Gözat360',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 36,
@@ -1589,7 +1553,7 @@ if (mounted) {
             ),
             const SizedBox(height: 3),
             const Text(
-              'Doğru İş, Daha İyi Yarın',
+              'Doğru ilan, doğru fırsat.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 15,
@@ -1615,7 +1579,7 @@ if (mounted) {
       ),
       SizedBox(height: 5),
       Text(
-        'İş fırsatları burada seni bekliyor.',
+        'İş ve ikinci el fırsatları seni bekliyor.',
         textAlign: TextAlign.center,
         style: TextStyle(fontSize: 15),
       ),
@@ -1624,14 +1588,15 @@ if (mounted) {
   ),
 ),
 
-            Center(
-              child: Image.asset(
-                'file_0000000043a88210aa303ce3db3df68d.png',
-                height: 125,
-                fit: BoxFit.contain,
-              ),
-            ),
-
+            
+ClipRRect(
+  borderRadius: BorderRadius.circular(18),
+  child: Image.asset(
+    'file_00000000e26c81f58631d89abd23397f.png',
+    width: double.infinity,
+    fit: BoxFit.contain,
+  ),
+),
             const SizedBox(height: 16),
 
             Container(
@@ -2784,7 +2749,7 @@ Future<void> _favoriDegistir(String id) async {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'İş Bul',
+              'Gözat360',
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.w900,
@@ -2792,7 +2757,7 @@ Future<void> _favoriDegistir(String id) async {
               ),
             ),
             Text(
-              'Doğru işi, doğru insanla buluşturur',
+              'Doğru ilan, doğru fırsat.',
               style: TextStyle(
                 fontSize: 12,
                 color: Color(0xFF52617D),
@@ -11539,6 +11504,101 @@ class _IkinciElDuzenleSayfasiState
           ),
         ],
       ),
+    );
+  }
+}
+class Gozat360Slider extends StatefulWidget {
+  const Gozat360Slider({super.key});
+
+  @override
+  State<Gozat360Slider> createState() => _Gozat360SliderState();
+}
+
+class _Gozat360SliderState extends State<Gozat360Slider> {
+  final PageController _controller = PageController();
+  int _sayfa = 0;
+  Timer? _timer;
+
+  final List<String> _gorseller = const [
+    'file_00000000e26c81f58631d89abd23397f.png',
+    'file_0000000033c881f59f1f7b2fe62adcf7.png',
+    'file_000000006fcc821194f1d6a3784e8361.png',
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    _timer = Timer.periodic(const Duration(seconds: 4), (_) {
+      if (!_controller.hasClients) return;
+
+      _sayfa = (_sayfa + 1) % _gorseller.length;
+
+      _controller.animateToPage(
+        _sayfa,
+        duration: const Duration(milliseconds: 450),
+        curve: Curves.easeInOut,
+      );
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Expanded(
+          child: PageView.builder(
+            controller: _controller,
+            itemCount: _gorseller.length,
+            onPageChanged: (index) {
+              setState(() {
+                _sayfa = index;
+              });
+            },
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18),
+                  child: Image.asset(
+                    _gorseller[index],
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            _gorseller.length,
+            (index) => Container(
+              width: 8,
+              height: 8,
+              margin: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _sayfa == index
+                    ? const Color(0xFF087CF0)
+                    : Colors.grey.shade300,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+      ],
     );
   }
 }
