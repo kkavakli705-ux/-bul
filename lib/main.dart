@@ -25,7 +25,7 @@ Future<void> main() async {
       storageBucket: 'is-bul-1652d.firebasestorage.app',
     ),
   );
-runApp(const IsBulApp());
+runApp(const Gozat360App());
 
 try {
   await FirebaseMessaging.instance.requestPermission(
@@ -38,8 +38,9 @@ try {
 } catch (_) {}
 }
 
-class IsBulApp extends StatelessWidget {
-  const IsBulApp({super.key});
+class Gozat360App extends StatelessWidget {
+  const Gozat360App({super.key});
+  
 
   @override
   Widget build(BuildContext context) {
@@ -8420,15 +8421,13 @@ class _IkinciElSayfasiState extends State<IkinciElSayfasi> {
 
           IconButton(
             onPressed: () {
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'İkinci El bildirimleri.',
-                  ),
-                ),
-              );
-            },
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const BildirimlerSayfasi(),
+    ),
+  );
+},
             icon: const Icon(
               Icons.notifications,
               color: koyu,
