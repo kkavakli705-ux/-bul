@@ -46,8 +46,7 @@ jobs:
           KEYSTORE_BASE64: ${{ secrets.GOZAT360_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.GOZAT360_KEYSTORE_PASSWORD }}
         run: |
-          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/app/gozat360-release-v3.p12
-
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode --ignore-garbage > android/app/gozat360-release-v3.p12
           python3 - <<'PY'
           from pathlib import Path
 
