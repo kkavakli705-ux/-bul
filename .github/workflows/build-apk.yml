@@ -43,10 +43,10 @@ jobs:
 
       - name: Kalici release anahtarini hazirla
         env:
-          KEYSTORE_BASE64: ${{ secrets.GOZAT360_KEYSTORE_BASE64 }}
+          KEYSTORE_HEX: ${{ secrets.GOZAT360_KEYSTORE_HEX }}
           KEYSTORE_PASSWORD: ${{ secrets.GOZAT360_KEYSTORE_PASSWORD }}
         run: |
-          printf '%s' "$KEYSTORE_BASE64" | base64 --decode --ignore-garbage > android/app/gozat360-release-v3.p12
+          python3 -c 'import os; open("android/app/gozat360-release-v3.p12","wb").write(bytes.fromhex(os.environ["KEYSTORE_HEX"]))'
           python3 - <<'PY'
           from pathlib import Path
 
