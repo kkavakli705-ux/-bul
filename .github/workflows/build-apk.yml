@@ -31,7 +31,7 @@ jobs:
             cp Pubspec.yaml pubspec.yaml
           fi
           rm -rf android
-         
+
           flutter create --platforms=android .
           sed -i 's/android:label="[^"]*"/android:label="Gözat360"/' android/app/src/main/AndroidManifest.xml
           sed -i 's/namespace = ".*"/namespace = "com.gozat360.app"/' android/app/build.gradle.kts
@@ -41,31 +41,53 @@ jobs:
           flutter pub get
           dart run flutter_launcher_icons
 
-      - name: Debug anahtari olustur
+      - name: Kalici release anahtarini hazirla
+        env:
+          KEYSTORE_BASE64: ${{ secrets.GOZAT360_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.GOZAT360_KEYSTORE_PASSWORD }}
         run: |
-          mkdir -p ~/.android
-          keytool -genkeypair \
-            -v \
-            -keystore ~/.android/debug.keystore \
-            -storepass android \
-            -alias androiddebugkey \
-            -keypass android \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -dname "CN=Android Debug,O=Android,C=US"
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/app/gozat360-release-v3.p12
 
-      - name: SHA1 goster
-        run: |
-          keytool -list -v \
-            -alias androiddebugkey \
-            -keystore ~/.android/debug.keystore \
-            -storepass android \
-            -keypass android
-      
-        
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path("android/app/build.gradle.kts")
+          text = path.read_text()
+
+          signing = '''    signingConfigs {
+              create("release") {
+                  storeFile = file("gozat360-release-v3.p12")
+                  storePassword = System.getenv("GOZAT360_KEYSTORE_PASSWORD")
+                  keyAlias = "gozat360"
+                  keyPassword = System.getenv("GOZAT360_KEYSTORE_PASSWORD")
+              }
+          }
+
+          '''
+
+          if 'create("release")' not in text:
+              text = text.replace(
+                  "    buildTypes {",
+                  signing + "    buildTypes {",
+                  1
+              )
+
+          text = text.replace(
+              'signingConfig = signingConfigs.getByName("debug")',
+              'signingConfig = signingConfigs.getByName("release")'
+          )
+
+          path.write_text(text)
+          PY
+
+          keytool -list \
+            -keystore android/app/gozat360-release-v3.p12 \
+            -storepass "$KEYSTORE_PASSWORD" \
+            -alias gozat360 > /dev/null
 
       - name: APK olustur
+        env:
+          GOZAT360_KEYSTORE_PASSWORD: ${{ secrets.GOZAT360_KEYSTORE_PASSWORD }}
         run: |
           for i in 1 2 3; do
             flutter build apk --release && exit 0
@@ -75,17 +97,19 @@ jobs:
             fi
           done
           exit 1
+
       - name: AAB olustur
-        run: flutter build appbundle --release 
+        env:
+          GOZAT360_KEYSTORE_PASSWORD: ${{ secrets.GOZAT360_KEYSTORE_PASSWORD }}
+        run: flutter build appbundle --release
 
       - name: APK yukle
         uses: actions/upload-artifact@v4
         with:
           name: gozat360-apk
-          
           path: build/app/outputs/flutter-apk/app-release.apk
+
       - name: AAB yukle
-     
         uses: actions/upload-artifact@v4
         with:
           name: gozat360-aab
