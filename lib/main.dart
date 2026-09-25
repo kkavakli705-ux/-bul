@@ -5739,19 +5739,25 @@ Future<void> hesabiSil() async {
                 metinAc(
                   'Gizlilik Politikası',
                   '''
-İş Bul uygulaması kullanıcı gizliliğine önem verir.
+.Gözat360 Gizlilik Politikası
 
-Uygulama; hesap oluşturma, ilan yayınlama, ilan yönetimi ve iletişim özelliklerini sağlamak amacıyla gerekli kullanıcı bilgilerini işler.
+Gözat360, kullanıcıların gizliliğine ve kişisel verilerinin korunmasına önem verir.
 
-Kullanıcıların e-posta adresleri hesap işlemleri için kullanılabilir.
+Uygulama; kullanıcı hesabının oluşturulması, kimlik doğrulama, iş ilanı ve ikinci el ilanı yayınlama, ilan yönetimi, mesajlaşma, bildirimler ve uygulamanın güvenli şekilde çalıştırılması amacıyla gerekli kullanıcı bilgilerini işleyebilir.
 
-İlanlarda kullanıcı tarafından eklenen telefon ve WhatsApp bilgileri, ilanla ilgilenen kişiler tarafından görülebilir.
+İşlenebilecek bilgiler; e-posta adresi, kullanıcı tarafından sağlanan profil bilgileri, ilan bilgileri, ilan fotoğrafları, konum/şehir bilgileri ile kullanıcının isteğe bağlı olarak ilanlarında paylaştığı telefon ve WhatsApp iletişim bilgilerini içerebilir.
 
-Kullanıcı bilgileri izinsiz olarak üçüncü kişilere satılmaz.
+Kullanıcı tarafından bir ilanda açıkça paylaşılan iletişim ve ilan bilgileri, diğer kullanıcılar tarafından görüntülenebilir.
 
-Uygunsuz kullanım, sahte ilan ve güvenlik ihlallerine karşı gerekli kayıtlar tutulabilir.
+Uygulama altyapısında Firebase hizmetleri kullanılmaktadır. Kimlik doğrulama, veritabanı, dosya depolama ve bildirim gibi özelliklerin çalıştırılması amacıyla gerekli veriler Firebase hizmetleri üzerinden işlenebilir ve saklanabilir.
 
-Bu metin uygulama Play Store'a gönderilmeden önce nihai hukuki metinle güncellenecektir.
+Kullanıcıların kişisel bilgileri izinsiz olarak satılmaz. Bilgiler yalnızca uygulamanın çalışması, güvenliğinin sağlanması, yasal yükümlülüklerin yerine getirilmesi ve kullanıcı tarafından talep edilen hizmetlerin sunulması amacıyla kullanılır.
+
+Dolandırıcılık, sahte ilan, kötüye kullanım ve güvenlik ihlallerinin önlenmesi amacıyla gerekli teknik ve güvenlik kayıtları tutulabilir.
+
+Kullanıcılar hesaplarını uygulamadaki hesap silme özelliğini kullanarak silebilir. Hesap silme işlemi sonrasında ilgili kullanıcı verileri, yasal veya güvenlik amacıyla saklanması zorunlu olan veriler hariç olmak üzere, geçerli veri saklama süreçlerine uygun şekilde silinir.
+
+Gözat360 bu Gizlilik Politikasını uygulamadaki özellikler, kullanılan hizmetler veya yasal gereklilikler değiştiğinde güncelleyebilir.
 ''',
                 );
               },
@@ -5766,17 +5772,31 @@ Bu metin uygulama Play Store'a gönderilmeden önce nihai hukuki metinle güncel
                 metinAc(
                   'Kullanım Koşulları',
                   '''
-İş Bul uygulamasını kullanan kişiler doğru ve güncel bilgi vermekle yükümlüdür.
+Gözat360 Kullanım Koşulları
 
-Sahte, yanıltıcı, hukuka aykırı veya uygunsuz iş ilanları yayınlanamaz.
+Gözat360'u kullanan kullanıcılar bu kullanım koşullarını kabul etmiş sayılır.
 
-Kullanıcılar diğer kullanıcıları yanıltamaz veya dolandırıcılık amacıyla uygulamayı kullanamaz.
+Gözat360; iş ilanları ve ikinci el ürün ilanlarının yayınlanmasına, görüntülenmesine ve kullanıcıların birbirleriyle iletişim kurmasına olanak sağlayan bir platformdur.
 
-Yönetici, uygulama kurallarına aykırı ilanları kaldırabilir ve kullanıcı hesaplarını engelleyebilir.
+Kullanıcılar hesap oluştururken ve ilan yayınlarken doğru, güncel ve yanıltıcı olmayan bilgiler vermekle yükümlüdür.
 
-İlanlarda yapılan iş teklifleri ve kullanıcılar arasındaki anlaşmalar tarafların kendi sorumluluğundadır.
+Sahte, yanıltıcı, hukuka aykırı, dolandırıcılık amacı taşıyan, başkalarının haklarını ihlal eden veya yasaklı ürün ve hizmetlere ilişkin ilanların yayınlanması yasaktır.
 
-Bu koşullar uygulamanın geliştirilme sürecinde güncellenebilir.
+Kullanıcılar yayınladıkları ilanların, fotoğrafların, açıklamaların ve iletişim bilgilerinin doğruluğundan ve hukuka uygunluğundan kendileri sorumludur.
+
+İkinci el ürünlerin satışı, teslimatı, ödemesi, ürünün durumu ve taraflar arasında yapılan anlaşmalar alıcı ile satıcının sorumluluğundadır. Gözat360 bu işlemlerde doğrudan satıcı, alıcı veya ödeme aracısı değildir.
+
+İş ilanlarının içeriği, işveren tarafından verilen bilgiler, iş görüşmeleri, işe alım süreçleri ve kullanıcılar arasında yapılan anlaşmalar ilgili tarafların sorumluluğundadır.
+
+Kullanıcıların diğer kullanıcılara karşı tehdit, taciz, spam, yanıltma veya dolandırıcılık amacıyla uygulamayı kullanması yasaktır.
+
+Gözat360; kurallara aykırı içerikleri kaldırma, ilanları inceleme ve gerekli durumlarda kullanıcı hesaplarını kısıtlama veya engelleme hakkını saklı tutar.
+
+Kullanıcılar şifrelerinin ve hesap bilgilerinin güvenliğinden sorumludur.
+
+Gözat360, uygulamanın kesintisiz veya hatasız çalışacağını garanti etmez. Bakım, güncelleme, teknik sorun veya güvenlik nedeniyle hizmetlerde geçici değişiklikler yapılabilir.
+
+Bu Kullanım Koşulları uygulamanın özellikleri, hizmetleri veya yasal gereklilikler değiştiğinde güncellenebilir.
 ''',
                 );
               },
@@ -5786,23 +5806,23 @@ Bu koşullar uygulamanın geliştirilme sürecinde güncellenebilir.
             child: ListTile(
               leading: const Icon(Icons.info),
               title: const Text('Uygulama Hakkında'),
-              subtitle: const Text('İş Bul - Sürüm 0.4.0'),
+          subtitle: const Text('Gözat360'),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
                 metinAc(
                   'Uygulama Hakkında',
-                  '''
-İş Bul
+  Gözat360
 
-İş arayanlarla işverenleri bir araya getirmek amacıyla geliştirilen iş ilanı uygulamasıdır.
+Gözat360, iş arayanları ve işverenleri buluştururken aynı zamanda kullanıcıların ikinci el ürünlerini ilan verebildiği kapsamlı bir mobil platformdur.
 
-Normal iş ilanı vermek ücretsizdir.
+Kullanıcılar iş ilanlarını ve ikinci el ilanlarını görüntüleyebilir, arama ve kategori filtrelerini kullanabilir, favorilerine ilan ekleyebilir ve ilan sahipleriyle iletişim kurabilir.
 
-Kullanıcılar ilan arayabilir, işverenle telefon veya WhatsApp üzerinden iletişime geçebilir ve uygunsuz ilanları şikayet edebilir.
+Kullanıcılar kendi iş ve ikinci el ilanlarını oluşturabilir ve yönetebilir. Uygulama içerisinde kullanıcılar arası mesajlaşma ve bildirim özellikleri bulunmaktadır.
 
-Uygulama geliştirme aşamasındadır.
+Gözat360, Flutter ile geliştirilmiş olup Firebase altyapısını kullanmaktadır.
 
-Sürüm: 0.4.0
+Gözat360 — Doğru ilan, doğru fırsat.                '''
+
 ''',
                 );
               },
