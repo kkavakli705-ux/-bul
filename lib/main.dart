@@ -9017,7 +9017,7 @@ kategoriButonu(
                                         
 bilgiSatiri(
   Icons.person_outline,
-  (data['sellerName'] ?? 'Satıcı').toString(),
+  'Satıcı',
 ),
                                         bilgiSatiri(
                                           Icons.sell,
