@@ -5811,17 +5811,17 @@ Bu Kullanım Koşulları uygulamanın özellikleri, hizmetleri veya yasal gerekl
               onTap: () {
                 metinAc(
                   'Uygulama Hakkında',
-  Gözat360
+     
+                '''
+                Gözat360
 
-Gözat360, iş arayanları ve işverenleri buluştururken aynı zamanda kullanıcıların ikinci el ürünlerini ilan verebildiği kapsamlı bir mobil platformdur.
+Gözat360, iş arayanlar ile işverenleri buluşturan ve aynı zamanda kullanıcıların ikinci el ürün ilanları yayınlayıp keşfedebildiği kapsamlı bir mobil platformdur.
 
-Kullanıcılar iş ilanlarını ve ikinci el ilanlarını görüntüleyebilir, arama ve kategori filtrelerini kullanabilir, favorilerine ilan ekleyebilir ve ilan sahipleriyle iletişim kurabilir.
+Kullanıcılar iş ilanlarını ve ikinci el ilanlarını görüntüleyebilir, arama ve kategori filtrelerini kullanabilir, kendi ilanlarını oluşturabilir ve yönetebilir.
 
-Kullanıcılar kendi iş ve ikinci el ilanlarını oluşturabilir ve yönetebilir. Uygulama içerisinde kullanıcılar arası mesajlaşma ve bildirim özellikleri bulunmaktadır.
+Gözat360, Flutter teknolojisiyle geliştirilmiş olup Firebase altyapısını kullanmaktadır.
 
-Gözat360, Flutter ile geliştirilmiş olup Firebase altyapısını kullanmaktadır.
-
-Gözat360 — Doğru ilan, doğru fırsat.                '''
+Gözat360 – Doğru ilan, doğru fırsat.
 
 ''',
                 );
