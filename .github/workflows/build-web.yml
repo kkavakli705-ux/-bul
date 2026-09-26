@@ -2,6 +2,10 @@ name: Web Test
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - is-al-sat-yeni
+  
 
 jobs:
   build-web:
