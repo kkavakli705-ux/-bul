@@ -2072,7 +2072,7 @@ mapsLink.dispose();
       color: const Color(0xFF2196F3).withOpacity(0.20),
     ),
   ),
-  
+                ),
           const SizedBox(height: 12),
           SizedBox(
   height: 64,
