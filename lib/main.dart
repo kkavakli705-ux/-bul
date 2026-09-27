@@ -1630,29 +1630,7 @@ ClipRRect(
                       ),
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: bekle
-                          ? null
-                          : () {
-                              moduDegistir(true);
-                            },
-                      icon: const Icon(Icons.phone_android),
-                      label: const Text('TELEFON'),
-                      style: ElevatedButton.styleFrom(
-                        elevation: telefonModu ? 2 : 0,
-                        backgroundColor:
-                            telefonModu ? Colors.white : Colors.transparent,
-                        foregroundColor:
-                            telefonModu ? mavi : Colors.blueGrey,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        minimumSize: const Size(0, 50),
-                      ),
-                    ),
-                  ),
+                  
                 ],
               ),
             ),
@@ -2094,44 +2072,7 @@ mapsLink.dispose();
       color: const Color(0xFF2196F3).withOpacity(0.20),
     ),
   ),
-  child: const Row(
-    children: [
-      CircleAvatar(
-        radius: 20,
-        backgroundColor: Color(0xFF2196F3),
-        child: Icon(
-          Icons.info_outline,
-          color: Colors.white,
-          size: 24,
-        ),
-      ),
-      SizedBox(width: 12),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Normal iş ilanı vermek ücretsizdir.',
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF102A56),
-              ),
-            ),
-            SizedBox(height: 3),
-            Text(
-              'İlanınızı isterseniz daha sonra öne çıkarabilirsiniz.',
-              style: TextStyle(
-                fontSize: 12,
-                color: Color(0xFF64748B),
-              ),
-            ),
-          ],
-        ),
-      ),
-    ],
-  ),
-), 
+  
           const SizedBox(height: 12),
           SizedBox(
   height: 64,
@@ -4031,35 +3972,7 @@ Widget build(BuildContext context) {
                                   height: 12,
                                 ),
 
-                                if (durum ==
-                                        'approved' &&
-                                    !featured)
-                                  SizedBox(
-                                    width:
-                                        double.infinity,
-                                    child:
-                                        ElevatedButton.icon(
-                                      onPressed: () {
-                                        oneCikarmaTalebi(
-                                          context,
-                                          belge.id,
-                                          data,
-                                        );
-                                      },
-                                      icon: const Icon(
-                                        Icons.star,
-                                      ),
-                                      label: const Text(
-                                        'ÜCRETLİ ÖNE ÇIKAR',
-                                      ),
-                                    ),
-                                  ),
-
-                                const SizedBox(
-                                  height: 8,
-                                ),
-
-                                SizedBox(
+                                
                                   width:
                                       double.infinity,
                                   child:
