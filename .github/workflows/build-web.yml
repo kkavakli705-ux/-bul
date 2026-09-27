@@ -27,7 +27,34 @@ jobs:
           fi
           flutter create --platforms=web .
           flutter pub get
+      - name: Gozat360 web logosunu ayarla
+        run: |
+          python3 -m pip install --quiet Pillow
+          python3 - <<'PY'
+          from PIL import Image
+          from pathlib import Path
 
+          src = Image.open("file_000000000640821098f7fc77265f38c8.png").convert("RGBA")
+
+          def make_icon(size, path):
+              img = src.copy()
+              img.thumbnail((size, size), Image.Resampling.LANCZOS)
+              canvas = Image.new("RGBA", (size, size), (255, 255, 255, 0))
+              canvas.alpha_composite(
+                  img,
+                  ((size - img.width) // 2, (size - img.height) // 2)
+              )
+              canvas.save(path)
+
+          Path("web/icons").mkdir(parents=True, exist_ok=True)
+
+          make_icon(64, "web/favicon.png")
+          make_icon(192, "web/icons/Icon-192.png")
+          make_icon(512, "web/icons/Icon-512.png")
+          make_icon(192, "web/icons/Icon-maskable-192.png")
+          make_icon(512, "web/icons/Icon-maskable-512.png")
+          PY
+ 
       - name: Web surumunu olustur
         run: flutter build web --release
 
