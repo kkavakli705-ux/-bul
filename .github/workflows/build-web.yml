@@ -89,9 +89,17 @@ jobs:
           manifest_path.write_text(
               json.dumps(manifest, ensure_ascii=False, indent=2)
           )
-
           index_path = Path("web/index.html")
           html = index_path.read_text()
+
+          verification = '<meta name="google-site-verification" content="EWUth7I1bl5nzKh_Iymm5SSeVUfKw67A8K5RvIei3VA" />'
+
+          if 'google-site-verification' not in html:
+              html = html.replace(
+                  '<head>',
+                  '<head>\n  ' + verification,
+                  1
+              )
 
           html = re.sub(
               r'href="favicon\.png"',
@@ -106,6 +114,7 @@ jobs:
           )
 
           index_path.write_text(html)
+          
           PY
  
       - name: Web surumunu olustur
