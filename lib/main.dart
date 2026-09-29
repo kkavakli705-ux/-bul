@@ -13,6 +13,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
+import 'web_ana_sayfa.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -273,6 +275,55 @@ Future<void> cikis() async {
         ),
       );
     }
+    if (kIsWeb) {
+  return WebAnaSayfa(
+    onGiris: () {
+      girisAc();
+    },
+    onIsIlanlari: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const IsAraSayfasi(),
+        ),
+      );
+    },
+    onIsIlaniVer: () {
+      if (user == null) {
+        girisAc();
+        return;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const IlanVerSayfasi(),
+        ),
+      );
+    },
+    onIkinciEl: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const IkinciElSayfasi(),
+        ),
+      );
+    },
+    onIkinciElIlanVer: () {
+      if (user == null) {
+        girisAc();
+        return;
+      }
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const IkinciElIlanVerSayfasi(),
+        ),
+      );
+    },
+  );
+}
     return Scaffold(
   appBar: AppBar(
   title: const Text('Gözat360'),
