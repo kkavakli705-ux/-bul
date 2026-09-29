@@ -46,7 +46,7 @@ class Gozat360App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Gözat360',
+      title: 'Gözat360 | İş İlanları ve İkinci El',
       theme: ThemeData(
       
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
