@@ -9,6 +9,9 @@ class WebAnaSayfa extends StatefulWidget {
     required this.onIsIlaniVer,
     required this.onIkinciEl,
     required this.onIkinciElIlanVer,
+    required this.onKendiIlanlarim,
+required this.onIsDetay,
+required this.onIkinciElDetay,
   });
 
   final VoidCallback onGiris;
@@ -16,6 +19,9 @@ class WebAnaSayfa extends StatefulWidget {
   final VoidCallback onIsIlaniVer;
   final VoidCallback onIkinciEl;
   final VoidCallback onIkinciElIlanVer;
+  final VoidCallback onKendiIlanlarim;
+final void Function(String id, Map<String, dynamic> data) onIsDetay;
+final void Function(String id, Map<String, dynamic> data) onIkinciElDetay;
 
   @override
   State<WebAnaSayfa> createState() => _WebAnaSayfaState();
@@ -566,6 +572,15 @@ class _WebAnaSayfaState extends State<WebAnaSayfa> {
                       widget.onIkinciElIlanVer,
                     ),
                   ),
+                  SizedBox(
+  width: kartGenislik,
+  child: _hizliKart(
+    Icons.description_outlined,
+    'Kendi İlanlarım',
+    'Yayınladığın ilanları yönet.',
+    widget.onKendiIlanlarim,
+  ),
+),
                 ],
               );
             },
@@ -766,7 +781,13 @@ class _WebAnaSayfaState extends State<WebAnaSayfa> {
                                 data: doc.data(),
                                 ikinciEl: ikinciEl,
                                 renk: renk,
-                                onTap: tumunuGor,
+                                onTap: () {
+  if (ikinciEl) {
+    widget.onIkinciElDetay(doc.id, doc.data());
+  } else {
+    widget.onIsDetay(doc.id, doc.data());
+  }
+},
                               ),
                             );
                           },
