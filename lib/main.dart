@@ -280,6 +280,9 @@ Future<void> cikis() async {
     onGiris: () {
       girisAc();
     },
+    onCikis: () {
+  cikis();
+},
     onIsIlanlari: () {
       Navigator.push(
         context,
