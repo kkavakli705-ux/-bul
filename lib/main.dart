@@ -322,6 +322,41 @@ Future<void> cikis() async {
         ),
       );
     },
+    onKendiIlanlarim: () {
+  if (user == null) {
+    girisAc();
+    return;
+  }
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const KendiIlanlarimSayfasi(),
+    ),
+  );
+},
+    onIsDetay: (id, data) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => IlanDetaySayfasi(
+        jobId: id,
+        data: data,
+      ),
+    ),
+  );
+},
+    onIkinciElDetay: (id, data) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => IkinciElDetaySayfasi(
+        postId: id,
+        data: data,
+      ),
+    ),
+  );
+},
   );
 }
     return Scaffold(
