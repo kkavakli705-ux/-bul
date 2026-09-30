@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class WebAnaSayfa extends StatefulWidget {
   const WebAnaSayfa({
     super.key,
     required this.onGiris,
+    required this.onCikis,
     required this.onIsIlanlari,
     required this.onIsIlaniVer,
     required this.onIkinciEl,
@@ -15,6 +17,7 @@ required this.onIkinciElDetay,
   });
 
   final VoidCallback onGiris;
+  final VoidCallback onCikis;
   final VoidCallback onIsIlanlari;
   final VoidCallback onIsIlaniVer;
   final VoidCallback onIkinciEl;
@@ -90,6 +93,7 @@ class _WebAnaSayfaState extends State<WebAnaSayfa> {
   Widget _ustMenu() {
     final width = MediaQuery.of(context).size.width;
     final mobil = width < 720;
+    final girisVar = FirebaseAuth.instance.currentUser != null;
 
     return Container(
       width: double.infinity,
@@ -120,32 +124,37 @@ class _WebAnaSayfaState extends State<WebAnaSayfa> {
                   widget.onIkinciEl,
                 ),
                 const SizedBox(width: 12),
-                OutlinedButton(
-                  onPressed: widget.onGiris,
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF0D6EFD),
-                    side: const BorderSide(
-                      color: Color(0xFF0D6EFD),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
-                    ),
-                  ),
-                  child: const Text('Giriş Yap'),
-                ),
-                const SizedBox(width: 10),
-                FilledButton(
-                  onPressed: widget.onGiris,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF0D6EFD),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
-                    ),
-                  ),
-                  child: const Text('Kayıt Ol'),
-                ),
+                if (girisVar) ...[
+  FilledButton(
+    onPressed: widget.onKendiIlanlarim,
+    style: FilledButton.styleFrom(
+      backgroundColor: const Color(0xFF0D6EFD),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 20,
+        vertical: 16,
+      ),
+    ),
+    child: const Text('Kendi İlanlarım'),
+  ),
+  const SizedBox(width: 10),
+  OutlinedButton(
+    onPressed: widget.onCikis,
+    child: const Text('Çıkış Yap'),
+  ),
+] else ...[
+  OutlinedButton(
+    onPressed: widget.onGiris,
+    child: const Text('Giriş Yap'),
+  ),
+  const SizedBox(width: 10),
+  FilledButton(
+    onPressed: widget.onGiris,
+    style: FilledButton.styleFrom(
+      backgroundColor: const Color(0xFF0D6EFD),
+    ),
+    child: const Text('Kayıt Ol'),
+  ),
+],
               ] else ...[
                 IconButton(
                   tooltip: 'Giriş Yap',
