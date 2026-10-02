@@ -31,10 +31,13 @@ jobs:
           python3 - <<'PY'
           from PIL import Image
           from pathlib import Path
-          import json, re
-          version = "v5"
-          src_path = Path("file_000000000640821098f7fc77265f38c8.png")
-          if not src_path.exists(): raise SystemExit("Gozat360 logo kaynagi bulunamadi")
+          import json, re, hashlib
+          version = "v6"
+          src_path = Path("gozat360_logo_v6.png")
+          if not src_path.exists(): raise SystemExit("Gozat360 v6 logo kaynagi bulunamadi")
+          expected="0ea4652653ae3c821b74e150d4e3622017456539de77202ad4aa28599e110131"
+          actual=hashlib.sha256(src_path.read_bytes()).hexdigest()
+          if actual!=expected: raise SystemExit(f"Yanlis logo dosyasi: {actual}")
           src = Image.open(src_path).convert("RGBA")
           def make_icon(size, path):
               img=src.copy(); img.thumbnail((size,size),Image.Resampling.LANCZOS)
@@ -68,10 +71,16 @@ jobs:
           assert m.get('start_url')=='/?pwa=1', m.get('start_url')
           assert m.get('id')=='/?pwa=1', m.get('id')
           assert len(m.get('icons',[]))==4
-          assert all('v5' in i['src'] for i in m['icons'])
+          assert all('v6' in i['src'] for i in m['icons'])
           for i in m['icons']: assert Path('build/web',i['src']).exists(), i['src']
           assert Path('build/web/main.dart.js').stat().st_size > 100000
-          print('PWA manifest, v5 ikonlar ve Flutter build dosyasi dogrulandi.')
+          src=Path('lib/web_ana_sayfa.dart').read_text()
+          desktop=Path('lib/web_ana_sayfa_desktop.dart').read_text()
+          assert "gozat360_logo_v6.png" in src
+          assert "Container(height:72" in src
+          assert "Container(height:62" in src
+          assert "gozat360_logo_v6.png" in desktop
+          print('PWA manifest, v6 doğru logo, mobil kart ölçüleri ve Flutter build dosyası doğrulandı.')
           PY
           cat > build/web/firebase.json <<'EOF'
           {"hosting":{"site":"gozat360web","public":".","ignore":["firebase.json",".firebaserc","**/.*","**/node_modules/**"],"headers":[{"source":"/index.html","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]},{"source":"/manifest.json","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]},{"source":"/flutter_bootstrap.js","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]},{"source":"/flutter_service_worker.js","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]},{"source":"/main.dart.js","headers":[{"key":"Cache-Control","value":"no-cache, must-revalidate"}]},{"source":"/icons/**","headers":[{"key":"Cache-Control","value":"public, max-age=31536000, immutable"}]}],"rewrites":[{"source":"**","destination":"/index.html"}]}}
