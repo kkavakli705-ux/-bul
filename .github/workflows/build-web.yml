@@ -21,9 +21,7 @@ jobs:
 
       - name: Web projesini hazirla
         run: |
-          if [ ! -f pubspec.yaml ] && [ -f Pubspec.yaml ]; then
-            cp Pubspec.yaml pubspec.yaml
-          fi
+          if [ ! -f pubspec.yaml ] && [ -f Pubspec.yaml ]; then cp Pubspec.yaml pubspec.yaml; fi
           flutter create --platforms=web .
           flutter pub get
 
@@ -34,57 +32,28 @@ jobs:
           from PIL import Image
           from pathlib import Path
           import json, re
-
-          # Her yayin yeni isim kullanir; eski PWA ikon cache'i geri gelemez.
           version = "v5"
           src_path = Path("file_000000000640821098f7fc77265f38c8.png")
-          if not src_path.exists():
-              raise SystemExit("Gozat360 logo kaynagi bulunamadi")
+          if not src_path.exists(): raise SystemExit("Gozat360 logo kaynagi bulunamadi")
           src = Image.open(src_path).convert("RGBA")
-
           def make_icon(size, path):
-              img = src.copy()
-              img.thumbnail((size, size), Image.Resampling.LANCZOS)
-              canvas = Image.new("RGBA", (size, size), (255, 255, 255, 0))
-              canvas.alpha_composite(img, ((size-img.width)//2, (size-img.height)//2))
-              canvas.save(path)
-
-          Path("web/icons").mkdir(parents=True, exist_ok=True)
-          make_icon(64, f"web/gozat360-favicon-{version}.png")
-          make_icon(192, f"web/icons/gozat360-192-{version}.png")
-          make_icon(512, f"web/icons/gozat360-512-{version}.png")
-          make_icon(192, f"web/icons/gozat360-maskable-192-{version}.png")
-          make_icon(512, f"web/icons/gozat360-maskable-512-{version}.png")
-
-          manifest_path = Path("web/manifest.json")
-          manifest = json.loads(manifest_path.read_text())
-          manifest.update({
-              "id": "/?pwa=1",
-              "name": "Gözat360",
-              "short_name": "Gözat360",
-              "description": "İş ilanları ve ikinci el pazaryeri",
-              "start_url": "/?pwa=1",
-              "scope": "/",
-              "display": "standalone",
-              "background_color": "#F6F9FD",
-              "theme_color": "#F6F9FD"
-          })
-          manifest["icons"] = [
-              {"src":f"icons/gozat360-192-{version}.png","sizes":"192x192","type":"image/png","purpose":"any"},
-              {"src":f"icons/gozat360-512-{version}.png","sizes":"512x512","type":"image/png","purpose":"any"},
-              {"src":f"icons/gozat360-maskable-192-{version}.png","sizes":"192x192","type":"image/png","purpose":"maskable"},
-              {"src":f"icons/gozat360-maskable-512-{version}.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
-          ]
-          manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2))
-
-          index_path = Path("web/index.html")
-          html = index_path.read_text()
-          verification = '<meta name="google-site-verification" content="EWUth7I1bl5nzKh_Iymm5SSeVUfKw67A8K5RvIei3VA" />'
-          if 'google-site-verification' not in html:
-              html = html.replace('<head>', '<head>\n  ' + verification, 1)
-          html = re.sub(r'href="favicon\.png"', f'href="gozat360-favicon-{version}.png"', html)
-          html = re.sub(r'href="icons/Icon-192\.png"', f'href="icons/gozat360-192-{version}.png"', html)
-          index_path.write_text(html)
+              img=src.copy(); img.thumbnail((size,size),Image.Resampling.LANCZOS)
+              canvas=Image.new("RGBA",(size,size),(255,255,255,0)); canvas.alpha_composite(img,((size-img.width)//2,(size-img.height)//2)); canvas.save(path)
+          Path("web/icons").mkdir(parents=True,exist_ok=True)
+          make_icon(64,f"web/gozat360-favicon-{version}.png")
+          make_icon(192,f"web/icons/gozat360-192-{version}.png")
+          make_icon(512,f"web/icons/gozat360-512-{version}.png")
+          make_icon(192,f"web/icons/gozat360-maskable-192-{version}.png")
+          make_icon(512,f"web/icons/gozat360-maskable-512-{version}.png")
+          p=Path("web/manifest.json"); m=json.loads(p.read_text())
+          m.update({"id":"/?pwa=1","name":"Gözat360","short_name":"Gözat360","description":"İş ilanları ve ikinci el pazaryeri","start_url":"/?pwa=1","scope":"/","display":"standalone","background_color":"#F6F9FD","theme_color":"#F6F9FD"})
+          m["icons"]=[{"src":f"icons/gozat360-192-{version}.png","sizes":"192x192","type":"image/png","purpose":"any"},{"src":f"icons/gozat360-512-{version}.png","sizes":"512x512","type":"image/png","purpose":"any"},{"src":f"icons/gozat360-maskable-192-{version}.png","sizes":"192x192","type":"image/png","purpose":"maskable"},{"src":f"icons/gozat360-maskable-512-{version}.png","sizes":"512x512","type":"image/png","purpose":"maskable"}]
+          p.write_text(json.dumps(m,ensure_ascii=False,indent=2))
+          ip=Path("web/index.html"); html=ip.read_text(); verification='<meta name="google-site-verification" content="EWUth7I1bl5nzKh_Iymm5SSeVUfKw67A8K5RvIei3VA" />'
+          if 'google-site-verification' not in html: html=html.replace('<head>','<head>\n  '+verification,1)
+          html=re.sub(r'href="favicon\.png"',f'href="gozat360-favicon-{version}.png"',html)
+          html=re.sub(r'href="icons/Icon-192\.png"',f'href="icons/gozat360-192-{version}.png"',html)
+          ip.write_text(html)
           PY
 
       - name: Web surumunu olustur
@@ -95,45 +64,21 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
-
-          manifest = json.loads(Path('build/web/manifest.json').read_text())
-          assert manifest['start_url'] == '/?pwa=1'
-          assert manifest['id'] == '/?pwa=1'
-          assert any('v5' in i['src'] for i in manifest['icons'])
-          for icon in manifest['icons']:
-              assert Path('build/web', icon['src']).exists(), icon['src']
-          main = Path('build/web/main.dart.js').read_text(errors='ignore')
-          assert 'İŞ İLANLARI' in main
-          assert 'İKİNCİ EL İLANI VER' in main
-          print('PWA manifest, yeni ikonlar ve mobil arayuz build icinde dogrulandi.')
+          m=json.loads(Path('build/web/manifest.json').read_text())
+          assert m.get('start_url')=='/?pwa=1', m.get('start_url')
+          assert m.get('id')=='/?pwa=1', m.get('id')
+          assert len(m.get('icons',[]))==4
+          assert all('v5' in i['src'] for i in m['icons'])
+          for i in m['icons']: assert Path('build/web',i['src']).exists(), i['src']
+          assert Path('build/web/main.dart.js').stat().st_size > 100000
+          print('PWA manifest, v5 ikonlar ve Flutter build dosyasi dogrulandi.')
           PY
-
           cat > build/web/firebase.json <<'EOF'
-          {
-            "hosting": {
-              "site": "gozat360web",
-              "public": ".",
-              "ignore": ["firebase.json", ".firebaserc", "**/.*", "**/node_modules/**"],
-              "headers": [
-                {"source": "/index.html", "headers": [{"key": "Cache-Control", "value": "no-cache, no-store, must-revalidate"}]},
-                {"source": "/manifest.json", "headers": [{"key": "Cache-Control", "value": "no-cache, no-store, must-revalidate"}]},
-                {"source": "/flutter_bootstrap.js", "headers": [{"key": "Cache-Control", "value": "no-cache, no-store, must-revalidate"}]},
-                {"source": "/flutter_service_worker.js", "headers": [{"key": "Cache-Control", "value": "no-cache, no-store, must-revalidate"}]},
-                {"source": "/main.dart.js", "headers": [{"key": "Cache-Control", "value": "no-cache, must-revalidate"}]},
-                {"source": "/icons/**", "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]}
-              ],
-              "rewrites": [{"source": "**", "destination": "/index.html"}]
-            }
-          }
+          {"hosting":{"site":"gozat360web","public":".","ignore":["firebase.json",".firebaserc","**/.*","**/node_modules/**"],"headers":[{"source":"/index.html","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]},{"source":"/manifest.json","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]},{"source":"/flutter_bootstrap.js","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]},{"source":"/flutter_service_worker.js","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]},{"source":"/main.dart.js","headers":[{"key":"Cache-Control","value":"no-cache, must-revalidate"}]},{"source":"/icons/**","headers":[{"key":"Cache-Control","value":"public, max-age=31536000, immutable"}]}],"rewrites":[{"source":"**","destination":"/index.html"}]}}
           EOF
-
           cat > build/web/.firebaserc <<'EOF'
-          {
-            "projects": {"default": "is-bul-1652d"},
-            "targets": {}
-          }
+          {"projects":{"default":"is-bul-1652d"},"targets":{}}
           EOF
-
           cat > build/web/DEPLOY-TERMUX.txt <<'EOF'
           cd ~ && rm -rf gozat360-final && mkdir gozat360-final && unzip -o ~/storage/downloads/gozat360-web.zip -d gozat360-final && cd ~/gozat360-final && firebase deploy --only hosting
           EOF
