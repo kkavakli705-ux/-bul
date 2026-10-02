@@ -35,8 +35,12 @@ jobs:
           from pathlib import Path
           import json, re
 
-          version = "v4"
-          src = Image.open("file_000000000640821098f7fc77265f38c8.png").convert("RGBA")
+          # Her yayin yeni isim kullanir; eski PWA ikon cache'i geri gelemez.
+          version = "v5"
+          src_path = Path("file_000000000640821098f7fc77265f38c8.png")
+          if not src_path.exists():
+              raise SystemExit("Gozat360 logo kaynagi bulunamadi")
+          src = Image.open(src_path).convert("RGBA")
 
           def make_icon(size, path):
               img = src.copy()
@@ -54,15 +58,17 @@ jobs:
 
           manifest_path = Path("web/manifest.json")
           manifest = json.loads(manifest_path.read_text())
-          manifest["id"] = "/?pwa=1"
-          manifest["name"] = "Gözat360"
-          manifest["short_name"] = "Gözat360"
-          manifest["description"] = "İş ilanları ve ikinci el pazaryeri"
-          manifest["start_url"] = "/?pwa=1"
-          manifest["scope"] = "/"
-          manifest["display"] = "standalone"
-          manifest["background_color"] = "#F6F9FD"
-          manifest["theme_color"] = "#F6F9FD"
+          manifest.update({
+              "id": "/?pwa=1",
+              "name": "Gözat360",
+              "short_name": "Gözat360",
+              "description": "İş ilanları ve ikinci el pazaryeri",
+              "start_url": "/?pwa=1",
+              "scope": "/",
+              "display": "standalone",
+              "background_color": "#F6F9FD",
+              "theme_color": "#F6F9FD"
+          })
           manifest["icons"] = [
               {"src":f"icons/gozat360-192-{version}.png","sizes":"192x192","type":"image/png","purpose":"any"},
               {"src":f"icons/gozat360-512-{version}.png","sizes":"512x512","type":"image/png","purpose":"any"},
@@ -78,31 +84,58 @@ jobs:
               html = html.replace('<head>', '<head>\n  ' + verification, 1)
           html = re.sub(r'href="favicon\.png"', f'href="gozat360-favicon-{version}.png"', html)
           html = re.sub(r'href="icons/Icon-192\.png"', f'href="icons/gozat360-192-{version}.png"', html)
-          # PWA kabugunun kendisi tarayici HTTP onbelleginde takilmasin.
-          html = html.replace('</head>', '  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">\n</head>')
           index_path.write_text(html)
           PY
 
       - name: Web surumunu olustur
         run: flutter build web --release
 
-      - name: PWA guncelleme ve cache ayarlarini ekle
+      - name: PWA paketini dogrula ve Firebase ayarini ekle
         run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(Path('build/web/manifest.json').read_text())
+          assert manifest['start_url'] == '/?pwa=1'
+          assert manifest['id'] == '/?pwa=1'
+          assert any('v5' in i['src'] for i in manifest['icons'])
+          for icon in manifest['icons']:
+              assert Path('build/web', icon['src']).exists(), icon['src']
+          main = Path('build/web/main.dart.js').read_text(errors='ignore')
+          assert 'İŞ İLANLARI' in main
+          assert 'İKİNCİ EL İLANI VER' in main
+          print('PWA manifest, yeni ikonlar ve mobil arayuz build icinde dogrulandi.')
+          PY
+
           cat > build/web/firebase.json <<'EOF'
           {
             "hosting": {
+              "site": "gozat360web",
               "public": ".",
-              "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+              "ignore": ["firebase.json", ".firebaserc", "**/.*", "**/node_modules/**"],
               "headers": [
                 {"source": "/index.html", "headers": [{"key": "Cache-Control", "value": "no-cache, no-store, must-revalidate"}]},
+                {"source": "/manifest.json", "headers": [{"key": "Cache-Control", "value": "no-cache, no-store, must-revalidate"}]},
                 {"source": "/flutter_bootstrap.js", "headers": [{"key": "Cache-Control", "value": "no-cache, no-store, must-revalidate"}]},
                 {"source": "/flutter_service_worker.js", "headers": [{"key": "Cache-Control", "value": "no-cache, no-store, must-revalidate"}]},
-                {"source": "/manifest.json", "headers": [{"key": "Cache-Control", "value": "no-cache, no-store, must-revalidate"}]},
-                {"source": "/**/*.js", "headers": [{"key": "Cache-Control", "value": "no-cache"}]}
+                {"source": "/main.dart.js", "headers": [{"key": "Cache-Control", "value": "no-cache, must-revalidate"}]},
+                {"source": "/icons/**", "headers": [{"key": "Cache-Control", "value": "public, max-age=31536000, immutable"}]}
               ],
               "rewrites": [{"source": "**", "destination": "/index.html"}]
             }
           }
+          EOF
+
+          cat > build/web/.firebaserc <<'EOF'
+          {
+            "projects": {"default": "is-bul-1652d"},
+            "targets": {}
+          }
+          EOF
+
+          cat > build/web/DEPLOY-TERMUX.txt <<'EOF'
+          cd ~ && rm -rf gozat360-final && mkdir gozat360-final && unzip -o ~/storage/downloads/gozat360-web.zip -d gozat360-final && cd ~/gozat360-final && firebase deploy --only hosting
           EOF
 
       - name: Web dosyalarini yukle
@@ -110,3 +143,4 @@ jobs:
         with:
           name: gozat360-web
           path: build/web
+          include-hidden-files: true
