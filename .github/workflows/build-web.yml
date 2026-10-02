@@ -35,7 +35,7 @@ jobs:
           version = "v6"
           src_path = Path("gozat360_logo_v6.png")
           if not src_path.exists(): raise SystemExit("Gozat360 v6 logo kaynagi bulunamadi")
-          expected="0ea4652653ae3c821b74e150d4e3622017456539de77202ad4aa28599e110131"
+          expected="efd881b82693815ec64abd8e7bad4c05688308f0f902f9da7acf0d0973b0fc4c"
           actual=hashlib.sha256(src_path.read_bytes()).hexdigest()
           if actual!=expected: raise SystemExit(f"Yanlis logo dosyasi: {actual}")
           src = Image.open(src_path).convert("RGBA")
