@@ -33,12 +33,9 @@ jobs:
           from pathlib import Path
           import json, re, hashlib
           version = "v6"
-          import base64
-          b64_path = Path("gozat360_logo_v6.b64")
-          if not b64_path.exists(): raise SystemExit("Gozat360 v6 logo kaynagi bulunamadi")
           src_path = Path("gozat360_logo_v6.png")
-          src_path.write_bytes(base64.b64decode(b64_path.read_text().strip()))
-          expected="61272f7c190ec66d6854c399c445c185c80663a5d5af1b85d8a626d155703b46"
+          if not src_path.exists(): raise SystemExit("Gozat360 v6 logo kaynagi bulunamadi")
+          expected="86c22ab0806ea920761b905a4710c3bccc0f7ac6fe250ac1219c2c8f3daa73a2"
           actual=hashlib.sha256(src_path.read_bytes()).hexdigest()
           if actual!=expected: raise SystemExit(f"Yanlis logo dosyasi: {actual}")
           src = Image.open(src_path).convert("RGBA")
