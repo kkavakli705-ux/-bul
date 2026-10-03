@@ -38,7 +38,7 @@ jobs:
           if not b64_path.exists(): raise SystemExit("Gozat360 v6 logo kaynagi bulunamadi")
           src_path = Path("gozat360_logo_v6.png")
           src_path.write_bytes(base64.b64decode(b64_path.read_text().strip()))
-          expected="f6202b12d0fa49889d55e981c6d7d503ea11a9ef29eb731df5cc9097dc68141c"
+          expected="61272f7c190ec66d6854c399c445c185c80663a5d5af1b85d8a626d155703b46"
           actual=hashlib.sha256(src_path.read_bytes()).hexdigest()
           if actual!=expected: raise SystemExit(f"Yanlis logo dosyasi: {actual}")
           src = Image.open(src_path).convert("RGBA")
