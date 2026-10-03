@@ -62,6 +62,34 @@ jobs:
       - name: Web surumunu olustur
         run: flutter build web --release
 
+      - name: Mobil web cache ayarini zorla
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          version = "50"
+          index = Path("build/web/index.html")
+          html = index.read_text()
+          html = html.replace('src="flutter_bootstrap.js"', f'src="flutter_bootstrap.js?v={version}"')
+          index.write_text(html)
+
+          boot = Path("build/web/flutter_bootstrap.js")
+          js = boot.read_text()
+          js = js.replace('"mainJsPath":"main.dart.js"', f'"mainJsPath":"main.dart.js?v={version}"')
+          js = re.sub(
+              r'_flutter\.loader\.load\(\{\s*serviceWorkerSettings:\s*\{\s*serviceWorkerVersion:\s*"[^"]+"[^}]*\}\s*\}\);',
+              '_flutter.loader.load();',
+              js,
+              flags=re.S,
+          )
+          boot.write_text(js)
+
+          assert f'flutter_bootstrap.js?v={version}' in index.read_text()
+          assert f'main.dart.js?v={version}' in boot.read_text()
+          assert 'serviceWorkerSettings' not in boot.read_text().split('_flutter.buildConfig =',1)[1]
+          print('Normal mobil web cache bypass ve service worker kapatma uygulandi.')
+          PY
+
       - name: PWA paketini dogrula ve Firebase ayarini ekle
         run: |
           python3 - <<'PY'

@@ -12,8 +12,7 @@ class WebAnaSayfa extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mobilWeb = MediaQuery.of(context).size.width < 720;
-    if (!_pwa && !mobilWeb) {
+    if (!_pwa) {
       return desktop.WebAnaSayfa(onGiris:onGiris,onCikis:onCikis,onIsIlanlari:onIsIlanlari,onIsIlaniVer:onIsIlaniVer,onIkinciEl:onIkinciEl,onIkinciElIlanVer:onIkinciElIlanVer,onKendiIlanlarim:onKendiIlanlarim,onIsDetay:onIsDetay,onIkinciElDetay:onIkinciElDetay);
     }
     final user = FirebaseAuth.instance.currentUser;
