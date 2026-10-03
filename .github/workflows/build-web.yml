@@ -31,11 +31,17 @@ jobs:
           python3 - <<'PY'
           from PIL import Image
           from pathlib import Path
-          import json, re
+          from io import BytesIO
+          import json, re, base64
           version = "v6"
           src_path = Path("gozat360_logo_new.jpg")
           if not src_path.exists(): raise SystemExit("Yeni Gozat360 logo kaynagi bulunamadi")
-          src = Image.open(src_path); src.load(); src = src.convert("RGBA")
+          raw = src_path.read_bytes()
+          try:
+              src = Image.open(BytesIO(raw)); src.load()
+          except Exception:
+              src = Image.open(BytesIO(base64.b64decode(raw))); src.load()
+          src = src.convert("RGBA")
           def make_icon(size, path):
               img=src.copy(); img.thumbnail((size,size),Image.Resampling.LANCZOS)
               canvas=Image.new("RGBA",(size,size),(255,255,255,0)); canvas.alpha_composite(img,((size-img.width)//2,(size-img.height)//2)); canvas.save(path)
@@ -54,6 +60,7 @@ jobs:
           html=re.sub(r'href="favicon\.png"',f'href="gozat360-favicon-{version}.png"',html)
           html=re.sub(r'href="icons/Icon-192\.png"',f'href="icons/gozat360-192-{version}.png"',html)
           ip.write_text(html)
+          print('Yeni logo okundu ve v6 ikonlar uretildi:', src.size)
           PY
 
       - name: Web surumunu olustur
@@ -71,7 +78,6 @@ jobs:
           assert all('v6' in i['src'] for i in m['icons'])
           for i in m['icons']: assert Path('build/web',i['src']).exists(), i['src']
           assert Path('build/web/main.dart.js').stat().st_size > 100000
-          assert Path('build/web/firebase.json').exists() if False else True
           print('PWA manifest, yeni v6 ikonlar ve Flutter build dosyasi dogrulandi.')
           PY
           cat > build/web/firebase.json <<'EOF'
