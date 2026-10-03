@@ -35,6 +35,7 @@ flutter:
   uses-material-design: true
   
   assets:
+    - gozat360_logo_v6.png
     
     
     
