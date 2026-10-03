@@ -1239,27 +1239,23 @@ class _GozatLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RichText(
-      text: TextSpan(
+    if (koyuArkaPlan) {
+      return const Text(
+        'Gözat360',
         style: TextStyle(
           fontSize: 29,
           fontWeight: FontWeight.w900,
-          color: koyuArkaPlan
-              ? Colors.white
-              : const Color(0xFF0D6EFD),
+          color: Colors.white,
         ),
-        children: const [
-          TextSpan(
-            text: 'Gözat',
-          ),
-          TextSpan(
-            text: '360',
-            style: TextStyle(
-              color: Color(0xFF20B947),
-            ),
-          ),
-        ],
-      ),
+      );
+    }
+
+    return Image.asset(
+      'gozat360_logo_v6.png',
+      width: 62,
+      height: 62,
+      fit: BoxFit.contain,
+      filterQuality: FilterQuality.high,
     );
   }
 }
