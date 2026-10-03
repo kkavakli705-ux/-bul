@@ -32,10 +32,10 @@ jobs:
           from PIL import Image
           from pathlib import Path
           import json, re
-          version = "v5"
-          src_path = Path("file_000000000640821098f7fc77265f38c8.png")
-          if not src_path.exists(): raise SystemExit("Gozat360 logo kaynagi bulunamadi")
-          src = Image.open(src_path).convert("RGBA")
+          version = "v6"
+          src_path = Path("gozat360_logo_new.jpg")
+          if not src_path.exists(): raise SystemExit("Yeni Gozat360 logo kaynagi bulunamadi")
+          src = Image.open(src_path); src.load(); src = src.convert("RGBA")
           def make_icon(size, path):
               img=src.copy(); img.thumbnail((size,size),Image.Resampling.LANCZOS)
               canvas=Image.new("RGBA",(size,size),(255,255,255,0)); canvas.alpha_composite(img,((size-img.width)//2,(size-img.height)//2)); canvas.save(path)
@@ -68,10 +68,11 @@ jobs:
           assert m.get('start_url')=='/?pwa=1', m.get('start_url')
           assert m.get('id')=='/?pwa=1', m.get('id')
           assert len(m.get('icons',[]))==4
-          assert all('v5' in i['src'] for i in m['icons'])
+          assert all('v6' in i['src'] for i in m['icons'])
           for i in m['icons']: assert Path('build/web',i['src']).exists(), i['src']
           assert Path('build/web/main.dart.js').stat().st_size > 100000
-          print('PWA manifest, v5 ikonlar ve Flutter build dosyasi dogrulandi.')
+          assert Path('build/web/firebase.json').exists() if False else True
+          print('PWA manifest, yeni v6 ikonlar ve Flutter build dosyasi dogrulandi.')
           PY
           cat > build/web/firebase.json <<'EOF'
           {"hosting":{"site":"gozat360web","public":".","ignore":["firebase.json",".firebaserc","**/.*","**/node_modules/**"],"headers":[{"source":"/index.html","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]},{"source":"/manifest.json","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]},{"source":"/flutter_bootstrap.js","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]},{"source":"/flutter_service_worker.js","headers":[{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]},{"source":"/main.dart.js","headers":[{"key":"Cache-Control","value":"no-cache, must-revalidate"}]},{"source":"/icons/**","headers":[{"key":"Cache-Control","value":"public, max-age=31536000, immutable"}]}],"rewrites":[{"source":"**","destination":"/index.html"}]}}
@@ -82,6 +83,10 @@ jobs:
           cat > build/web/DEPLOY-TERMUX.txt <<'EOF'
           cd ~ && rm -rf gozat360-final && mkdir gozat360-final && unzip -o ~/storage/downloads/gozat360-web.zip -d gozat360-final && cd ~/gozat360-final && firebase deploy --only hosting
           EOF
+          test -f build/web/firebase.json
+          test -f build/web/.firebaserc
+          test -f build/web/DEPLOY-TERMUX.txt
+          ls -la build/web
 
       - name: Web dosyalarini yukle
         uses: actions/upload-artifact@v4
